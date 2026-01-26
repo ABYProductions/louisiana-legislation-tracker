@@ -13,9 +13,6 @@ async function getBills() {
   
   if (error) {
     console.error('Error fetching bills:', JSON.stringify(error, null, 2))
-    console.error('Error message:', error.message)
-    console.error('Error details:', error.details)
-    console.error('Error hint:', error.hint)
     return []
   }
   
@@ -32,12 +29,12 @@ export default async function Home() {
           Louisiana Legislation Tracker
         </h1>
         <p className="text-gray-600 mb-8">
-          Tracking bills for the 2025 Legislative Session
+          Tracking bills for the 2026 Legislative Session
         </p>
         
         <div className="bg-white rounded-lg shadow">
           {bills.length === 0 ? (
-            <p className="p-8 text-gray-500">No bills found. Add some bills in Supabase!</p>
+            <p className="p-8 text-gray-500">No bills found.</p>
           ) : (
             <div className="divide-y divide-gray-200">
               {bills.map((bill) => (
@@ -50,9 +47,24 @@ export default async function Home() {
                       <p className="text-gray-700 mb-3">
                         {bill.title}
                       </p>
-                      <div className="flex gap-4 text-sm text-gray-500">
-                        <span>Author: {bill.author}</span>
-                        <span>Status: {bill.status}</span>
+                      
+                      {bill.summary && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-3">
+                          <h3 className="text-sm font-semibold text-blue-900 mb-2">
+                            AI Summary
+                          </h3>
+                          <p className="text-sm text-blue-800 whitespace-pre-line">
+                            {bill.summary}
+                          </p>
+                        </div>
+                      )}
+                      
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                        <span>Author: {bill.author || 'Not specified'}</span>
+                        <span>Status: {bill.status || 'Not specified'}</span>
+                        {bill.last_action && (
+                          <span>Last Action: {bill.last_action}</span>
+                        )}
                       </div>
                     </div>
                   </div>
