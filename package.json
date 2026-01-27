@@ -2,14 +2,14 @@
   "name": "louisiana-legislation-tracker",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
+"scripts": {
+  "dev": "next dev --turbopack",
   "build": "next build",
   "start": "next start",
-  "lint": "eslint",
+  "lint": "next lint",
   "sync": "tsx scripts/sync-legiscan.ts",
   "summaries": "tsx scripts/generate-summaries.ts"
-  },
+},
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
     "@supabase/supabase-js": "^2.91.0",
