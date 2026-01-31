@@ -11,25 +11,30 @@ const supabase = createClient(
 )
 
 async function generateSummary(bill: any): Promise<string> {
-  const prompt = `You are an expert at explaining legislation in plain language. Analyze the following Louisiana bill and provide a clear, concise summary.
+  const prompt = `You are a legislative analyst providing summaries for a public-facing Louisiana legislation tracking website. Write in clear, professional prose without any markdown formatting symbols (no #, ##, **, or bullet points with -). Use natural paragraphs and sentences.
+
+Structure your summary with these sections, using the section names as simple headers followed by a colon:
+
+Executive Summary: Write 2-3 sentences providing a concise overview of what this bill does and why it matters.
+
+Existing Statutes Impacted: List the specific Louisiana statutes this bill amends, creates, or repeals. For each statute, provide the citation (e.g., La. R.S. 17:252) and a brief explanation of how it is being changed. If no specific statutes are cited in the bill text, note that this bill creates new provisions.
+
+Affected Parties: Identify all individuals, organizations, government agencies, or groups who would be directly or indirectly affected by this legislation. Explain how each party is affected.
+
+Impact Potential: Provide an intelligent analysis of the potential implications of this bill. Consider how this changes existing law, what problems it tries to solve, the likely practical effects if enacted, and how this fits into the broader legal or policy landscape.
+
+Write as if you are a knowledgeable attorney or policy analyst explaining this bill to an intelligent layperson. Be comprehensive but accessible. Never use markdown symbols.
 
 Bill Number: ${bill.bill_number}
 Title: ${bill.title}
-Description: ${bill.description || 'Not provided'}
-Author: ${bill.author || 'Not specified'}
-Status: ${bill.status || 'Not specified'}
-Subjects: ${bill.subjects ? bill.subjects.map((s: any) => s.subject_name).join(', ') : 'Not specified'}
-
-Please provide:
-1. A 2-3 sentence plain-language summary of what this bill does
-2. Who would be affected by this bill
-3. The potential impact if passed
-
-Keep your response under 200 words and avoid legal jargon. Write for an educated general audience.`
+Description: ${bill.description || "Not provided"}
+Author: ${bill.author || "Not specified"}
+Status: ${bill.status || "Not specified"}
+Subjects: ${bill.subjects ? bill.subjects.map((s: any) => s.subject_name).join(", ") : "Not specified"}`;
 
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 500,
+    max_tokens: 1000,
     messages: [
       { role: 'user', content: prompt }
     ]

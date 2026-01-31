@@ -94,7 +94,25 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
             {bill.summary && (
               <div className="bg-indigo-50 rounded-2xl border border-indigo-100 p-8">
                 <h3 className="font-bold text-slate-900 mb-2">AI Summary</h3>
-                <p className="text-slate-700 whitespace-pre-line">{bill.summary}</p>
+                <div className="text-slate-700 space-y-4">
+  {bill.summary.split('\n').map((line: string, i: number) => {
+    const cleanLine = line
+      .replace(/^#{1,3}\s*/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/^[-•]\s*/g, '• ')
+      .trim()
+    
+    if (!cleanLine) return null
+    
+    const isHeader = line.startsWith('#') || 
+      ['Executive Summary', 'Existing Statutes Impacted', 'Affected Parties', 'Impact Potential', 'Plain-Language Summary', 'What this bill does', 'Who Would Be Affected', 'Potential Impact'].some(h => cleanLine.includes(h))
+    
+    if (isHeader) {
+      return <h4 key={i} className="font-semibold text-slate-900 pt-2">{cleanLine}</h4>
+    }
+    return <p key={i}>{cleanLine}</p>
+  })}
+</div>
               </div>
             )}
 
