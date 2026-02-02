@@ -2,84 +2,62 @@ import Link from 'next/link'
 
 interface BillCardProps {
   bill: {
-    id: string
+    id: number
     bill_number: string
     title: string
-    summary?: string
+    description?: string
     author?: string
     status?: string
+    summary?: string
+    subjects?: { subject_name: string }[]
     last_action?: string
-    last_action_date?: string
-    subjects?: Array<{ subject_name: string }>
   }
 }
 
 export default function BillCard({ bill }: BillCardProps) {
-  const getStatusStyle = (status: string | undefined) => {
-    switch (status?.toLowerCase()) {
-      case 'passed':
-        return 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20'
-      case 'failed':
-        return 'bg-red-50 text-red-700 ring-1 ring-red-600/20'
-      case 'prefiled':
-        return 'bg-amber-50 text-amber-700 ring-1 ring-amber-600/20'
-      case 'introduced':
-        return 'bg-blue-50 text-blue-700 ring-1 ring-blue-600/20'
-      default:
-        return 'bg-slate-50 text-slate-700 ring-1 ring-slate-600/20'
-    }
-  }
-
+  const billType = bill.bill_number?.replace(/[^A-Z]/g, '') || 'B'
+  
   return (
-    <Link href={`/bill/${bill.id}`} className="group block">
-      <article className="relative bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm hover:shadow-lg hover:border-slate-300/60 transition-all duration-300 hover:-translate-y-0.5">
-        <div className="flex items-start justify-between gap-4 mb-4">
+    <Link href={`/bill/${bill.id}`}>
+      <div className="group bg-white rounded-xl border border-slate-200 p-5 hover:shadow-lg hover:border-[#002868]/30 transition-all duration-200 h-full">
+        <div className="flex items-start justify-between gap-4 mb-3">
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 text-indigo-600 font-bold text-sm ring-1 ring-indigo-100">
-              {bill.bill_number.replace(/[^A-Z]/g, '')}
-            </span>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#002868] to-[#003d99] flex items-center justify-center text-white font-bold text-sm shadow-md">
+              {billType}
+            </div>
             <div>
-              <h2 className="text-lg font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+              <h3 className="font-bold text-[#002868] group-hover:text-[#003d99] transition-colors">
                 {bill.bill_number}
-              </h2>
-              {bill.author && (
-                <p className="text-sm text-slate-500">by {bill.author}</p>
-              )}
+              </h3>
+              <p className="text-sm text-slate-500">by {bill.author || 'Unknown'}</p>
             </div>
           </div>
-          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getStatusStyle(bill.status)}`}>
-            {bill.status || 'Unknown'}
-          </span>
+          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-[#f4c430] group-hover:text-[#002868] transition-colors">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
         </div>
-
-        <h3 className="text-slate-700 font-medium mb-3 line-clamp-2 leading-relaxed">
+        
+        <h4 className="font-medium text-slate-900 mb-2 line-clamp-2">
           {bill.title}
-        </h3>
-
+        </h4>
+        
         {bill.summary && (
-          <div className="relative mb-4">
-            <div className="absolute -left-3 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-500 to-violet-500 rounded-full" />
-            <p className="text-sm text-slate-600 line-clamp-2 pl-2">
-              {bill.summary}
+          <div className="mb-3 pl-3 border-l-2 border-[#f4c430]">
+            <p className="text-sm text-slate-600 line-clamp-2">
+              {bill.summary.replace(/^##\s*/gm, '').replace(/\*\*/g, '').substring(0, 150)}...
             </p>
           </div>
         )}
-
-        {bill.last_action && (
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="truncate">{bill.last_action}</span>
-          </div>
-        )}
-
-        <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <svg className="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        
+        <div className="flex items-center gap-2 text-xs text-slate-500">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
+          <span className="line-clamp-1">{bill.last_action || bill.status || 'Prefiled'}</span>
         </div>
-      </article>
+      </div>
     </Link>
   )
 }

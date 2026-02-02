@@ -6,16 +6,30 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Louisiana Theme Colors */
+:root {
+  --la-blue: #002868;
+  --la-blue-light: #003d99;
+  --la-blue-dark: #001a4d;
+  --la-gold: #f4c430;
+  --la-gold-light: #f7d35c;
+  --la-gold-dark: #c9a227;
+}
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
+  box-orient: vertical;
   overflow: hidden;
 }
 
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
+  box-orient: vertical;
   overflow: hidden;
 }

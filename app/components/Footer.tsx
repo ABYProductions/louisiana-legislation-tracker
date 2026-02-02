@@ -2,67 +2,106 @@ import Link from 'next/link'
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-400">
+    <footer className="bg-[#002868] text-white">
+      {/* Gold Top Border */}
+      <div className="h-1 bg-gradient-to-r from-[#f4c430] via-[#f7d35c] to-[#f4c430]" />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              <div className="w-10 h-10 rounded-lg bg-[#f4c430] flex items-center justify-center">
+                <svg className="w-6 h-6 text-[#002868]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
                 </svg>
               </div>
-              <span className="text-lg font-semibold text-white">Louisiana Legislation Tracker</span>
+              <div>
+                <span className="text-lg font-bold text-white">Louisiana Legislation Tracker</span>
+              </div>
             </div>
-            <p className="text-sm text-slate-400 max-w-md leading-relaxed">
-              Making Louisiana legislation accessible and understandable for everyone. 
-              AI-powered summaries help you stay informed about the bills that matter to you.
+            <p className="text-blue-200 max-w-md">
+              Making Louisiana legislation accessible to every citizen. 
+              AI-powered summaries help you understand bills without the legal jargon.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-sm font-semibold text-white mb-4">Quick Links</h3>
-            <ul className="space-y-3">
+            <h3 className="font-semibold text-[#f4c430] mb-4">Quick Links</h3>
+            <ul className="space-y-2">
               <li>
-                <Link href="/" className="text-sm hover:text-white transition-colors">
-                  All Bills
+                <Link href="/#bills" className="text-blue-200 hover:text-[#f4c430] transition-colors">
+                  Browse Bills
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="text-sm hover:text-white transition-colors">
+                <Link href="/about" className="text-blue-200 hover:text-[#f4c430] transition-colors">
                   About
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Resources */}
+          {/* Official Resources */}
           <div>
-            <h3 className="text-sm font-semibold text-white mb-4">Resources</h3>
-            <ul className="space-y-3">
+            <h3 className="font-semibold text-[#f4c430] mb-4">Official Resources</h3>
+            <ul className="space-y-2">
               <li>
                 <a 
                   href="https://legis.la.gov" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-sm hover:text-white transition-colors inline-flex items-center gap-1"
+                  className="text-blue-200 hover:text-[#f4c430] transition-colors"
                 >
-                  Official Legislature Site
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
+                  Louisiana Legislature
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://house.louisiana.gov" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-200 hover:text-[#f4c430] transition-colors"
+                >
+                  House of Representatives
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://senate.la.gov" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-200 hover:text-[#f4c430] transition-colors"
+                >
+                  Louisiana Senate
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://gov.louisiana.gov" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-200 hover:text-[#f4c430] transition-colors"
+                >
+                  Governor's Office
                 </a>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-slate-800">
-          <p className="text-xs text-slate-500 text-center">
-            © {new Date().getFullYear()} Louisiana Legislation Tracker. Data sourced from LegiScan. AI summaries powered by Claude.
-          </p>
+        {/* Bottom Bar */}
+        <div className="mt-12 pt-8 border-t border-white/20">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-blue-200">
+              © {new Date().getFullYear()} Louisiana Legislation Tracker. 
+              Not affiliated with the Louisiana State Legislature.
+            </p>
+            <p className="text-sm text-blue-200">
+              Data sourced from <a href="https://legiscan.com" target="_blank" rel="noopener noreferrer" className="text-[#f4c430] hover:underline">LegiScan</a>
+            </p>
+          </div>
         </div>
       </div>
     </footer>
