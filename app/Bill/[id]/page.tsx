@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import BillTimeline from '@/app/components/BillTimeline'
 
 async function getBill(id: string) {
   const supabase = createClient(
@@ -123,22 +124,7 @@ export default async function BillPage({ params }: { params: Promise<{ id: strin
               </div>
             )}
 
-            {bill.history && bill.history.length > 0 && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-8">
-                <h3 className="font-bold text-slate-900 mb-6">Bill History</h3>
-                <div className="space-y-4">
-                  {bill.history.map((event: { date: string; action: string }, index: number) => (
-                    <div key={index} className="flex gap-4 pb-4 border-b border-slate-100 last:border-0">
-                      <div className={`w-3 h-3 rounded-full mt-1.5 ${index === 0 ? 'bg-indigo-500' : 'bg-slate-300'}`} />
-                      <div>
-                        <p className="text-sm text-slate-500">{formatDate(event.date)}</p>
-                        <p className="text-slate-900">{event.action}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+        <BillTimeline history={bill.history || []} />
 
             {bill.votes && bill.votes.length > 0 && (
               <div className="bg-white rounded-2xl border border-slate-200 p-8">
