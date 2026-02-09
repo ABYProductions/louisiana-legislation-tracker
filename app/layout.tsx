@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import { Analytics } from '@vercel/analytics/react';
 
 export const metadata: Metadata = {
   title: "Louisiana Legislation Tracker | AI-Powered Bill Tracking",
@@ -26,6 +27,7 @@ export default function RootLayout({
         <div className="flex-1 pt-16">
           {children}
         </div>
+        <Analytics />
         <Footer />
       </body>
     </html>
