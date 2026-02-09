@@ -1,8 +1,9 @@
+// app/components/BillListClient.tsx
 'use client'
 
 import { useState, useMemo } from 'react'
 import BillCard from './BillCard'
-import SearchFilters, { SearchFilters as SearchFiltersType } from './SearchFilters'
+import SearchFilters from './SearchFilters'
 
 interface Bill {
   id: number
@@ -15,6 +16,7 @@ interface Bill {
   subjects: { subject_name: string }[]
   summary: string
   last_action_date: string
+  last_action: string | null
   created_at: string
 }
 
@@ -23,7 +25,14 @@ interface BillListClientProps {
 }
 
 export default function BillListClient({ bills }: BillListClientProps) {
-  const [filters, setFilters] = useState<SearchFiltersType>({
+  const [filters, setFilters] = useState<{
+    keyword: string
+    author: string
+    subject: string
+    status: string
+    chamber: string
+    sortBy: string
+  }>({
     keyword: '',
     author: '',
     subject: '',
@@ -49,94 +58,130 @@ export default function BillListClient({ bills }: BillListClientProps) {
     return uniqueStatuses.sort()
   }, [bills])
 
-  // Filter and sort bills
+  // Filter bills
   const filteredBills = useMemo(() => {
-    let result = [...bills]
+    return bills.filter(bill => {
+      // Keyword search
+      if (filters.keyword) {
+        const keyword = filters.keyword.toLowerCase()
+        const matchesKeyword = 
+          bill.title?.toLowerCase().includes(keyword) ||
+          bill.bill_number?.toLowerCase().includes(keyword) ||
+          bill.description?.toLowerCase().includes(keyword) ||
+          bill.summary?.toLowerCase().includes(keyword)
+        if (!matchesKeyword) return false
+      }
 
-    // Keyword search
-    if (filters.keyword) {
-      const keyword = filters.keyword.toLowerCase()
-      result = result.filter(bill =>
-        bill.bill_number?.toLowerCase().includes(keyword) ||
-        bill.title?.toLowerCase().includes(keyword) ||
-        bill.description?.toLowerCase().includes(keyword) ||
-        bill.author?.toLowerCase().includes(keyword) ||
-        bill.summary?.toLowerCase().includes(keyword) ||
-        bill.subjects?.some(s => s.subject_name?.toLowerCase().includes(keyword))
-      )
-    }
+      // Author filter
+      if (filters.author && filters.author !== 'all') {
+        if (bill.author !== filters.author) return false
+      }
 
-    // Author filter
-    if (filters.author) {
-      result = result.filter(bill => bill.author === filters.author)
-    }
+      // Subject filter
+      if (filters.subject && filters.subject !== 'all') {
+        const hasSubject = bill.subjects?.some(s => s.subject_name === filters.subject)
+        if (!hasSubject) return false
+      }
 
-    // Subject filter
-    if (filters.subject) {
-      result = result.filter(bill =>
-        bill.subjects?.some(s => s.subject_name === filters.subject)
-      )
-    }
+      // Status filter
+      if (filters.status && filters.status !== 'all') {
+        if (bill.status !== filters.status) return false
+      }
 
-    // Status filter
-    if (filters.status) {
-      result = result.filter(bill => bill.status === filters.status)
-    }
+      // Chamber filter
+      if (filters.chamber && filters.chamber !== 'all') {
+        const billChamber = bill.body?.toLowerCase()
+        if (billChamber !== filters.chamber.toLowerCase()) return false
+      }
 
-    // Chamber filter
-    if (filters.chamber) {
-      result = result.filter(bill => bill.body === filters.chamber)
-    }
-
-    // Sorting
-    switch (filters.sortBy) {
-      case 'newest':
-        result.sort((a, b) => new Date(b.last_action_date || b.created_at).getTime() - new Date(a.last_action_date || a.created_at).getTime())
-        break
-      case 'oldest':
-        result.sort((a, b) => new Date(a.last_action_date || a.created_at).getTime() - new Date(b.last_action_date || b.created_at).getTime())
-        break
-      case 'bill_number':
-        result.sort((a, b) => a.bill_number.localeCompare(b.bill_number))
-        break
-      case 'author':
-        result.sort((a, b) => (a.author || '').localeCompare(b.author || ''))
-        break
-    }
-
-    return result
+      return true
+    })
   }, [bills, filters])
 
+  // Sort bills
+  const sortedBills = useMemo(() => {
+    const sorted = [...filteredBills]
+    
+    switch (filters.sortBy) {
+      case 'newest':
+        return sorted.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+      case 'oldest':
+        return sorted.sort((a, b) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        )
+      case 'bill_number':
+        return sorted.sort((a, b) => 
+          a.bill_number.localeCompare(b.bill_number)
+        )
+      case 'last_action':
+        return sorted.sort((a, b) => {
+          const dateA = a.last_action_date ? new Date(a.last_action_date).getTime() : 0
+          const dateB = b.last_action_date ? new Date(b.last_action_date).getTime() : 0
+          return dateB - dateA
+        })
+      default:
+        return sorted
+    }
+  }, [filteredBills, filters.sortBy])
+
   return (
-    <div>
+    <div className="space-y-6">
+      {/* Search Filters */}
       <SearchFilters
-        onSearch={setFilters}
         authors={authors}
         subjects={subjects}
         statuses={statuses}
       />
 
-      <div className="flex items-center justify-between mb-4">
+      {/* Results Count */}
+      <div className="flex items-center justify-between">
         <p className="text-slate-600">
-          Showing <span className="font-semibold text-slate-900">{filteredBills.length}</span> of {bills.length} bills
+          Showing <span className="font-semibold text-[#002868]">{sortedBills.length}</span> of {bills.length} bills
         </p>
+        
+        {/* Sort Dropdown */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-slate-600">Sort by:</label>
+          <select
+            value={filters.sortBy}
+            onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+            className="px-3 py-1 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#002868]"
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="bill_number">Bill Number</option>
+            <option value="last_action">Recent Activity</option>
+          </select>
+        </div>
       </div>
 
-      {filteredBills.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <svg className="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <h3 className="text-lg font-semibold text-slate-900 mb-2">No bills found</h3>
-          <p className="text-slate-500">Try adjusting your search or filters</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredBills.map((bill) => (
+      {/* Bill Cards */}
+      <div className="grid gap-4">
+        {sortedBills.length > 0 ? (
+          sortedBills.map((bill) => (
             <BillCard key={bill.id} bill={bill} />
-          ))}
-        </div>
-      )}
+          ))
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-slate-500 text-lg">No bills found matching your filters.</p>
+            <button
+              onClick={() => setFilters({
+                keyword: '',
+                author: '',
+                subject: '',
+                status: '',
+                chamber: '',
+                sortBy: 'newest'
+              })}
+              className="mt-4 px-4 py-2 bg-[#002868] text-white rounded-lg hover:bg-[#001a4d] transition-colors"
+            >
+              Clear Filters
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
