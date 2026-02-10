@@ -15,7 +15,7 @@ interface BillCardProps {
 
 export default function BillCard({ bill }: BillCardProps) {
   return (
-    <div className="block bg-white rounded-xl border border-slate-200 p-6 hover:border-[#002868] hover:shadow-lg transition-all">
+    <div className="bg-white rounded-xl border border-slate-200 p-6 hover:border-[#002868] hover:shadow-lg transition-all">
       <Link href={`/bill/${bill.id}`} className="block mb-4">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -44,11 +44,10 @@ export default function BillCard({ bill }: BillCardProps) {
         )}
       </Link>
 
-      <div className="flex items-center justify-between text-xs text-slate-500">
+      <div className="flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 pt-3">
         <Link 
           href={`/legislator/${encodeURIComponent(bill.author)}`}
           className="text-[#002868] hover:text-[#f4c430] font-medium hover:underline"
-          onClick={(e) => e.stopPropagation()}
         >
           {bill.author}
         </Link>
