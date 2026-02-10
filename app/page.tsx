@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
-import BillCard from '@/app/components/BillCard'
 import Header from '@/app/components/Header'
 import Footer from '@/app/components/Footer'
+import BillListWithFilters from '@/app/components/BillListWithFilters'
 
 async function getBills() {
   const supabase = createClient(
@@ -150,18 +150,11 @@ export default async function Home() {
             </div>
           </div>
 
-          {bills.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
-              <p className="text-slate-500 text-lg">No bills found in database.</p>
-              <p className="text-slate-400 text-sm mt-2">Run the sync script to populate bills.</p>
-            </div>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {bills.map((bill: any) => (
-                <BillCard key={bill.id} bill={bill} />
-              ))}
-            </div>
-          )}
+          <BillListWithFilters 
+            initialBills={bills}
+            legislators={authors}
+            subjects={subjects}
+          />
         </section>
       </main>
       <Footer />
