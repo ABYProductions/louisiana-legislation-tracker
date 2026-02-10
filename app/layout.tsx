@@ -1,18 +1,21 @@
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import { Analytics } from '@vercel/analytics/react';
+import DisclaimerModal from "./components/DisclaimerModal";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
-  title: "Louisiana Legislation Tracker | AI-Powered Bill Tracking",
-  description: "Track Louisiana legislation with AI-powered summaries. Stay informed about bills that matter to you with plain-language explanations and real-time updates.",
-  keywords: ["Louisiana", "legislation", "bills", "tracking", "legislature", "law", "politics"],
-  openGraph: {
-    title: "Louisiana Legislation Tracker",
-    description: "Track Louisiana legislation with AI-powered summaries.",
-    type: "website",
-  },
+  title: "Louisiana Legislation Tracker",
+  description: "Track Louisiana state legislation with AI-powered summaries",
 };
 
 export default function RootLayout({
@@ -22,13 +25,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col">
-        <Header />
-        <div className="flex-1 pt-16">
-          {children}
-        </div>
-        <Analytics />
-        <Footer />
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
+      >
+        <DisclaimerModal />
+        {children}
       </body>
     </html>
   );
