@@ -1,10 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import Header from '@/app/components/Header'
-import Footer from '@/app/components/Footer'
-import LegislatorProfile from '@/app/components/LegislatorProfile'
-import LegislatorBills from '@/app/components/LegislatorBills'
+import Header from '../../components/Header'
+import Footer from '../../components/Footer'
+import LegislatorProfile from '../../components/LegislatorProfile'
+import LegislatorBills from '../../components/LegislatorBills'
+import { getLegislatorInfo } from '../../../lib/legislator-data'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,7 +16,6 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
   const resolvedParams = await params
   const legislatorName = decodeURIComponent(resolvedParams.name)
 
-  // Fetch all bills by this legislator
   const { data: bills, error } = await supabase
     .from('Bills')
     .select('*')
@@ -26,15 +26,17 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
     notFound()
   }
 
-  // Generate legislator profile data
+  // Get legislator info from data file
+  const legislatorInfo = getLegislatorInfo(legislatorName)
+  
   const legislatorData = {
     name: legislatorName,
-    party: 'Republican',
-    district: 'District information not available',
+    party: legislatorInfo.party,
+    district: legislatorInfo.district,
     photo: null,
-    termInfo: 'Term information not available',
-    committees: [],
-    career: 'Career information not available',
+    termInfo: legislatorInfo.termInfo,
+    committees: legislatorInfo.committees,
+    career: legislatorInfo.career,
   }
 
   return (
@@ -114,7 +116,7 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
                 </div>
 
                 <p className="text-slate-700 leading-relaxed">
-                  <strong className="text-[#002868]">Historical Context:</strong> While comprehensive historical data for prior sessions is not currently available, the current session's legislative activity suggests a focus on {getTopicAnalysis(bills).summary}. This legislator appears to prioritize legislation that impacts {getTopicAnalysis(bills).impactAreas}.
+                  <strong className="text-[#002868]">Historical Context:</strong> While comprehensive historical data for prior sessions is not currently available, the current sessions legislative activity suggests a focus on {getTopicAnalysis(bills).summary}. This legislator appears to prioritize legislation that impacts {getTopicAnalysis(bills).impactAreas}.
                 </p>
 
                 <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
