@@ -47,14 +47,15 @@ export default async function BillDetailPage({ params }: { params: { id: string 
       
       <main className="flex-1 py-8">
         <div className="container mx-auto px-4 max-w-7xl">
+          {/* Main Bill Header Card */}
           <div className="bg-white rounded-2xl border border-slate-200 p-8 mb-6 shadow-sm">
             <div className="flex flex-col lg:flex-row items-start justify-between gap-6 mb-6">
               <div className="flex-1 w-full">
                 <div className="flex items-center gap-3 mb-3 flex-wrap">
-                  <span className="px-3 py-1 bg-[#002868] text-white rounded-full text-sm font-semibold">
+                  <span className="px-3 py-1 bg-[#002868] text-white rounded-full text-sm font-bold">
                     {typedBill.bill_number}
                   </span>
-                  <span className="px-3 py-1 bg-[#f4c430] text-[#002868] rounded-full text-sm font-semibold">
+                  <span className="px-3 py-1 bg-[#f4c430] text-[#002868] rounded-full text-sm font-bold">
                     {typedBill.body}
                   </span>
                 </div>
@@ -64,90 +65,92 @@ export default async function BillDetailPage({ params }: { params: { id: string 
                 </h1>
                 
                 {typedBill.description && (
-                  <p className="text-slate-700 text-lg leading-relaxed mb-4">
+                  <p className="text-slate-600 text-lg leading-relaxed mb-4">
                     {typedBill.description}
                   </p>
                 )}
 
-                <div className="flex flex-wrap gap-4 text-sm text-slate-600">
-                 <div className="flex items-center gap-2">
-                   <span className="font-semibold text-slate-900">Sponsor:</span>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Author</p>
                     <Link 
                       href={`/legislator/${encodeURIComponent(typedBill.author)}`}
-                      className="text-[#002868] hover:text-[#001a4d] underline font-medium transition-colors"
+                      className="text-[#002868] hover:underline font-bold text-sm"
                     > 
                       {typedBill.author}
                     </Link>
-                </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-900">Status:</span>
-                    <span className="px-2 py-1 bg-slate-100 text-slate-700 rounded border border-slate-200">{typedBill.status}</span>
                   </div>
-                  {typedBill.last_action_date && (
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-900">Last Action:</span>
-                      <span className="text-slate-700">
-                        {new Date(typedBill.last_action_date).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric', 
-                          year: 'numeric' 
-                        })}
-                      </span>
-                    </div>
-                  )}
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Last Action</p>
+                    <p className="text-sm text-slate-900 font-bold">
+                      {typedBill.last_action_date ? new Date(typedBill.last_action_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Status</p>
+                    <p className="text-sm text-slate-900 font-bold">{typedBill.status}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Chamber</p>
+                    <p className="text-sm text-slate-900 font-bold">{typedBill.body}</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 w-full lg:w-auto">
+              <div className="flex flex-col gap-3 w-full lg:w-auto">
                 <a href={'https://legiscan.com/LA/bill/' + typedBill.bill_number}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 bg-[#002868] text-white rounded-lg hover:bg-[#001a4d] transition-colors text-center text-sm font-semibold shadow-sm"
+                  className="px-6 py-3 bg-[#002868] text-white rounded-xl hover:bg-[#001a4d] transition-all text-center text-sm font-bold shadow-md"
                 >
-                  View on LegiScan
+                  View Official Document →
                 </a>
-                <button className="px-4 py-2 border-2 border-[#002868] text-[#002868] rounded-lg hover:bg-[#002868] hover:text-white transition-all text-sm font-semibold">
+                <button className="px-6 py-3 border-2 border-[#002868] text-[#002868] rounded-xl hover:bg-[#002868] hover:text-white transition-all text-sm font-bold">
                   Share Bill
                 </button>
               </div>
             </div>
 
+            {/* AI Summary Box */}
             {typedBill.summary && (
-              <div className="bg-slate-50 border-2 border-[#002868] rounded-xl p-6 shadow-inner">
-                <div className="flex items-center gap-3 mb-3">
+              <div className="bg-slate-50 border-2 border-[#002868] rounded-2xl p-6 shadow-sm mt-8">
+                <div className="flex items-center gap-3 mb-4">
                   <span className="text-2xl" role="img" aria-label="AI summary">🤖</span>
-                  <h2 className="text-lg font-bold text-[#002868] tracking-tight">AI Summary</h2>
+                  <h2 className="text-xl font-bold text-[#002868]">AI Summary</h2>
                 </div>
-                <p className="text-slate-700 leading-relaxed font-medium">
+                <div className="prose prose-slate max-w-none text-slate-700 leading-relaxed">
                   {typedBill.summary}
-                </p>
+                </div>
               </div>
             )}
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-6">
+          {/* Secondary Information Grid */}
+          <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1">
-              <BillTimeline 
-                history={[
-                  {
-                    date: typedBill.created_at,
-                    action: 'Bill Introduced',
-                    chamber: typedBill.body,
-                    chamber_id: 1,
-                    importance: 3
-                  },
-                  {
-                    date: typedBill.last_action_date || typedBill.created_at,
-                    action: typedBill.last_action || typedBill.status,
-                    chamber: typedBill.body,
-                    chamber_id: 1,
-                    importance: 2
-                  }
-                ]} 
-              />
+              <div className="sticky top-8">
+                <BillTimeline 
+                  history={[
+                    {
+                      date: typedBill.created_at,
+                      action: 'Bill Introduced',
+                      chamber: typedBill.body,
+                      chamber_id: 1,
+                      importance: 3
+                    },
+                    {
+                      date: typedBill.last_action_date || typedBill.created_at,
+                      action: typedBill.last_action || typedBill.status,
+                      chamber: typedBill.body,
+                      chamber_id: 1,
+                      importance: 2
+                    }
+                  ]} 
+                />
+              </div>
             </div>
 
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-8">
               <AmendmentSummary billId={typedBill.id} />
               <BillChangeHistory billId={typedBill.id} />
               <TextComparison
@@ -155,29 +158,6 @@ export default async function BillDetailPage({ params }: { params: { id: string 
                 afterText="Section 3. The department must establish comprehensive procedures and guidelines."
                 sectionTitle="Section 3 Changes"
               />
-
-              {typedBill.last_action && (
-                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                  <h2 className="text-xl font-bold text-slate-900 mb-4">Latest Action</h2>
-                  <div className="flex items-start gap-3">
-                    <span className="text-2xl" role="img" aria-label="pin">📌</span>
-                    <div className="flex-1">
-                      <p className="text-slate-700 leading-relaxed mb-2 font-medium">
-                        {typedBill.last_action}
-                      </p>
-                      {typedBill.last_action_date && (
-                        <p className="text-sm text-slate-500">
-                          {new Date(typedBill.last_action_date).toLocaleDateString('en-US', { 
-                            month: 'long', 
-                            day: 'numeric', 
-                            year: 'numeric' 
-                          })}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
