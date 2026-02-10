@@ -26,7 +26,6 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
     notFound()
   }
 
-  // Get legislator info from data file
   const legislatorInfo = getLegislatorInfo(legislatorName)
   
   const legislatorData = {
@@ -47,7 +46,7 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
         <div className="container mx-auto px-4 max-w-7xl">
           <Link 
             href="/"
-            className="inline-flex items-center gap-2 text-[#002868] hover:text-[#001a4d] mb-6 font-medium"
+            className="inline-flex items-center gap-2 text-[#0C2340] hover:text-[#1a3a5c] mb-6 font-medium"
           >
             ← Back to All Bills
           </Link>
@@ -55,7 +54,7 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
           <LegislatorProfile legislator={legislatorData} billCount={bills.length} />
 
           <div className="mt-12">
-            <h2 className="text-2xl font-bold text-[#002868] mb-6">
+            <h2 className="text-2xl font-bold text-[#0C2340] mb-6">
               Bills Filed in 2026 Regular Session ({bills.length})
             </h2>
             <LegislatorBills bills={bills} />
@@ -64,7 +63,7 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
           <div className="mt-12 bg-white rounded-2xl border border-slate-200 p-8">
             <div className="flex items-center gap-3 mb-6">
               <span className="text-3xl">📊</span>
-              <h2 className="text-2xl font-bold text-[#002868]">
+              <h2 className="text-2xl font-bold text-[#0C2340]">
                 Legislative Focus & Historical Analysis
               </h2>
             </div>
@@ -72,7 +71,7 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-6">
               <div className="flex items-start gap-3 mb-4">
                 <span className="text-2xl">🤖</span>
-                <h3 className="text-lg font-bold text-[#002868]">AI-Generated Analysis</h3>
+                <h3 className="text-lg font-bold text-[#0C2340]">AI-Generated Analysis</h3>
               </div>
               <div className="prose max-w-none">
                 <p className="text-slate-700 leading-relaxed mb-4">
@@ -81,11 +80,11 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
                 
                 <div className="grid md:grid-cols-2 gap-6 mb-6">
                   <div className="bg-white rounded-lg p-4 border border-blue-200">
-                    <h4 className="font-bold text-[#002868] mb-2">Primary Focus Areas</h4>
+                    <h4 className="font-bold text-[#0C2340] mb-2">Primary Focus Areas</h4>
                     <ul className="space-y-2 text-sm">
                       {getTopicAnalysis(bills).topics.map((topic, i) => (
                         <li key={i} className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-[#f4c430]"></span>
+                          <span className="w-2 h-2 rounded-full bg-[#FDD023]"></span>
                           <span>{topic}</span>
                         </li>
                       ))}
@@ -93,21 +92,21 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
                   </div>
                   
                   <div className="bg-white rounded-lg p-4 border border-blue-200">
-                    <h4 className="font-bold text-[#002868] mb-2">Legislative Activity</h4>
+                    <h4 className="font-bold text-[#0C2340] mb-2">Legislative Activity</h4>
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
                         <span className="text-slate-600">Bills Filed:</span>
-                        <span className="font-semibold text-[#002868]">{bills.length}</span>
+                        <span className="font-semibold text-[#0C2340]">{bills.length}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-600">Active Bills:</span>
-                        <span className="font-semibold text-[#002868]">
+                        <span className="font-semibold text-[#0C2340]">
                           {bills.filter(b => b.status !== 'Dead').length}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-600">House Bills:</span>
-                        <span className="font-semibold text-[#002868]">
+                        <span className="font-semibold text-[#0C2340]">
                           {bills.filter(b => b.body === 'House').length}
                         </span>
                       </div>
@@ -116,7 +115,7 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
                 </div>
 
                 <p className="text-slate-700 leading-relaxed">
-                  <strong className="text-[#002868]">Historical Context:</strong> While comprehensive historical data for prior sessions is not currently available, the current sessions legislative activity suggests a focus on {getTopicAnalysis(bills).summary}. This legislator appears to prioritize legislation that impacts {getTopicAnalysis(bills).impactAreas}.
+                  <strong className="text-[#0C2340]">Historical Context:</strong> While comprehensive historical data for prior sessions is not currently available, the current sessions legislative activity suggests a focus on {getTopicAnalysis(bills).summary}. This legislator appears to prioritize legislation that impacts {getTopicAnalysis(bills).impactAreas}.
                 </p>
 
                 <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">

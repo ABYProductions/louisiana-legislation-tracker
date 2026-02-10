@@ -41,12 +41,12 @@ export default async function LegislatorsPage() {
           <div className="mb-8">
             <Link 
               href="/"
-              className="inline-flex items-center gap-2 text-[#002868] hover:text-[#001a4d] mb-4 font-medium"
+              className="inline-flex items-center gap-2 text-[#0C2340] hover:text-[#1a3a5c] mb-4 font-medium"
             >
               ← Back to All Bills
             </Link>
             
-            <h1 className="text-4xl font-bold text-[#002868] mb-3">
+            <h1 className="text-4xl font-bold text-[#0C2340] mb-3">
               Louisiana Legislators
             </h1>
             <p className="text-slate-600 text-lg">
@@ -56,23 +56,23 @@ export default async function LegislatorsPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <div className="text-3xl font-bold text-[#002868]">{legislators.length}</div>
+              <div className="text-3xl font-bold text-[#0C2340]">{legislators.length}</div>
               <div className="text-sm text-slate-600 mt-1">Total Legislators</div>
             </div>
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <div className="text-3xl font-bold text-[#002868]">
+              <div className="text-3xl font-bold text-[#0C2340]">
                 {legislators.reduce((sum, l) => sum + l.billCount, 0)}
               </div>
               <div className="text-sm text-slate-600 mt-1">Total Bills Filed</div>
             </div>
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <div className="text-3xl font-bold text-[#002868]">
+              <div className="text-3xl font-bold text-[#0C2340]">
                 {Math.round(legislators.reduce((sum, l) => sum + l.billCount, 0) / legislators.length)}
               </div>
               <div className="text-sm text-slate-600 mt-1">Avg Bills/Legislator</div>
             </div>
             <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <div className="text-3xl font-bold text-[#002868]">
+              <div className="text-3xl font-bold text-[#0C2340]">
                 {Math.max(...legislators.map(l => l.billCount))}
               </div>
               <div className="text-sm text-slate-600 mt-1">Most Bills Filed</div>
@@ -80,18 +80,18 @@ export default async function LegislatorsPage() {
           </div>
 
           <div className="bg-white rounded-2xl border border-slate-200 p-8">
-            <h2 className="text-2xl font-bold text-[#002868] mb-6">All Legislators</h2>
+            <h2 className="text-2xl font-bold text-[#0C2340] mb-6">All Legislators</h2>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {legislators.map((legislator) => (
                 <Link
                   key={legislator.name}
                   href={`/legislator/${encodeURIComponent(legislator.name)}`}
-                  className="group block p-4 rounded-xl border border-slate-200 hover:border-[#002868] hover:shadow-lg transition-all"
+                  className="group block p-4 rounded-xl border border-slate-200 hover:border-[#0C2340] hover:shadow-lg transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-slate-900 group-hover:text-[#002868] transition-colors">
+                      <h3 className="font-semibold text-slate-900 group-hover:text-[#0C2340] transition-colors">
                         {legislator.name}
                       </h3>
                       <p className="text-sm text-slate-500 mt-1">
@@ -99,7 +99,7 @@ export default async function LegislatorsPage() {
                       </p>
                     </div>
                     <div className="flex-shrink-0 ml-3">
-                      <div className="w-10 h-10 rounded-full bg-[#002868] flex items-center justify-center text-white font-bold">
+                      <div className="w-10 h-10 rounded-full bg-[#0C2340] flex items-center justify-center text-white font-bold">
                         {legislator.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                       </div>
                     </div>
