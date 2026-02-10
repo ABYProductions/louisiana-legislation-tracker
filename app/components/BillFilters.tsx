@@ -78,17 +78,16 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
     selectedSubject !== 'all' || 
     selectedStatus !== 'all'
 
-  // Get unique statuses from bills
   const statuses = [...new Set(bills.map(b => b.status).filter(Boolean))].sort()
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-8">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-[#002868]">Filter Bills</h3>
+        <h3 className="text-lg font-bold text-[#0C2340]">Filter Bills</h3>
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="text-sm text-[#002868] hover:text-[#f4c430] font-medium underline"
+            className="text-sm text-[#0C2340] hover:text-[#FDD023] font-medium underline"
           >
             Clear All Filters
           </button>
@@ -96,7 +95,6 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Chamber Filter */}
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-2">
             Chamber
@@ -104,7 +102,7 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
           <select
             value={selectedChamber}
             onChange={(e) => handleChamberChange(e.target.value)}
-            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#002868] focus:border-transparent outline-none"
+            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#0C2340] focus:border-transparent outline-none"
           >
             <option value="all">All Chambers</option>
             <option value="House">House</option>
@@ -112,7 +110,6 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
           </select>
         </div>
 
-        {/* Legislator Filter */}
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-2">
             Legislator
@@ -120,7 +117,7 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
           <select
             value={selectedLegislator}
             onChange={(e) => handleLegislatorChange(e.target.value)}
-            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#002868] focus:border-transparent outline-none"
+            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#0C2340] focus:border-transparent outline-none"
           >
             <option value="all">All Legislators</option>
             {legislators.map((legislator) => (
@@ -131,7 +128,6 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
           </select>
         </div>
 
-        {/* Subject Filter */}
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-2">
             Subject
@@ -139,7 +135,7 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
           <select
             value={selectedSubject}
             onChange={(e) => handleSubjectChange(e.target.value)}
-            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#002868] focus:border-transparent outline-none"
+            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#0C2340] focus:border-transparent outline-none"
           >
             <option value="all">All Subjects</option>
             {subjects.map((subject) => (
@@ -150,7 +146,6 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
           </select>
         </div>
 
-        {/* Status Filter */}
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-2">
             Status
@@ -158,7 +153,7 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
           <select
             value={selectedStatus}
             onChange={(e) => handleStatusChange(e.target.value)}
-            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#002868] focus:border-transparent outline-none"
+            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#0C2340] focus:border-transparent outline-none"
           >
             <option value="all">All Statuses</option>
             {statuses.map((status) => (
@@ -170,48 +165,47 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
         </div>
       </div>
 
-      {/* Active Filter Summary */}
       {hasActiveFilters && (
         <div className="mt-4 flex flex-wrap gap-2">
           {selectedChamber !== 'all' && (
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-[#002868] text-white rounded-full text-sm">
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-[#0C2340] text-white rounded-full text-sm">
               Chamber: {selectedChamber}
               <button
                 onClick={() => handleChamberChange('all')}
-                className="hover:text-[#f4c430]"
+                className="hover:text-[#FDD023]"
               >
                 ×
               </button>
             </span>
           )}
           {selectedLegislator !== 'all' && (
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-[#002868] text-white rounded-full text-sm">
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-[#0C2340] text-white rounded-full text-sm">
               Legislator: {selectedLegislator}
               <button
                 onClick={() => handleLegislatorChange('all')}
-                className="hover:text-[#f4c430]"
+                className="hover:text-[#FDD023]"
               >
                 ×
               </button>
             </span>
           )}
           {selectedSubject !== 'all' && (
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-[#002868] text-white rounded-full text-sm">
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-[#0C2340] text-white rounded-full text-sm">
               Subject: {selectedSubject}
               <button
                 onClick={() => handleSubjectChange('all')}
-                className="hover:text-[#f4c430]"
+                className="hover:text-[#FDD023]"
               >
                 ×
               </button>
             </span>
           )}
           {selectedStatus !== 'all' && (
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-[#002868] text-white rounded-full text-sm">
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-[#0C2340] text-white rounded-full text-sm">
               Status: {selectedStatus}
               <button
                 onClick={() => handleStatusChange('all')}
-                className="hover:text-[#f4c430]"
+                className="hover:text-[#FDD023]"
               >
                 ×
               </button>

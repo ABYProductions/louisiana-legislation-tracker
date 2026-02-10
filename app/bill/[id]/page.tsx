@@ -51,15 +51,15 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
             <div className="flex flex-col lg:flex-row items-start justify-between gap-6 mb-6">
               <div className="flex-1 w-full">
                 <div className="flex items-center gap-3 mb-3 flex-wrap">
-                  <span className="px-3 py-1 bg-[#002868] text-white rounded-full text-sm font-semibold">
+                  <span className="px-3 py-1 bg-[#0C2340] text-white rounded-full text-sm font-semibold">
                     {typedBill.bill_number}
                   </span>
-                  <span className="px-3 py-1 bg-[#f4c430] text-[#002868] rounded-full text-sm font-semibold">
+                  <span className="px-3 py-1 bg-[#FDD023] text-[#0C2340] rounded-full text-sm font-semibold">
                     {typedBill.body}
                   </span>
                 </div>
                 
-                <h1 className="text-3xl font-bold text-[#002868] mb-4">
+                <h1 className="text-3xl font-bold text-[#0C2340] mb-4">
                   {typedBill.title}
                 </h1>
                 
@@ -72,7 +72,12 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
                 <div className="flex flex-wrap gap-4 text-sm text-slate-600">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold">Sponsor:</span>
-                    <span>{typedBill.author}</span>
+                    <Link 
+                      href={`/legislator/${encodeURIComponent(typedBill.author)}`}
+                      className="text-[#0C2340] hover:text-[#FDD023] hover:underline font-medium"
+                    >
+                      {typedBill.author}
+                    </Link>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="font-semibold">Status:</span>
@@ -98,7 +103,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
                   href={`https://legiscan.com/LA/bill/${typedBill.bill_number}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 bg-[#002868] text-white rounded-lg hover:bg-[#001a4d] transition-colors text-center text-sm font-medium"
+                  className="px-4 py-2 bg-[#0C2340] text-white rounded-lg hover:bg-[#152d4a] transition-colors text-center text-sm font-medium"
                 >
                   View on LegiScan
                 </a>
@@ -115,7 +120,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-2xl">🤖</span>
-                  <h2 className="text-lg font-bold text-[#002868]">AI-Generated Summary</h2>
+                  <h2 className="text-lg font-bold text-[#0C2340]">AI-Generated Summary</h2>
                 </div>
                 <div className="text-slate-700 leading-relaxed whitespace-pre-line">
                   {typedBill.summary}
@@ -149,7 +154,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
             <div className="lg:col-span-2 space-y-6">
               {typedBill.last_action && (
                 <div className="bg-white rounded-2xl border border-slate-200 p-6">
-                  <h2 className="text-xl font-bold text-[#002868] mb-4">Latest Action</h2>
+                  <h2 className="text-xl font-bold text-[#0C2340] mb-4">Latest Action</h2>
                   <div className="flex items-start gap-3">
                     <span className="text-2xl">📌</span>
                     <div className="flex-1">
@@ -171,7 +176,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
               )}
 
               <div className="bg-white rounded-2xl border border-slate-200 p-6">
-                <h2 className="text-xl font-bold text-[#002868] mb-4">Bill Information</h2>
+                <h2 className="text-xl font-bold text-[#0C2340] mb-4">Bill Information</h2>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between py-2 border-b border-slate-100">
                     <span className="font-semibold text-slate-600">Bill ID:</span>

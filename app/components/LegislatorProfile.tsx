@@ -14,20 +14,18 @@ interface LegislatorProfileProps {
 export default function LegislatorProfile({ legislator, billCount }: LegislatorProfileProps) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-      <div className="bg-gradient-to-r from-[#002868] to-[#003a8c] p-8 text-white">
+      <div className="bg-gradient-to-r from-[#0C2340] to-[#1a3a5c] p-8 text-white">
         <div className="flex items-start gap-6">
-          {/* Profile Photo Placeholder */}
-          <div className="w-32 h-32 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 border-4 border-[#f4c430]">
+          <div className="w-32 h-32 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 border-4 border-[#FDD023]">
             <span className="text-5xl font-bold text-white">
               {legislator.name.split(' ').map(n => n[0]).join('')}
             </span>
           </div>
 
-          {/* Profile Info */}
           <div className="flex-1">
             <h1 className="text-4xl font-bold mb-2">{legislator.name}</h1>
             <div className="flex flex-wrap gap-3 mb-4">
-              <span className="px-3 py-1 bg-[#f4c430] text-[#002868] rounded-full text-sm font-semibold">
+              <span className="px-3 py-1 bg-[#FDD023] text-[#0C2340] rounded-full text-sm font-semibold">
                 {legislator.party}
               </span>
               <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold">
@@ -43,7 +41,6 @@ export default function LegislatorProfile({ legislator, billCount }: LegislatorP
 
       <div className="p-8">
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Left Column */}
           <div className="space-y-6">
             <div>
               <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-2">
@@ -60,7 +57,6 @@ export default function LegislatorProfile({ legislator, billCount }: LegislatorP
             </div>
           </div>
 
-          {/* Right Column */}
           <div className="space-y-6">
             <div>
               <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-2">
