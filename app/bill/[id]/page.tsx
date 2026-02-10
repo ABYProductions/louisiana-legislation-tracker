@@ -25,11 +25,13 @@ interface Bill {
   created_at: string
 }
 
-export default async function BillDetailPage({ params }: { params: { id: string } }) {
+export default async function BillDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params
+  
   const { data: bill, error } = await supabase
     .from('Bills')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', resolvedParams.id)
     .single()
 
   if (error || !bill) {
