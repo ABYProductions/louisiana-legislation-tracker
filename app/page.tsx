@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import Header from '@/app/components/Header'
 import Footer from '@/app/components/Footer'
 import BillListWithFilters from '@/app/components/BillListWithFilters'
+import UpcomingEventsWidget from '@/app/components/UpcomingEventsWidget'
 
 async function getBills() {
   const supabase = createClient(
@@ -148,8 +149,13 @@ export default async function Home() {
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FDD023] via-[#FFDB4D] to-[#FDD023]" />
         </section>
 
+        {/* NEW: Upcoming Events Widget */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <UpcomingEventsWidget />
+        </section>
+
         {/* Bills Section */}
-        <section id="bills" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <section id="bills" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 sm:pb-16">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">All Bills</h2>
