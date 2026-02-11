@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Header from '@/app/components/Header'
 import Footer from '@/app/components/Footer'
 import BillTimeline from '@/app/components/BillTimeline'
+import BillScheduleTimeline from '@/app/components/BillScheduleTimeline'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -130,7 +131,8 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Existing BillTimeline (History/Actions) */}
               <BillTimeline 
                 history={[
                   {
@@ -149,14 +151,11 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
                   }
                 ]} 
               />
-            </div>
 
-            <div className="lg:col-span-2 space-y-6">
               {typedBill.last_action && (
                 <div className="bg-white rounded-2xl border border-slate-200 p-6">
                   <h2 className="text-xl font-bold text-[#0C2340] mb-4">Latest Action</h2>
                   <div className="flex items-start gap-3">
-                    <span className="text-2xl">📌</span>
                     <div className="flex-1">
                       <p className="text-slate-700 leading-relaxed mb-2">
                         {typedBill.last_action}
@@ -202,6 +201,11 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* NEW: Schedule Timeline Sidebar */}
+            <div className="lg:col-span-1">
+              <BillScheduleTimeline billId={typedBill.id} />
             </div>
           </div>
         </div>

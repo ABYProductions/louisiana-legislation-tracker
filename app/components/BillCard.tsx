@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import BillScheduleBadge from './BillScheduleBadge'
 
 interface BillCardProps {
   bill: {
@@ -44,7 +45,11 @@ export default function BillCard({ bill }: BillCardProps) {
         )}
       </Link>
 
-      <div className="flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 pt-3">
+      {/* NEW: Schedule Badge - Only shows if bill has upcoming events */}
+      <BillScheduleBadge billId={bill.id} />
+
+      {/* Existing Footer */}
+      <div className="flex items-center justify-between text-xs text-slate-500 border-t border-slate-100 pt-3 mt-3">
         <Link 
           href={`/legislator/${encodeURIComponent(bill.author)}`}
           className="text-[#0C2340] hover:text-[#FDD023] font-medium hover:underline"
