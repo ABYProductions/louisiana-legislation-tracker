@@ -1,5 +1,5 @@
 // scripts/enhanced-sync.ts
-// Simplified enhanced sync - analyzes amendments from text (no PDF parsing yet)
+// Fixed sync - corrected LegiScan field name (number not bill_number)
 
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
@@ -19,113 +19,134 @@ const MONTHLY_BUDGET = 30
 let monthlySpending = 0
 
 async function enhancedSync() {
-  console.log('🚀 Starting Enhanced Sync...')
-  console.log(`📅 Date: ${new Date().toISOString()}`)
-  
+  console.log('Starting Enhanced Sync...')
+  console.log(`Date: ${new Date().toISOString()}`)
+
   try {
     // Check budget
-    console.log(`💰 Monthly spending: $${monthlySpending.toFixed(2)} / $${MONTHLY_BUDGET}`)
-    
+    console.log(`Monthly spending: $${monthlySpending.toFixed(2)} / $${MONTHLY_BUDGET}`)
+
     if (monthlySpending >= MONTHLY_BUDGET) {
-      console.log('⚠️  Budget exceeded. Running basic sync only.')
+      console.log('Budget exceeded. Running basic sync only.')
       await basicSync()
       return
     }
-    
-    // Get bills from database
+
+    // Get existing bills from database (only fields needed for comparison)
     const { data: existingBills } = await supabase
       .from('Bills')
-      .select('*')
-    
-    console.log(`📚 Found ${existingBills?.length || 0} bills in database`)
-    
+      .select('bill_id, change_hash')
+
+    console.log(`Found ${existingBills?.length || 0} bills in database`)
+
+    // Build lookup map for fast comparison
+    const existingMap = new Map(
+      (existingBills || []).map(b => [b.bill_id, b.change_hash])
+    )
+
     // Fetch bills from LegiScan
     const legiScanBills = await fetchLegiScanBills()
-    console.log(`🔍 Found ${legiScanBills.length} bills from LegiScan`)
-    
+    console.log(`Found ${legiScanBills.length} bills from LegiScan`)
+
     let billsUpdated = 0
-    
+    let billsSkipped = 0
+
     // Process each bill
     for (const bill of legiScanBills) {
-      const existing = existingBills?.find(b => b.bill_id === bill.bill_id)
-      
-      // Check if bill changed
-      if (existing && existing.change_hash === bill.change_hash) {
+      // Skip if unchanged
+      if (existingMap.get(bill.bill_id) === bill.change_hash) {
+        billsSkipped++
         continue
       }
-      
-      console.log(`\n📋 Updating: ${bill.bill_number}`)
-      
-      // Update bill record
-      await supabase
+
+      // FIX: LegiScan getMasterList returns "number" not "bill_number"
+      console.log(`Updating: ${bill.number}`)
+
+      const { error } = await supabase
         .from('Bills')
         .upsert({
-          bill_id: bill.bill_id,
-          bill_number: bill.bill_number,
-          title: bill.title,
-          description: bill.description,
-          status: bill.status?.desc || bill.status,
-          change_hash: bill.change_hash,
-          updated_at: new Date().toISOString()
+          bill_id:          bill.bill_id,
+          bill_number:      bill.number,
+          title:            bill.title,
+          description:      bill.description,
+          status:           String(bill.status),
+          last_action:      bill.last_action,
+          last_action_date: bill.last_action_date,
+          url:              bill.url,
+          change_hash:      bill.change_hash,
+          updated_at:       new Date().toISOString(),
         }, {
           onConflict: 'bill_id'
         })
-      
-      billsUpdated++
-      
+
+      if (error) {
+        console.error(`Error upserting ${bill.number}:`, error.message)
+      } else {
+        billsUpdated++
+      }
+
       // Rate limit
-      await sleep(500)
+      await sleep(300)
     }
-    
-    console.log('\n✅ Sync Complete!')
-    console.log(`📊 Summary:`)
+
+    console.log('\nSync Complete!')
+    console.log(`Summary:`)
     console.log(`   - Bills checked: ${legiScanBills.length}`)
     console.log(`   - Bills updated: ${billsUpdated}`)
+    console.log(`   - Bills skipped (unchanged): ${billsSkipped}`)
     console.log(`   - Monthly spending: $${monthlySpending.toFixed(2)} / $${MONTHLY_BUDGET}`)
-    
+
   } catch (error) {
-    console.error('❌ Sync failed:', error)
+    console.error('Sync failed:', error)
     throw error
   }
 }
 
 async function fetchLegiScanBills() {
   const url = `https://api.legiscan.com/?key=${LEGISCAN_API_KEY}&op=getMasterList&state=LA`
-  
+
   const response = await fetch(url)
   const data = await response.json()
-  
+
   if (data.status !== 'OK') {
-    throw new Error(`LegiScan API error: ${data.status}`)
+    throw new Error(`LegiScan API error: ${JSON.stringify(data)}`)
   }
-  
+
+  // Filter out session metadata entry (has no bill_id or number)
   const bills = Object.values(data.masterlist) as any[]
-  return bills.filter(b => typeof b === 'object' && b.bill_id)
+  return bills.filter(b => typeof b === 'object' && b.bill_id && b.number)
 }
 
 async function basicSync() {
-  console.log('📊 Running basic sync...')
+  console.log('Running basic sync...')
   const bills = await fetchLegiScanBills()
-  
+
   for (const bill of bills) {
-    await supabase
+    const { error } = await supabase
       .from('Bills')
       .upsert({
-        bill_id: bill.bill_id,
-        bill_number: bill.bill_number,
-        title: bill.title,
-        description: bill.description,
-        status: bill.status?.desc || bill.status,
-        change_hash: bill.change_hash,
-        updated_at: new Date().toISOString()
+        bill_id:          bill.bill_id,
+        bill_number:      bill.number,
+        title:            bill.title,
+        description:      bill.description,
+        status:           String(bill.status),
+        last_action:      bill.last_action,
+        last_action_date: bill.last_action_date,
+        url:              bill.url,
+        change_hash:      bill.change_hash,
+        updated_at:       new Date().toISOString(),
       }, {
         onConflict: 'bill_id'
       })
-    
-    await sleep(500)
+
+    if (error) {
+      console.error(`Error upserting ${bill.number}:`, error.message)
+    }
+
+    await sleep(300)
   }
-  
-  console.log('✅ Basic sync complete')
+
+  console.log('Basic sync complete')
 }
 
 function sleep(ms: number): Promise<void> {
@@ -135,10 +156,10 @@ function sleep(ms: number): Promise<void> {
 // Run
 enhancedSync()
   .then(() => {
-    console.log('✨ All done!')
+    console.log('All done!')
     process.exit(0)
   })
   .catch(error => {
-    console.error('💥 Fatal error:', error)
+    console.error('Fatal error:', error)
     process.exit(1)
   })
