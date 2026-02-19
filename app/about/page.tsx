@@ -10,12 +10,12 @@ export default function AboutPage() {
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="bg-white rounded-2xl border border-slate-200 p-8 mb-8">
             <h1 className="text-4xl font-bold text-[#0C2340] mb-6">
-              About Louisiana Legislation Tracker
+              About SessionSource - Louisiana
             </h1>
             
             <div className="prose max-w-none space-y-6 text-slate-700 leading-relaxed">
               <p className="text-lg">
-                The Louisiana Legislation Tracker is a public service tool designed to make Louisiana state legislation more accessible and understandable for all citizens of the Pelican State.
+                The SessionSource - Louisiana is a public service tool designed to make Louisiana state legislation more accessible and understandable for all citizens of the Pelican State.
               </p>
 
               <h2 className="text-2xl font-bold text-[#0C2340] mt-8 mb-4">Our Mission</h2>
@@ -81,7 +81,7 @@ export default function AboutPage() {
 
               <h3 className="text-lg font-bold text-[#0C2340] mt-6">No Warranty of Accuracy</h3>
               <p>
-                The Louisiana Legislation Tracker <strong>does not warrant, guarantee, or represent</strong> that any information provided on this website is accurate, complete, current, or reliable. AI-generated content may contain errors, omissions, or misinterpretations of legislative text.
+                The SessionSource - Louisiana <strong>does not warrant, guarantee, or represent</strong> that any information provided on this website is accurate, complete, current, or reliable. AI-generated content may contain errors, omissions, or misinterpretations of legislative text.
               </p>
 
               <h3 className="text-lg font-bold text-[#0C2340] mt-6">Not Legal or Professional Advice</h3>
@@ -101,7 +101,7 @@ export default function AboutPage() {
 
               <h3 className="text-lg font-bold text-[#0C2340] mt-6">Limitation of Liability</h3>
               <p className="text-sm">
-                To the maximum extent permitted by law, the Louisiana Legislation Tracker, its operators, developers, and affiliates shall not be liable for any damages, losses, or consequences arising from use of this website or reliance on AI-generated content, including direct, indirect, incidental, consequential, or punitive damages.
+                To the maximum extent permitted by law, the SessionSource - Louisiana, its operators, developers, and affiliates shall not be liable for any damages, losses, or consequences arising from use of this website or reliance on AI-generated content, including direct, indirect, incidental, consequential, or punitive damages.
               </p>
 
               <h3 className="text-lg font-bold text-[#0C2340] mt-6">Compliance Statement</h3>

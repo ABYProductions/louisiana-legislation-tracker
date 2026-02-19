@@ -54,7 +54,7 @@ export default function DisclaimerModal() {
 
             <h3 className="text-lg font-bold text-[#0C2340] mt-6 mb-3">No Warranty of Accuracy</h3>
             <p>
-              The Louisiana Legislation Tracker <strong>does not warrant, guarantee, or represent</strong> that any information provided on this website is accurate, complete, current, or reliable. AI-generated content may contain errors, omissions, or misinterpretations of legislative text, legislative intent, or factual information.
+              The SessionSource - Louisiana <strong>does not warrant, guarantee, or represent</strong> that any information provided on this website is accurate, complete, current, or reliable. AI-generated content may contain errors, omissions, or misinterpretations of legislative text, legislative intent, or factual information.
             </p>
 
             <h3 className="text-lg font-bold text-[#0C2340] mt-6 mb-3">Not Legal, Political, or Professional Advice</h3>
@@ -75,7 +75,7 @@ export default function DisclaimerModal() {
 
             <h3 className="text-lg font-bold text-[#0C2340] mt-6 mb-3">Limitation of Liability</h3>
             <p>
-              To the maximum extent permitted by applicable law, the Louisiana Legislation Tracker, its operators, developers, and affiliates shall not be liable for any damages, losses, or consequences arising from your use of this website or reliance on AI-generated content, including but not limited to direct, indirect, incidental, consequential, or punitive damages.
+              To the maximum extent permitted by applicable law, the SessionSource - Louisiana, its operators, developers, and affiliates shall not be liable for any damages, losses, or consequences arising from your use of this website or reliance on AI-generated content, including but not limited to direct, indirect, incidental, consequential, or punitive damages.
             </p>
 
             <h3 className="text-lg font-bold text-[#0C2340] mt-6 mb-3">Louisiana and Federal Law Compliance</h3>

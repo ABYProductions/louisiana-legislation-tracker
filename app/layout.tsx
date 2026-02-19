@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Louisiana Legislation Tracker",
+  title: "SessionSource - Louisiana",
   description: "Track Louisiana state legislation with AI-powered summaries",
 };
 

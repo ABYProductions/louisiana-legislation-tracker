@@ -46,7 +46,7 @@ export default function BetaLoginPage() {
               </svg>
             </div>
             <h1 className="text-3xl font-bold text-[#0C2340] mb-2">
-              Louisiana Legislation Tracker
+              SessionSource - Louisiana
             </h1>
             <p className="text-slate-600 text-sm">
               Beta Testing Access
