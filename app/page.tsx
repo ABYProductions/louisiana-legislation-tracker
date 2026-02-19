@@ -67,10 +67,9 @@ export default async function Home() {
                 <span className="text-sm font-bold">2026 Regular Session • Pre-filing</span>
               </div>
               
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-                Louisiana{' '}
-                <span className="text-[#FDD023]">Legislation</span>{' '}
-                Tracker
+              <h1 className="font-bold tracking-tight mb-6">
+                <span className="block text-5xl sm:text-6xl lg:text-7xl">SessionSource</span>
+                <span className="block text-3xl sm:text-4xl lg:text-5xl text-[#FDD023] mt-1">Louisiana</span>
               </h1>
               
               <p className="text-lg sm:text-xl text-blue-100 mb-8 leading-relaxed max-w-2xl">
