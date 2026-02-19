@@ -1,5 +1,6 @@
 // scripts/generate-summaries.ts
 // Professional-grade legislative analysis using full bill text + digest
+// Includes Unicode sanitization fix for Supabase compatibility
 
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
@@ -15,6 +16,16 @@ const supabase = createClient(
 
 const LEGISCAN_API_KEY = process.env.LEGISCAN_API_KEY!
 
+// Sanitize text to remove characters that break Supabase JSON encoding
+function sanitizeText(text: string): string {
+  return text
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '') // control characters
+    .replace(/\\u[0-9a-fA-F]{0,3}(?![0-9a-fA-F])/g, '')             // incomplete unicode escapes
+    .replace(/\uFFFD/g, '')                                           // replacement character
+    .replace(/[\uD800-\uDFFF]/g, '')                                  // lone surrogates
+    .trim()
+}
+
 async function fetchBillText(docId: number): Promise<string | null> {
   try {
     const url = `https://api.legiscan.com/?key=${LEGISCAN_API_KEY}&op=getBillText&id=${docId}`
@@ -25,7 +36,7 @@ async function fetchBillText(docId: number): Promise<string | null> {
       return null
     }
     const decoded = Buffer.from(data.text.doc, 'base64').toString('utf-8')
-    return decoded
+    return sanitizeText(decoded)
   } catch (err) {
     console.log(`    Error fetching bill text:`, err)
     return null
@@ -80,7 +91,7 @@ Affected Legislation: Identify every specific statute, code article, or constitu
   })
 
   const content = message.content[0]
-  if (content.type === 'text') return content.text
+  if (content.type === 'text') return sanitizeText(content.text)
   return 'Summary could not be generated.'
 }
 
