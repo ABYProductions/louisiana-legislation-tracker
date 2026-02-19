@@ -68,6 +68,8 @@ async function enhancedSync() {
           url:              bill.url,
           state_link:       bill.url,
           change_hash:      bill.change_hash,
+          summary:          null,
+          full_text:        null,
           updated_at:       new Date().toISOString(),
         }, {
           onConflict: 'legiscan_bill_id'
@@ -126,6 +128,8 @@ async function basicSync() {
         url:              bill.url,
         state_link:       bill.url,
         change_hash:      bill.change_hash,
+        summary:     null,
+        full_text:   null,
         updated_at:       new Date().toISOString(),
       }, {
         onConflict: 'legiscan_bill_id'
