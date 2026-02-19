@@ -1,10 +1,9 @@
 // scripts/enhanced-sync.ts
-// Fixed sync - corrected LegiScan field name (number not bill_number)
+// Fixed sync - correct column names matching actual Bills table schema
 
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 
-// Initialize clients
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -23,7 +22,6 @@ async function enhancedSync() {
   console.log(`Date: ${new Date().toISOString()}`)
 
   try {
-    // Check budget
     console.log(`Monthly spending: $${monthlySpending.toFixed(2)} / $${MONTHLY_BUDGET}`)
 
     if (monthlySpending >= MONTHLY_BUDGET) {
@@ -32,40 +30,35 @@ async function enhancedSync() {
       return
     }
 
-    // Get existing bills from database (only fields needed for comparison)
+    // Use legiscan_bill_id — the correct column name
     const { data: existingBills } = await supabase
       .from('Bills')
-      .select('bill_id, change_hash')
+      .select('legiscan_bill_id, change_hash')
 
     console.log(`Found ${existingBills?.length || 0} bills in database`)
 
-    // Build lookup map for fast comparison
     const existingMap = new Map(
-      (existingBills || []).map(b => [b.bill_id, b.change_hash])
+      (existingBills || []).map(b => [b.legiscan_bill_id, b.change_hash])
     )
 
-    // Fetch bills from LegiScan
     const legiScanBills = await fetchLegiScanBills()
     console.log(`Found ${legiScanBills.length} bills from LegiScan`)
 
     let billsUpdated = 0
     let billsSkipped = 0
 
-    // Process each bill
     for (const bill of legiScanBills) {
-      // Skip if unchanged
       if (existingMap.get(bill.bill_id) === bill.change_hash) {
         billsSkipped++
         continue
       }
 
-      // FIX: LegiScan getMasterList returns "number" not "bill_number"
       console.log(`Updating: ${bill.number}`)
 
       const { error } = await supabase
         .from('Bills')
         .upsert({
-          bill_id:          bill.bill_id,
+          legiscan_bill_id: bill.bill_id,
           bill_number:      bill.number,
           title:            bill.title,
           description:      bill.description,
@@ -73,10 +66,11 @@ async function enhancedSync() {
           last_action:      bill.last_action,
           last_action_date: bill.last_action_date,
           url:              bill.url,
+          state_link:       bill.url,
           change_hash:      bill.change_hash,
           updated_at:       new Date().toISOString(),
         }, {
-          onConflict: 'bill_id'
+          onConflict: 'legiscan_bill_id'
         })
 
       if (error) {
@@ -85,7 +79,6 @@ async function enhancedSync() {
         billsUpdated++
       }
 
-      // Rate limit
       await sleep(300)
     }
 
@@ -104,7 +97,6 @@ async function enhancedSync() {
 
 async function fetchLegiScanBills() {
   const url = `https://api.legiscan.com/?key=${LEGISCAN_API_KEY}&op=getMasterList&state=LA`
-
   const response = await fetch(url)
   const data = await response.json()
 
@@ -112,7 +104,6 @@ async function fetchLegiScanBills() {
     throw new Error(`LegiScan API error: ${JSON.stringify(data)}`)
   }
 
-  // Filter out session metadata entry (has no bill_id or number)
   const bills = Object.values(data.masterlist) as any[]
   return bills.filter(b => typeof b === 'object' && b.bill_id && b.number)
 }
@@ -125,7 +116,7 @@ async function basicSync() {
     const { error } = await supabase
       .from('Bills')
       .upsert({
-        bill_id:          bill.bill_id,
+        legiscan_bill_id: bill.bill_id,
         bill_number:      bill.number,
         title:            bill.title,
         description:      bill.description,
@@ -133,10 +124,11 @@ async function basicSync() {
         last_action:      bill.last_action,
         last_action_date: bill.last_action_date,
         url:              bill.url,
+        state_link:       bill.url,
         change_hash:      bill.change_hash,
         updated_at:       new Date().toISOString(),
       }, {
-        onConflict: 'bill_id'
+        onConflict: 'legiscan_bill_id'
       })
 
     if (error) {
@@ -153,7 +145,6 @@ function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// Run
 enhancedSync()
   .then(() => {
     console.log('All done!')
