@@ -3,306 +3,41 @@ import Link from 'next/link'
 import Header from '@/app/components/Header'
 import Footer from '@/app/components/Footer'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-// Helper function to group events by date
+function getOfficialUrl(event: any, type: 'floor_session' | 'committee_meeting' | 'session_event') {
+  if (type === 'floor_session') {
+    if (event.chamber === 'House') return 'https://house.louisiana.gov/H_Video/VideoArchivePlayer'
+    else if (event.chamber === 'Senate') return 'https://senate.la.gov/video/videoarchive.asp'
+  } else if (type === 'committee_meeting') {
+    if (event.chamber === 'House') return 'https://house.louisiana.gov/H_Cmtes/H_Cmtes'
+    else if (event.chamber === 'Senate') return 'https://senate.la.gov/Committees/Committees.asp'
+  } else if (type === 'session_event') return 'https://legis.la.gov/legis/SessionInfo.aspx'
+  return 'https://legis.la.gov'
+}
+
 function groupEventsByDate(events: any[]) {
   const grouped = new Map<string, any[]>()
-  
   events.forEach(event => {
     const date = event.session_date || event.meeting_date || event.event_date
-    if (!grouped.has(date)) {
-      grouped.set(date, [])
-    }
+    if (!grouped.has(date)) grouped.set(date, [])
     grouped.get(date)!.push(event)
   })
-  
   return Array.from(grouped.entries()).sort((a, b) => a[0].localeCompare(b[0]))
 }
 
 export default async function CalendarPage() {
-  // Fetch all scheduling data
   const [sessionEvents, floorSessions, committeeMeetings] = await Promise.all([
     supabase.from('session_events').select('*').order('event_date', { ascending: true }),
     supabase.from('floor_sessions').select('*').order('session_date', { ascending: true }),
     supabase.from('committee_meetings').select('*').order('meeting_date', { ascending: true })
   ])
-
-  // Get upcoming events (next 60 days)
   const today = new Date().toISOString().split('T')[0]
   const sixtyDaysFromNow = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-
   const upcomingFloor = floorSessions.data?.filter(s => s.session_date >= today && s.session_date <= sixtyDaysFromNow) || []
   const upcomingCommittees = committeeMeetings.data?.filter(m => m.meeting_date >= today && m.meeting_date <= sixtyDaysFromNow) || []
-
-  // Combine all upcoming events and group by date
-  const allUpcomingEvents = [
-    ...upcomingFloor.map(s => ({ ...s, type: 'floor_session' })),
-    ...upcomingCommittees.map(m => ({ ...m, type: 'committee_meeting' }))
-  ]
-
+  const allUpcomingEvents = [...upcomingFloor.map(s => ({ ...s, type: 'floor_session' as const })), ...upcomingCommittees.map(m => ({ ...m, type: 'committee_meeting' as const }))]
   const eventsByDate = groupEventsByDate(allUpcomingEvents)
 
-  return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
-      <Header />
-      
-      <main className="flex-1 py-12">
-        <div className="container mx-auto px-4 max-w-7xl">
-          {/* Header */}
-          <div className="mb-8">
-            <Link 
-              href="/"
-              className="inline-flex items-center gap-2 text-[#0C2340] hover:text-[#1a3a5c] mb-4 font-medium"
-            >
-              ← Back to All Bills
-            </Link>
-            
-            <div className="bg-gradient-to-r from-[#0C2340] to-[#1a3a5c] rounded-2xl p-8 text-white">
-              <h1 className="text-4xl font-bold mb-2">
-                Legislative Calendar
-              </h1>
-              <p className="text-blue-100 text-lg">
-                2026 Regular Session Schedule & Events
-              </p>
-            </div>
-          </div>
-
-          {/* Key Session Dates */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-[#0C2340] mb-6">
-              Important Session Dates
-            </h2>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {sessionEvents.data?.map((event) => (
-                <div key={event.id} className="bg-white rounded-xl border-2 border-[#0C2340] p-6 hover:shadow-lg transition-all">
-                  <div className="mb-3">
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${
-                      event.event_type === 'opening_ceremony' ? 'bg-green-100 text-green-700' :
-                      event.event_type === 'deadline' ? 'bg-red-100 text-red-700' :
-                      event.event_type === 'recess' ? 'bg-blue-100 text-blue-700' :
-                      'bg-slate-100 text-slate-700'
-                    }`}>
-                      {event.event_type.replace('_', ' ')}
-                    </span>
-                  </div>
-                  
-                  <h3 className="font-bold text-[#0C2340] text-lg mb-2">
-                    {event.event_name}
-                  </h3>
-                  
-                  <div className="text-sm text-slate-600 mb-3">
-                    <div className="font-semibold">
-                      {new Date(event.event_date).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric'
-                      })}
-                    </div>
-                    {event.event_time && (
-                      <div className="mt-1">
-                        {event.event_time}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {event.description && (
-                    <p className="text-sm text-slate-700 border-t border-slate-200 pt-3">
-                      {event.description}
-                    </p>
-                  )}
-                  
-                  {event.location && (
-                    <p className="text-xs text-slate-500 mt-2">
-                      Location: {event.location}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Daily Calendar View */}
-          <div className="mb-12">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-[#0C2340]">
-                Upcoming Legislative Schedule
-              </h2>
-              <div className="text-sm text-slate-600">
-                Next 60 Days
-              </div>
-            </div>
-
-            {eventsByDate.length === 0 ? (
-              <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
-                <p className="text-slate-500 text-lg">
-                  No events scheduled in the next 60 days
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {eventsByDate.map(([date, events]) => {
-                  const dateObj = new Date(date + 'T00:00:00')
-                  const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' })
-                  const monthDay = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
-                  const year = dateObj.getFullYear()
-                  
-                  return (
-                    <div key={date} className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all">
-                      {/* Date Header */}
-                      <div className="bg-gradient-to-r from-[#0C2340] to-[#1a3a5c] px-6 py-4 flex items-center justify-between">
-                        <div className="flex items-baseline gap-3">
-                          <div className="text-4xl font-bold text-[#FDD023]">
-                            {dateObj.getDate()}
-                          </div>
-                          <div>
-                            <div className="text-white font-semibold text-lg">
-                              {dayOfWeek}
-                            </div>
-                            <div className="text-blue-200 text-sm">
-                              {dateObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-[#FDD023] text-sm font-semibold">
-                            {events.length} {events.length === 1 ? 'Event' : 'Events'}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Events for this day */}
-                      <div className="divide-y divide-slate-200">
-                        {events.map((event, idx) => {
-                          const isFloorSession = event.type === 'floor_session'
-                          const time = event.session_time || event.meeting_time
-                          
-                          return (
-                            <div key={idx} className="p-6 hover:bg-slate-50 transition-colors">
-                              <div className="flex items-start gap-4">
-                                {/* Time */}
-                                <div className="flex-shrink-0 w-24">
-                                  {time ? (
-                                    <div className="text-sm font-semibold text-[#0C2340]">
-                                      {time}
-                                    </div>
-                                  ) : (
-                                    <div className="text-sm text-slate-400">
-                                      All Day
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Event Details */}
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                      isFloorSession 
-                                        ? 'bg-blue-100 text-blue-700' 
-                                        : 'bg-purple-100 text-purple-700'
-                                    }`}>
-                                      {isFloorSession ? 'Floor Session' : 'Committee Meeting'}
-                                    </span>
-                                    
-                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                      event.chamber === 'House' 
-                                        ? 'bg-green-100 text-green-700' 
-                                        : event.chamber === 'Senate'
-                                        ? 'bg-orange-100 text-orange-700'
-                                        : 'bg-slate-100 text-slate-700'
-                                    }`}>
-                                      {event.chamber}
-                                    </span>
-
-                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                      event.status === 'scheduled' ? 'bg-green-100 text-green-700' :
-                                      event.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700' :
-                                      event.status === 'completed' ? 'bg-slate-100 text-slate-700' :
-                                      'bg-red-100 text-red-700'
-                                    }`}>
-                                      {event.status}
-                                    </span>
-                                  </div>
-
-                                  <h3 className="text-lg font-bold text-slate-900 mb-2">
-                                    {isFloorSession 
-                                      ? `${event.chamber} Floor Session`
-                                      : event.committee_name
-                                    }
-                                  </h3>
-
-                                  <div className="grid md:grid-cols-2 gap-x-6 gap-y-2 text-sm text-slate-600">
-                                    {event.location && (
-                                      <div>
-                                        <span className="font-semibold">Location:</span> {event.location}
-                                      </div>
-                                    )}
-                                    {event.chairman && (
-                                      <div>
-                                        <span className="font-semibold">Chairman:</span> {event.chairman}
-                                      </div>
-                                    )}
-                                    {event.session_type && (
-                                      <div>
-                                        <span className="font-semibold">Type:</span> {event.session_type}
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {event.notes && (
-                                    <p className="text-sm text-slate-600 mt-3 p-3 bg-blue-50 rounded border-l-4 border-[#0C2340]">
-                                      {event.notes}
-                                    </p>
-                                  )}
-
-                                  {event.agenda_url && (
-                                    <div className="mt-3">
-                                      <a 
-                                        href={event.agenda_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-sm text-[#0C2340] hover:text-[#FDD023] font-semibold underline"
-                                      >
-                                        View Agenda →
-                                      </a>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Info Box */}
-          <div className="bg-blue-50 border-l-4 border-[#0C2340] rounded-lg p-6">
-            <p className="text-sm text-slate-700">
-              <strong>Note:</strong> This calendar is updated in real-time as the Louisiana Legislature releases new scheduling information. For the most current official schedule, please visit{' '}
-              <a 
-                href="https://legis.la.gov" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-[#0C2340] underline font-medium hover:text-[#FDD023]"
-              >
-                legis.la.gov
-              </a>
-            </p>
-          </div>
-        </div>
-      </main>
-
-      <Footer />
-    </div>
-  )
+  return (<div className="min-h-screen flex flex-col bg-slate-50"><Header /><main className="flex-1 py-12"><div className="container mx-auto px-4 max-w-7xl"><div className="mb-8"><Link href="/" className="inline-flex items-center gap-2 text-[#0C2340] hover:text-[#1a3a5c] mb-4 font-medium">← Back to All Bills</Link><div className="bg-gradient-to-r from-[#0C2340] to-[#1a3a5c] rounded-2xl p-8 text-white"><h1 className="text-4xl font-bold mb-2">Legislative Calendar</h1><p className="text-blue-100 text-lg mb-4">2026 Regular Session Schedule & Events</p><a href="https://legis.la.gov/legis/SessionInfo.aspx" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-[#FDD023] text-[#0C2340] rounded-lg font-semibold text-sm hover:bg-[#FFDB4D] transition-colors">View Official Legislature Calendar</a></div></div><div className="mb-12"><h2 className="text-2xl font-bold text-[#0C2340] mb-6">Important Session Dates</h2><div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">{sessionEvents.data?.map((event) => (<div key={event.id} className="bg-white rounded-xl border-2 border-[#0C2340] p-6 hover:shadow-lg transition-all"><div className="mb-3"><span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${event.event_type === 'opening_ceremony' ? 'bg-green-100 text-green-700' : event.event_type === 'deadline' ? 'bg-red-100 text-red-700' : event.event_type === 'recess' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'}`}>{event.event_type.replace('_', ' ')}</span></div><h3 className="font-bold text-[#0C2340] text-lg mb-2">{event.event_name}</h3><div className="text-sm text-slate-600 mb-3"><div className="font-semibold">{new Date(event.event_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</div>{event.event_time && <div className="mt-1">{event.event_time}</div>}</div>{event.description && <p className="text-sm text-slate-700 border-t border-slate-200 pt-3 mb-3">{event.description}</p>}{event.location && <p className="text-xs text-slate-500 mb-3">Location: {event.location}</p>}<a href="https://legis.la.gov/legis/SessionInfo.aspx" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-[#0C2340] hover:text-[#FDD023] font-semibold">Official Details</a></div>))}</div></div><div className="mb-12"><div className="flex items-center justify-between mb-6"><h2 className="text-2xl font-bold text-[#0C2340]">Upcoming Legislative Schedule</h2><div className="text-sm text-slate-600">Next 60 Days</div></div>{eventsByDate.length === 0 ? (<div className="bg-white rounded-xl border border-slate-200 p-12 text-center"><p className="text-slate-500 text-lg">No events scheduled in the next 60 days</p></div>) : (<div className="space-y-6">{eventsByDate.map(([date, events]) => {const dateObj = new Date(date + 'T00:00:00'); const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' }); return (<div key={date} className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-all"><div className="bg-gradient-to-r from-[#0C2340] to-[#1a3a5c] px-6 py-4 flex items-center justify-between"><div className="flex items-baseline gap-3"><div className="text-4xl font-bold text-[#FDD023]">{dateObj.getDate()}</div><div><div className="text-white font-semibold text-lg">{dayOfWeek}</div><div className="text-blue-200 text-sm">{dateObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</div></div></div><div className="text-right"><div className="text-[#FDD023] text-sm font-semibold">{events.length} {events.length === 1 ? 'Event' : 'Events'}</div></div></div><div className="divide-y divide-slate-200">{events.map((event, idx) => {const isFloorSession = event.type === 'floor_session'; const time = event.session_time || event.meeting_time; const officialUrl = getOfficialUrl(event, event.type); return (<div key={idx} className="p-6 hover:bg-slate-50 transition-colors"><div className="flex items-start gap-4"><div className="flex-shrink-0 w-24">{time ? <div className="text-sm font-semibold text-[#0C2340]">{time}</div> : <div className="text-sm text-slate-400">All Day</div>}</div><div className="flex-1"><div className="flex items-center gap-3 mb-2"><span className={`px-3 py-1 rounded-full text-xs font-semibold ${isFloorSession ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>{isFloorSession ? 'Floor Session' : 'Committee Meeting'}</span><span className={`px-3 py-1 rounded-full text-xs font-semibold ${event.chamber === 'House' ? 'bg-green-100 text-green-700' : event.chamber === 'Senate' ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-700'}`}>{event.chamber}</span><span className={`px-3 py-1 rounded-full text-xs font-semibold ${event.status === 'scheduled' ? 'bg-green-100 text-green-700' : event.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700' : event.status === 'completed' ? 'bg-slate-100 text-slate-700' : 'bg-red-100 text-red-700'}`}>{event.status}</span></div><h3 className="text-lg font-bold text-slate-900 mb-2">{isFloorSession ? `${event.chamber} Floor Session` : event.committee_name}</h3><div className="grid md:grid-cols-2 gap-x-6 gap-y-2 text-sm text-slate-600 mb-3">{event.location && <div><span className="font-semibold">Location:</span> {event.location}</div>}{event.chairman && <div><span className="font-semibold">Chairman:</span> {event.chairman}</div>}{event.session_type && <div><span className="font-semibold">Type:</span> {event.session_type}</div>}</div>{event.notes && <p className="text-sm text-slate-600 mb-3 p-3 bg-blue-50 rounded border-l-4 border-[#0C2340]">{event.notes}</p>}<a href={officialUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-[#0C2340] hover:text-[#FDD023] font-semibold">View on Official Legislature Website</a></div></div></div>)})}</div></div>)})}</div>)}</div><div className="bg-blue-50 border-l-4 border-[#0C2340] rounded-lg p-6"><p className="text-sm text-slate-700"><strong>Note:</strong> This calendar is updated in real-time as the Louisiana Legislature releases new scheduling information. For the most current official schedule, please visit <a href="https://legis.la.gov" target="_blank" rel="noopener noreferrer" className="text-[#0C2340] underline font-medium hover:text-[#FDD023]">legis.la.gov</a></p></div></div></main><Footer /></div>)
 }

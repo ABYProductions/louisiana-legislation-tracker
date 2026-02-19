@@ -8,17 +8,21 @@ const supabase = createClient(
 
 interface BillScheduleTimelineProps {
   billId: number
+  billNumber?: string
 }
 
-export default async function BillScheduleTimeline({ billId }: BillScheduleTimelineProps) {
-  // Fetch past events (bill_events table)
+function getOfficialBillUrl(billNumber: string) {
+  const cleanNumber = billNumber.replace(/\s+/g, '')
+  return `https://legis.la.gov/legis/BillInfo.aspx?s=26RS&b=${cleanNumber}&sbi=y`
+}
+
+export default async function BillScheduleTimeline({ billId, billNumber }: BillScheduleTimelineProps) {
   const { data: pastEvents } = await supabase
     .from('bill_events')
     .select('*')
     .eq('bill_id', billId)
     .order('event_date', { ascending: true })
 
-  // Fetch future scheduled events (bill_schedule table)
   const { data: futureEvents } = await supabase
     .from('bill_schedule')
     .select('*')
@@ -27,7 +31,6 @@ export default async function BillScheduleTimeline({ billId }: BillScheduleTimel
 
   const today = new Date().toISOString().split('T')[0]
 
-  // Combine and sort all events
   const allEvents = [
     ...(pastEvents || []).map(e => ({
       date: e.event_date,
@@ -55,22 +58,49 @@ export default async function BillScheduleTimeline({ billId }: BillScheduleTimel
 
   if (allEvents.length === 0) {
     return (
-      <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
-        <p className="text-slate-500 text-sm">
+      <div className="bg-slate-50 border border-slate-200 rounded-xl p-6">
+        <h3 className="text-lg font-bold text-[#0C2340] mb-4">
+          Bill Schedule
+        </h3>
+        <p className="text-slate-500 text-sm text-center py-4">
           No timeline events available for this bill
         </p>
+        {billNumber && (
+          <a
+            href={getOfficialBillUrl(billNumber)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block mt-4 text-center text-sm text-[#0C2340] hover:text-[#FDD023] font-semibold"
+          >
+            View Official Bill Page →
+          </a>
+        )}
       </div>
     )
   }
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6">
-      <h3 className="text-lg font-bold text-[#0C2340] mb-6">
-        Bill Timeline
-      </h3>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-bold text-[#0C2340]">
+          Bill Schedule
+        </h3>
+        {billNumber && (
+          <a
+            href={getOfficialBillUrl(billNumber)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-[#0C2340] hover:text-[#FDD023] font-semibold flex items-center gap-1"
+          >
+            Official Page
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        )}
+      </div>
 
       <div className="relative">
-        {/* Timeline vertical line */}
         <div className="absolute left-[15px] top-4 bottom-4 w-0.5 bg-slate-200" />
 
         <div className="space-y-6">
@@ -80,7 +110,6 @@ export default async function BillScheduleTimeline({ billId }: BillScheduleTimel
             
             return (
               <div key={idx} className="relative pl-10">
-                {/* Timeline dot */}
                 <div 
                   className={`absolute left-0 w-8 h-8 rounded-full border-4 flex items-center justify-center ${
                     isToday 
@@ -100,9 +129,7 @@ export default async function BillScheduleTimeline({ billId }: BillScheduleTimel
                   )}
                 </div>
 
-                {/* Event content */}
                 <div className={`pb-2 ${isFuture && !isToday ? 'opacity-75' : ''}`}>
-                  {/* Date */}
                   <div className="flex items-center gap-3 mb-2">
                     <div className={`text-sm font-semibold ${
                       isToday ? 'text-[#FDD023]' : 
@@ -135,7 +162,6 @@ export default async function BillScheduleTimeline({ billId }: BillScheduleTimel
                     )}
                   </div>
 
-                  {/* Event type badge */}
                   <div className="flex flex-wrap gap-2 mb-2">
                     <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
                       event.type === 'introduced' ? 'bg-green-100 text-green-700' :
@@ -164,12 +190,10 @@ export default async function BillScheduleTimeline({ billId }: BillScheduleTimel
                     )}
                   </div>
 
-                  {/* Description */}
                   <p className="text-sm text-slate-700 leading-relaxed">
                     {event.description}
                   </p>
 
-                  {/* Location */}
                   {event.location && (
                     <p className="text-xs text-slate-500 mt-1">
                       Location: {event.location}
@@ -182,25 +206,38 @@ export default async function BillScheduleTimeline({ billId }: BillScheduleTimel
         </div>
       </div>
 
-      {/* Future events summary */}
-      {futureEvents && futureEvents.length > 0 && (
-        <div className="mt-6 pt-6 border-t border-slate-200">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-slate-600">
+      <div className="mt-6 pt-6 border-t border-slate-200 space-y-3">
+        {futureEvents && futureEvents.length > 0 && (
+          <div className="flex items-center justify-between text-sm">
+            <div className="text-slate-600">
               <span className="font-semibold text-[#0C2340]">
                 {futureEvents.filter(e => e.scheduled_date >= today).length}
               </span>{' '}
-              upcoming event(s) scheduled
+              upcoming event(s)
             </div>
             <Link
               href="/calendar"
-              className="text-sm text-[#0C2340] hover:text-[#FDD023] font-semibold"
+              className="text-[#0C2340] hover:text-[#FDD023] font-semibold"
             >
-              View Full Calendar →
+              View Calendar →
             </Link>
           </div>
-        </div>
-      )}
+        )}
+        
+        {billNumber && (
+          <a
+            href={getOfficialBillUrl(billNumber)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-[#0C2340] text-white rounded-lg text-sm font-semibold hover:bg-[#1a3a5c] transition-colors"
+          >
+            View Full Bill Details on legis.la.gov
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        )}
+      </div>
     </div>
   )
 }

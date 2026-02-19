@@ -101,12 +101,15 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
 
               <div className="flex flex-col gap-2 w-full lg:w-auto">
                 <a 
-                  href={`https://legiscan.com/LA/bill/${typedBill.bill_number}`}
+                  href={`https://legis.la.gov/legis/BillInfo.aspx?s=26RS&b=${typedBill.bill_number.replace(/\s+/g, '')}&sbi=y`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 bg-[#0C2340] text-white rounded-lg hover:bg-[#152d4a] transition-colors text-center text-sm font-medium"
+                  className="px-4 py-2 bg-[#0C2340] text-white rounded-lg hover:bg-[#152d4a] transition-colors text-center text-sm font-medium flex items-center justify-center gap-2"
                 >
-                  View on LegiScan
+                  View on legis.la.gov
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
                 </a>
                 <Link
                   href="/"
@@ -132,7 +135,6 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
 
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
-              {/* Existing BillTimeline (History/Actions) */}
               <BillTimeline 
                 history={[
                   {
@@ -203,9 +205,8 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
               </div>
             </div>
 
-            {/* NEW: Schedule Timeline Sidebar */}
             <div className="lg:col-span-1">
-              <BillScheduleTimeline billId={typedBill.id} />
+              <BillScheduleTimeline billId={typedBill.id} billNumber={typedBill.bill_number} />
             </div>
           </div>
         </div>
