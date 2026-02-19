@@ -1,21 +1,40 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
 
+/* ── Font smoothing ── */
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: #F7F4EF;
 }
 
-/* Louisiana Theme Colors */
+/* ── Design Tokens ── */
 :root {
-  --la-blue: #002868;
-  --la-blue-light: #003d99;
-  --la-blue-dark: #001a4d;
-  --la-gold: #f4c430;
-  --la-gold-light: #f7d35c;
-  --la-gold-dark: #c9a227;
+  /* SessionSource palette */
+  --navy:             #0C2340;
+  --gold:             #C4922A;
+  --parchment:        #F7F4EF;
+  --parchment-border: #DDD8CE;
+  --text-dark:        #1a1a1a;
+  --text-mid:         #5a5248;
+  --text-light:       #888888;
+  --white:            #ffffff;
+
+  /* Typography */
+  --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-sans:  'DM Sans', system-ui, -apple-system, sans-serif;
+
+  /* Legacy Louisiana theme (kept for backward compat) */
+  --la-blue:       #0C2340;
+  --la-blue-light: #0d2d52;
+  --la-blue-dark:  #081828;
+  --la-gold:       #C4922A;
+  --la-gold-light: #d4a84a;
+  --la-gold-dark:  #a87820;
 }
 
+/* ── Line clamp utilities ── */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -32,4 +51,15 @@ body {
   -webkit-box-orient: vertical;
   box-orient: vertical;
   overflow: hidden;
+}
+
+/* ── Pulse animation (used by header session dot) ── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* ── Smooth anchor scroll ── */
+html {
+  scroll-behavior: smooth;
 }

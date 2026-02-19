@@ -3,144 +3,185 @@ import Footer from '@/app/components/Footer'
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <>
       <Header />
-      
-      <main className="flex-1 py-12">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="bg-white rounded-2xl border border-slate-200 p-8 mb-8">
-            <h1 className="text-4xl font-bold text-[#0C2340] mb-6">
-              About SessionSource - Louisiana
-            </h1>
-            
-            <div className="prose max-w-none space-y-6 text-slate-700 leading-relaxed">
-              <p className="text-lg">
-                The SessionSource - Louisiana is a public service tool designed to make Louisiana state legislation more accessible and understandable for all citizens of the Pelican State.
-              </p>
+      <main style={{ background: '#F7F4EF', minHeight: '100vh' }}>
 
-              <h2 className="text-2xl font-bold text-[#0C2340] mt-8 mb-4">Our Mission</h2>
-              <p>
-                We believe that an informed citizenry is essential to democracy. Our mission is to provide Louisiana residents with clear, accessible summaries of state legislation using artificial intelligence technology to break down complex legal language into plain English.
-              </p>
+        {/* Page header */}
+        <div style={{
+          background: '#F7F4EF',
+          borderBottom: '1px solid #DDD8CE',
+          padding: '56px 48px 48px',
+          maxWidth: '1400px',
+          margin: '0 auto',
+        }}>
+          <div style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '13px',
+            fontStyle: 'italic',
+            fontWeight: 300,
+            color: '#C4922A',
+            letterSpacing: '0.15em',
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+          }}>
+            <span style={{ width: '28px', height: '1px', background: '#C4922A', opacity: 0.55, display: 'inline-block' }} />
+            SessionSource
+          </div>
+          <h1 style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '56px',
+            fontWeight: 700,
+            color: '#0C2340',
+            lineHeight: 1,
+            letterSpacing: '-0.01em',
+          }}>
+            About
+          </h1>
+        </div>
 
-              <h2 className="text-2xl font-bold text-[#0C2340] mt-8 mb-4">How It Works</h2>
-              <p>
-                Our system automatically syncs with the Louisiana Legislature's LegiScan database every 4 hours during active legislative sessions. When new bills are introduced or updated, we use Claude AI (by Anthropic) to generate comprehensive summaries that explain:
-              </p>
-              <ul className="list-disc pl-6 space-y-2">
-                <li>What the bill does in plain language</li>
-                <li>Who would be affected by the legislation</li>
-                <li>Potential impacts on Louisiana residents and businesses</li>
-                <li>Which Louisiana Revised Statutes would be modified</li>
-              </ul>
+        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '56px 48px' }}>
 
-              <h2 className="text-2xl font-bold text-[#0C2340] mt-8 mb-4">Features</h2>
-              <ul className="list-disc pl-6 space-y-2">
-                <li><strong>Real-time Updates:</strong> Automated synchronization with official legislative data</li>
-                <li><strong>AI-Powered Summaries:</strong> Complex bills explained in accessible language</li>
-                <li><strong>Legislator Profiles:</strong> Track bills by sponsor and view legislative activity</li>
-                <li><strong>Search & Filter:</strong> Find bills by chamber, sponsor, subject, or status</li>
-                <li><strong>Bill Timeline:</strong> Track legislation through the legislative process</li>
-              </ul>
+          {/* Section: What is this */}
+          <section style={{ marginBottom: '56px' }}>
+            <h2 style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '28px',
+              fontWeight: 700,
+              color: '#0C2340',
+              marginBottom: '16px',
+              paddingBottom: '12px',
+              borderBottom: '1px solid #DDD8CE',
+            }}>
+              What is SessionSource?
+            </h2>
+            <p style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '15px',
+              lineHeight: 1.8,
+              color: '#5a5248',
+              fontWeight: 300,
+              marginBottom: '16px',
+            }}>
+              SessionSource is an independent legislative tracking tool built to make the Louisiana State Legislature more accessible to every citizen of the Pelican State. We track bills as they are filed, amended, and voted upon — and provide AI-generated plain-English summaries to help you understand what each piece of legislation actually means.
+            </p>
+            <p style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '15px',
+              lineHeight: 1.8,
+              color: '#5a5248',
+              fontWeight: 300,
+            }}>
+              SessionSource is not affiliated with, endorsed by, or funded by the Louisiana Legislature or any government body. This is a civic technology project.
+            </p>
+          </section>
 
-              <h2 className="text-2xl font-bold text-[#0C2340] mt-8 mb-4">Technology</h2>
-              <p>
-                This project is built with modern web technologies including Next.js, Supabase, and the Anthropic Claude API. We believe in transparency and open-source principles.
-              </p>
+          {/* Section: Data */}
+          <section style={{ marginBottom: '56px' }}>
+            <h2 style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '28px',
+              fontWeight: 700,
+              color: '#0C2340',
+              marginBottom: '16px',
+              paddingBottom: '12px',
+              borderBottom: '1px solid #DDD8CE',
+            }}>
+              Where does the data come from?
+            </h2>
+            <p style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '15px',
+              lineHeight: 1.8,
+              color: '#5a5248',
+              fontWeight: 300,
+              marginBottom: '16px',
+            }}>
+              Bill data is sourced from LegiScan, a non-partisan legislative data service that aggregates information from official state legislature websites. Our system syncs with LegiScan regularly during the session to keep bill information, statuses, and histories current.
+            </p>
+            <p style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '15px',
+              lineHeight: 1.8,
+              color: '#5a5248',
+              fontWeight: 300,
+            }}>
+              For official and authoritative information, always refer to the{' '}
+              <a href="https://legis.la.gov" target="_blank" rel="noopener noreferrer"
+                style={{ color: '#C4922A', textDecoration: 'none', borderBottom: '1px solid #C4922A' }}>
+                Louisiana Legislature's official website
+              </a>.
+            </p>
+          </section>
 
-              <h2 className="text-2xl font-bold text-[#0C2340] mt-8 mb-4">Contact</h2>
-              <p>
-                For questions, feedback, or technical issues, please reach out through the official Louisiana Legislature channels or consult a licensed attorney for legal matters.
-              </p>
+          {/* Section: AI */}
+          <section style={{ marginBottom: '56px' }}>
+            <h2 style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '28px',
+              fontWeight: 700,
+              color: '#0C2340',
+              marginBottom: '16px',
+              paddingBottom: '12px',
+              borderBottom: '1px solid #DDD8CE',
+            }}>
+              About AI-Generated Content
+            </h2>
+            <p style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '15px',
+              lineHeight: 1.8,
+              color: '#5a5248',
+              fontWeight: 300,
+              marginBottom: '16px',
+            }}>
+              Bill summaries on this site are generated using Claude, Anthropic's AI assistant. These summaries are intended to provide accessible plain-English overviews of complex legislation. They are not legal advice, legislative analysis, or official government communications.
+            </p>
+            <p style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '15px',
+              lineHeight: 1.8,
+              color: '#5a5248',
+              fontWeight: 300,
+            }}>
+              AI-generated content may contain inaccuracies, omissions, or errors. Always review the full text of any bill before relying on a summary for legal, business, or civic purposes.
+            </p>
+          </section>
+
+          {/* Disclaimer box */}
+          <div style={{
+            background: '#fff',
+            border: '1px solid #DDD8CE',
+            borderLeft: '4px solid #C4922A',
+            padding: '24px 28px',
+          }}>
+            <div style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '11px',
+              fontWeight: 600,
+              color: '#C4922A',
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              marginBottom: '10px',
+            }}>
+              Legal Disclaimer
             </div>
+            <p style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '13px',
+              lineHeight: 1.75,
+              color: '#5a5248',
+              fontWeight: 300,
+            }}>
+              SessionSource — Louisiana provides information about Louisiana legislation using artificial intelligence and automated processes. By using this website, you acknowledge and agree to the terms of this disclaimer. This website is for informational and educational purposes only. All generated content may contain errors, omissions, or factual inaccuracies. SessionSource does not warrant, guarantee, or represent that any information provided on this website is accurate, complete, or reliable. This site does not provide legal, political, professional, official, government communication, or other professional advice.
+            </p>
           </div>
 
-          {/* Legal Disclaimer Section */}
-          <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-2xl p-8">
-            <div className="flex items-start gap-4 mb-6">
-              <span className="text-4xl">⚖️</span>
-              <div>
-                <h2 className="text-2xl font-bold text-[#0C2340] mb-2">
-                  Legal Disclaimer & Terms of Use
-                </h2>
-                <p className="text-sm text-slate-600">
-                  Important information about AI-generated content and legal limitations
-                </p>
-              </div>
-            </div>
-
-            <div className="prose max-w-none space-y-6 text-slate-700 leading-relaxed">
-              <div className="bg-white border-l-4 border-red-500 p-4 rounded">
-                <p className="font-semibold text-red-700 mb-2">
-                  ⚠️ AI-GENERATED CONTENT NOTICE
-                </p>
-                <p className="text-sm">
-                  All bill summaries, analyses, and legislator information on this website are generated using artificial intelligence and have NOT been reviewed by licensed attorneys or legislative experts.
-                </p>
-              </div>
-
-              <h3 className="text-lg font-bold text-[#0C2340] mt-6">No Warranty of Accuracy</h3>
-              <p>
-                The SessionSource - Louisiana <strong>does not warrant, guarantee, or represent</strong> that any information provided on this website is accurate, complete, current, or reliable. AI-generated content may contain errors, omissions, or misinterpretations of legislative text.
-              </p>
-
-              <h3 className="text-lg font-bold text-[#0C2340] mt-6">Not Legal or Professional Advice</h3>
-              <p>
-                <strong className="text-red-600">This website does NOT provide legal advice.</strong> Nothing on this website constitutes legal advice, political advice, professional consultation, or official government communication. This website is for informational and educational purposes only.
-              </p>
-
-              <h3 className="text-lg font-bold text-[#0C2340] mt-6">User Responsibility</h3>
-              <p>
-                <strong className="text-red-600">YOU ARE SOLELY RESPONSIBLE</strong> for verifying any information obtained from this website before taking action. For official legislative information, please consult:
-              </p>
-              <ul className="list-disc pl-6 space-y-2 text-sm">
-                <li>Official Louisiana State Legislature website: <a href="https://legis.la.gov" target="_blank" rel="noopener noreferrer" className="text-[#0C2340] underline font-medium">legis.la.gov</a></li>
-                <li>A licensed attorney admitted to practice in Louisiana</li>
-                <li>Official legislative documents and government agencies</li>
-              </ul>
-
-              <h3 className="text-lg font-bold text-[#0C2340] mt-6">Limitation of Liability</h3>
-              <p className="text-sm">
-                To the maximum extent permitted by law, the SessionSource - Louisiana, its operators, developers, and affiliates shall not be liable for any damages, losses, or consequences arising from use of this website or reliance on AI-generated content, including direct, indirect, incidental, consequential, or punitive damages.
-              </p>
-
-              <h3 className="text-lg font-bold text-[#0C2340] mt-6">Compliance Statement</h3>
-              <p className="text-sm">
-                This disclaimer complies with Louisiana consumer protection laws (Louisiana Revised Statutes Title 51), federal AI disclosure requirements, and general principles of online content liability. This website makes no representations about suitability of information for any specific purpose.
-              </p>
-
-              <h3 className="text-lg font-bold text-[#0C2340] mt-6">Data Sources & Attribution</h3>
-              <p className="text-sm">
-                Legislative data is sourced from LegiScan, a third-party legislative tracking service. AI summaries are generated using Claude AI by Anthropic. Neither LegiScan nor Anthropic endorse or verify the accuracy of content on this website.
-              </p>
-
-              <h3 className="text-lg font-bold text-[#0C2340] mt-6">User Acceptance</h3>
-              <p className="text-sm">
-                By using this website, you acknowledge that you have read, understood, and agreed to this disclaimer. If you do not agree, you should not use this website. Your use of this website, including acceptance of the initial disclaimer modal, is logged locally in your browser for compliance purposes.
-              </p>
-
-              <div className="bg-blue-50 border border-blue-300 rounded-lg p-6 mt-8">
-                <p className="text-sm font-semibold text-[#0C2340] mb-3">
-                  Summary of Your Responsibilities:
-                </p>
-                <ul className="text-sm space-y-2 text-slate-700">
-                  <li>✓ Verify all information independently before relying on it</li>
-                  <li>✓ Consult licensed professionals for legal or professional advice</li>
-                  <li>✓ Use official government sources for authoritative information</li>
-                  <li>✓ Understand that AI-generated content may contain errors</li>
-                  <li>✓ Accept full responsibility for decisions based on website content</li>
-                </ul>
-              </div>
-
-              <p className="text-xs text-slate-500 mt-8 italic">
-                Last Updated: February 10, 2026
-              </p>
-            </div>
-          </div>
         </div>
       </main>
-
       <Footer />
-    </div>
+    </>
   )
 }
