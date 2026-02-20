@@ -12,7 +12,7 @@ async function getBills() {
 
   const { data, error } = await supabase
     .from('Bills')
-    .select('*')
+    .select('*, subjects:Bill_subjects(subject_name)')
     .order('created_at', { ascending: false })
 
   if (error) {

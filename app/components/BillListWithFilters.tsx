@@ -10,39 +10,76 @@ interface BillListWithFiltersProps {
   subjects: string[]
 }
 
-export default function BillListWithFilters({ 
-  initialBills, 
-  legislators, 
-  subjects 
+export default function BillListWithFilters({
+  initialBills,
+  legislators,
+  subjects
 }: BillListWithFiltersProps) {
   const [filteredBills, setFilteredBills] = useState(initialBills)
+  const [isFiltered, setIsFiltered] = useState(false)
+
+  const handleFilterChange = (bills: any[]) => {
+    setFilteredBills(bills)
+    setIsFiltered(bills.length !== initialBills.length)
+  }
 
   return (
     <>
       <BillFilters
         bills={initialBills}
-        onFilterChange={setFilteredBills}
+        onFilterChange={handleFilterChange}
         legislators={legislators}
         subjects={subjects}
       />
 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '16px',
+      }}>
+        <p style={{
+          fontFamily: 'var(--font-sans)',
+          fontSize: '13px',
+          color: '#666',
+        }}>
+          {isFiltered
+            ? `Showing ${filteredBills.length} of ${initialBills.length} bills`
+            : `${initialBills.length} bills total`
+          }
+        </p>
+      </div>
+
       {filteredBills.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
-          <p className="text-slate-500 text-lg">No bills match the selected filters.</p>
-          <p className="text-slate-400 text-sm mt-2">Try adjusting your filter criteria.</p>
+        <div style={{
+          background: '#fff',
+          border: '1px solid #DDD8CE',
+          padding: '60px 24px',
+          textAlign: 'center',
+        }}>
+          <p style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', color: '#0C2340', marginBottom: '8px' }}>
+            No bills match your filters
+          </p>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: '#888' }}>
+            Try adjusting your search or filter criteria
+          </p>
         </div>
       ) : (
-        <>
-          <div className="mb-4 text-sm text-slate-600">
-            Showing {filteredBills.length} of {initialBills.length} bills
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredBills.map((bill: any) => (
-              <BillCard key={bill.id} bill={bill} />
-            ))}
-          </div>
-        </>
+        <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(3, 1fr)' }} className="bills-grid">
+          {filteredBills.map((bill: any) => (
+            <BillCard key={bill.id} bill={bill} />
+          ))}
+        </div>
       )}
+
+      <style>{`
+        @media (max-width: 1024px) {
+          .bills-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 640px) {
+          .bills-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </>
   )
 }
