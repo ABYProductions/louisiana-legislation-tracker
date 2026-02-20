@@ -5,6 +5,7 @@ import Header from '@/app/components/Header'
 import Footer from '@/app/components/Footer'
 import BillTimeline from '@/app/components/BillTimeline'
 import BillScheduleTimeline from '@/app/components/BillScheduleTimeline'
+import WatchBillButton from '@/app/components/WatchBillButton'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -39,10 +40,11 @@ function parseSummary(summary: string): {
   const impactMatch = summary.match(/Potential Impact:\s*([\s\S]*?)(?=\n\nAffected Legislation:|Affected Legislation:|$)/i)
   const legislationMatch = summary.match(/Affected Legislation:\s*([\s\S]*?)$/i)
 
+const clean = (s: string | null) => s ? s.replace(/\*\*/g, '').trim() : null
   return {
-    overview: overviewMatch ? overviewMatch[1].trim() : null,
-    impact: impactMatch ? impactMatch[1].trim() : null,
-    legislation: legislationMatch ? legislationMatch[1].trim() : null,
+    overview: clean(overviewMatch ? overviewMatch[1] : null),
+    impact: clean(impactMatch ? impactMatch[1] : null),
+    legislation: clean(legislationMatch ? legislationMatch[1] : null),
   }
 }
 
@@ -214,6 +216,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
                 </a>
+<WatchBillButton billId={typedBill.id} />
                 <Link
                   href="/"
                   style={{
