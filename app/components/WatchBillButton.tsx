@@ -1,12 +1,15 @@
 'use client'
 import { useAuth } from './AuthProvider'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 
 export default function WatchBillButton({ billId }: { billId: number }) {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const [watching, setWatching] = useState(false)
   const [added, setAdded] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,6 +28,20 @@ export default function WatchBillButton({ billId }: { billId: number }) {
     setWatching(false)
     if (!error) setAdded(true)
   }
+
+  if (!mounted || loading) return (
+    <div style={{
+      padding: '10px 16px',
+      border: '1px solid #DDD8CE',
+      background: '#fff',
+      textAlign: 'center',
+      fontFamily: 'var(--font-sans)',
+      fontSize: '11px',
+      color: '#888',
+    }}>
+      Loading...
+    </div>
+  )
 
   return (
     <button
