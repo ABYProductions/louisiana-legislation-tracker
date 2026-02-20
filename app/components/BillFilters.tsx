@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 
 interface BillFiltersProps {
   bills: any[]
@@ -15,7 +15,6 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
   const [selectedLegislator, setSelectedLegislator] = useState('all')
   const [selectedSubject, setSelectedSubject] = useState('all')
   const [selectedStatus, setSelectedStatus] = useState('all')
-  const isFirstRender = useRef(true)
 
   const statuses = [...new Set(bills.map(b => b.status).filter(Boolean))].sort()
 
@@ -26,15 +25,11 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
     selectedSubject !== 'all' ||
     selectedStatus !== 'all'
 
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false
-      return
-    }
+  const applyFilters = (s: string, chamber: string, legislator: string, subject: string, status: string) => {
     let filtered = [...bills]
 
-    if (search.trim()) {
-      const q = search.toLowerCase()
+    if (s.trim()) {
+      const q = s.toLowerCase()
       filtered = filtered.filter(bill =>
         bill.title?.toLowerCase().includes(q) ||
         bill.description?.toLowerCase().includes(q) ||
@@ -44,31 +39,56 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
       )
     }
 
-    if (selectedChamber !== 'all') {
+    if (chamber !== 'all') {
       filtered = filtered.filter(bill => {
         const num = bill.bill_number || ''
-        if (selectedChamber === 'House') return num.startsWith('HB') || num.startsWith('HR')
-        if (selectedChamber === 'Senate') return num.startsWith('SB') || num.startsWith('SR')
+        if (chamber === 'House') return num.startsWith('HB') || num.startsWith('HR')
+        if (chamber === 'Senate') return num.startsWith('SB') || num.startsWith('SR')
         return true
       })
     }
 
-    if (selectedLegislator !== 'all') {
-      filtered = filtered.filter(bill => bill.author === selectedLegislator)
+    if (legislator !== 'all') {
+      filtered = filtered.filter(bill => bill.author === legislator)
     }
 
-    if (selectedSubject !== 'all') {
+    if (subject !== 'all') {
       filtered = filtered.filter(bill =>
-        bill.subjects?.some((s: any) => s.subject_name === selectedSubject)
+        bill.subjects?.some((s: any) => s.subject_name === subject)
       )
     }
 
-    if (selectedStatus !== 'all') {
-      filtered = filtered.filter(bill => bill.status === selectedStatus)
+    if (status !== 'all') {
+      filtered = filtered.filter(bill => bill.status === status)
     }
 
     onFilterChange(filtered)
-  }, [search, selectedChamber, selectedLegislator, selectedSubject, selectedStatus])
+  }
+
+  const handleSearch = (value: string) => {
+    setSearch(value)
+    applyFilters(value, selectedChamber, selectedLegislator, selectedSubject, selectedStatus)
+  }
+
+  const handleChamberChange = (value: string) => {
+    setSelectedChamber(value)
+    applyFilters(search, value, selectedLegislator, selectedSubject, selectedStatus)
+  }
+
+  const handleLegislatorChange = (value: string) => {
+    setSelectedLegislator(value)
+    applyFilters(search, selectedChamber, value, selectedSubject, selectedStatus)
+  }
+
+  const handleSubjectChange = (value: string) => {
+    setSelectedSubject(value)
+    applyFilters(search, selectedChamber, selectedLegislator, value, selectedStatus)
+  }
+
+  const handleStatusChange = (value: string) => {
+    setSelectedStatus(value)
+    applyFilters(search, selectedChamber, selectedLegislator, selectedSubject, value)
+  }
 
   const clearFilters = () => {
     setSearch('')
@@ -167,7 +187,7 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
           type="text"
           placeholder="Search bills by title, number, legislator, keyword..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => handleSearch(e.target.value)}
           style={{
             width: '100%',
             padding: '10px 12px 10px 36px',
@@ -182,7 +202,7 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
         />
         {search && (
           <button
-            onClick={() => setSearch('')}
+            onClick={() => handleSearch('')}
             style={{
               position: 'absolute',
               right: '12px',
@@ -205,7 +225,7 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }} className="filter-grid">
         <div>
           <label style={labelStyle}>Chamber</label>
-          <select value={selectedChamber} onChange={e => setSelectedChamber(e.target.value)} style={selectStyle}>
+          <select value={selectedChamber} onChange={e => handleChamberChange(e.target.value)} style={selectStyle}>
             <option value="all">All Chambers</option>
             <option value="House">House</option>
             <option value="Senate">Senate</option>
@@ -214,7 +234,7 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
 
         <div>
           <label style={labelStyle}>Legislator</label>
-          <select value={selectedLegislator} onChange={e => setSelectedLegislator(e.target.value)} style={selectStyle}>
+          <select value={selectedLegislator} onChange={e => handleLegislatorChange(e.target.value)} style={selectStyle}>
             <option value="all">All Legislators</option>
             {legislators.map(l => <option key={l} value={l}>{l}</option>)}
           </select>
@@ -222,7 +242,7 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
 
         <div>
           <label style={labelStyle}>Subject</label>
-          <select value={selectedSubject} onChange={e => setSelectedSubject(e.target.value)} style={selectStyle}>
+          <select value={selectedSubject} onChange={e => handleSubjectChange(e.target.value)} style={selectStyle}>
             <option value="all">All Subjects</option>
             {subjects.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -230,7 +250,7 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
 
         <div>
           <label style={labelStyle}>Status</label>
-          <select value={selectedStatus} onChange={e => setSelectedStatus(e.target.value)} style={selectStyle}>
+          <select value={selectedStatus} onChange={e => handleStatusChange(e.target.value)} style={selectStyle}>
             <option value="all">All Statuses</option>
             {statuses.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -243,31 +263,31 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
           {search && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
               Search: "{search}"
-              <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+              <button onClick={() => handleSearch('')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
             </span>
           )}
           {selectedChamber !== 'all' && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
               {selectedChamber}
-              <button onClick={() => setSelectedChamber('all')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+              <button onClick={() => handleChamberChange('all')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
             </span>
           )}
           {selectedLegislator !== 'all' && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
               {selectedLegislator}
-              <button onClick={() => setSelectedLegislator('all')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+              <button onClick={() => handleLegislatorChange('all')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
             </span>
           )}
           {selectedSubject !== 'all' && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
               {selectedSubject}
-              <button onClick={() => setSelectedSubject('all')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+              <button onClick={() => handleSubjectChange('all')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
             </span>
           )}
           {selectedStatus !== 'all' && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
               {selectedStatus}
-              <button onClick={() => setSelectedStatus('all')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+              <button onClick={() => handleStatusChange('all')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
             </span>
           )}
         </div>
