@@ -29,19 +29,27 @@ async function getBills(search: string, chamber: string, legislator: string, sta
   if (status) {
     query = query.eq('status', status)
   }
-  if (subject) {
-    // Bills.subjects is a JSON array of objects like:
-    // [{ "subject_id": 3824, "subject_name": "CLERKS OF COURT" }]
-    // We filter for bills that contain an object with the matching subject_name.
-    query = query.contains('subjects', [{ subject_name: subject }])
-  }
 
   const { data, error } = await query
   if (error) {
     console.error('Error fetching bills:', error)
     return []
   }
-  return data || []
+
+  let bills = data || []
+
+  // Apply subject filter in application code to avoid any quirks
+  // with Supabase's JSON containment operators across environments.
+  if (subject) {
+    const target = subject.toLowerCase()
+    bills = bills.filter((bill: any) =>
+      (bill.subjects || []).some(
+        (s: any) => typeof s?.subject_name === 'string' && s.subject_name.toLowerCase() === target
+      )
+    )
+  }
+
+  return bills
 }
 
 async function getAllMeta() {
