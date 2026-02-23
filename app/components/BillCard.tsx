@@ -21,7 +21,7 @@ interface BillCardProps {
 }
 
 export default function BillCard({ bill }: BillCardProps) {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const [watching, setWatching] = useState(false)
   const [added, setAdded] = useState(false)
 
@@ -37,6 +37,10 @@ const supabase = getSupabaseBrowser()
   const handleWatch = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    // If auth state is still loading, don't redirect yet.
+    if (loading) {
+      return
+    }
     if (!user) {
       window.location.href = '/auth/login'
       return
