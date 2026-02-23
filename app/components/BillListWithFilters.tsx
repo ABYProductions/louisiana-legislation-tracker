@@ -1,57 +1,84 @@
 'use client'
 
-import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 import BillCard from './BillCard'
 
-interface Props {
-  bills: any[]
+interface BillListWithFiltersProps {
+  initialBills: any[]
   legislators: string[]
-  statuses: string[]
-  totalCount: number
-  currentSearch: string
-  currentChamber: string
-  currentLegislator: string
-  currentStatus: string
+  subjects: string[]
 }
 
 export default function BillListWithFilters({
-  bills,
+  initialBills,
   legislators,
-  statuses,
-  totalCount,
-  currentSearch,
-  currentChamber,
-  currentLegislator,
-  currentStatus,
-}: Props) {
-  const router = useRouter()
-  const pathname = usePathname()
+  subjects
+}: BillListWithFiltersProps) {
+  const [search, setSearch] = useState('')
+  const [selectedChamber, setSelectedChamber] = useState('all')
+  const [selectedLegislator, setSelectedLegislator] = useState('all')
+  const [selectedSubject, setSelectedSubject] = useState('all')
+  const [selectedStatus, setSelectedStatus] = useState('all')
+  const [applied, setApplied] = useState(false)
 
-  const [search, setSearch] = useState(currentSearch)
-  const [chamber, setChamber] = useState(currentChamber)
-  const [legislator, setLegislator] = useState(currentLegislator)
-  const [status, setStatus] = useState(currentStatus)
+  const statuses = [...new Set(initialBills.map(b => b.status).filter(Boolean))].sort()
 
-  const isFiltered = currentSearch || currentChamber || currentLegislator || currentStatus
+  const hasActiveFilters =
+    search !== '' ||
+    selectedChamber !== 'all' ||
+    selectedLegislator !== 'all' ||
+    selectedSubject !== 'all' ||
+    selectedStatus !== 'all'
 
-  const applyFilters = () => {
-    const params = new URLSearchParams()
-    if (search) params.set('search', search)
-    if (chamber) params.set('chamber', chamber)
-    if (legislator) params.set('legislator', legislator)
-    if (status) params.set('status', status)
-    const query = params.toString()
-    router.push(`${pathname}${query ? `?${query}` : ''}#bills`)
+  const getFilteredBills = () => {
+    if (!applied) return initialBills
+    let filtered = [...initialBills]
+
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      filtered = filtered.filter(bill =>
+        bill.title?.toLowerCase().includes(q) ||
+        bill.description?.toLowerCase().includes(q) ||
+        bill.bill_number?.toLowerCase().includes(q) ||
+        bill.author?.toLowerCase().includes(q) ||
+        bill.summary?.toLowerCase().includes(q)
+      )
+    }
+
+    if (selectedChamber !== 'all') {
+      filtered = filtered.filter(bill => {
+        const num = bill.bill_number || ''
+        if (selectedChamber === 'House') return num.startsWith('HB') || num.startsWith('HR')
+        if (selectedChamber === 'Senate') return num.startsWith('SB') || num.startsWith('SR')
+        return true
+      })
+    }
+
+    if (selectedLegislator !== 'all') {
+      filtered = filtered.filter(bill => bill.author === selectedLegislator)
+    }
+
+    if (selectedStatus !== 'all') {
+      filtered = filtered.filter(bill => bill.status === selectedStatus)
+    }
+
+    return filtered
   }
 
-  const clearFilters = () => {
+  const handleApply = () => {
+    setApplied(true)
+  }
+
+  const handleClear = () => {
     setSearch('')
-    setChamber('')
-    setLegislator('')
-    setStatus('')
-    router.push(`${pathname}#bills`)
+    setSelectedChamber('all')
+    setSelectedLegislator('all')
+    setSelectedSubject('all')
+    setSelectedStatus('all')
+    setApplied(false)
   }
+
+  const filteredBills = getFilteredBills()
 
   const selectStyle = {
     width: '100%',
@@ -83,8 +110,20 @@ export default function BillListWithFilters({
 
   return (
     <>
-      <div style={{ background: '#fff', border: '1px solid #DDD8CE', padding: '24px', marginBottom: '24px' }}>
-        <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 700, color: '#0C2340', margin: '0 0 20px 0' }}>
+      {/* Filter Panel */}
+      <div style={{
+        background: '#fff',
+        border: '1px solid #DDD8CE',
+        padding: '24px',
+        marginBottom: '24px',
+      }}>
+        <h3 style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: '18px',
+          fontWeight: 700,
+          color: '#0C2340',
+          margin: '0 0 20px 0',
+        }}>
           Filter Bills
         </h3>
 
@@ -99,7 +138,7 @@ export default function BillListWithFilters({
             placeholder="Search by title, bill number, legislator, or keyword..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') applyFilters() }}
+            onKeyDown={e => { if (e.key === 'Enter') handleApply() }}
             style={{
               width: '100%',
               padding: '10px 36px',
@@ -115,108 +154,125 @@ export default function BillListWithFilters({
         </div>
 
         {/* Dropdowns */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '20px' }} className="filter-grid">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }} className="filter-grid">
           <div>
             <label style={labelStyle}>Chamber</label>
-            <select value={chamber} onChange={e => setChamber(e.target.value)} style={selectStyle}>
-              <option value="">All Chambers</option>
+            <select value={selectedChamber} onChange={e => setSelectedChamber(e.target.value)} style={selectStyle}>
+              <option value="all">All Chambers</option>
               <option value="House">House</option>
               <option value="Senate">Senate</option>
             </select>
           </div>
           <div>
             <label style={labelStyle}>Legislator</label>
-            <select value={legislator} onChange={e => setLegislator(e.target.value)} style={selectStyle}>
-              <option value="">All Legislators</option>
+            <select value={selectedLegislator} onChange={e => setSelectedLegislator(e.target.value)} style={selectStyle}>
+              <option value="all">All Legislators</option>
               {legislators.map(l => <option key={l} value={l}>{l}</option>)}
             </select>
           </div>
           <div>
+            <label style={labelStyle}>Subject</label>
+            <select value={selectedSubject} onChange={e => setSelectedSubject(e.target.value)} style={selectStyle}>
+              <option value="all">All Subjects</option>
+              {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
             <label style={labelStyle}>Status</label>
-            <select value={status} onChange={e => setStatus(e.target.value)} style={selectStyle}>
-              <option value="">All Statuses</option>
+            <select value={selectedStatus} onChange={e => setSelectedStatus(e.target.value)} style={selectStyle}>
+              <option value="all">All Statuses</option>
               {statuses.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         </div>
 
-        {/* Buttons */}
+        {/* Apply / Clear buttons */}
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={applyFilters} style={{
-            fontFamily: 'var(--font-sans)', fontSize: '12px', fontWeight: 700,
-            letterSpacing: '0.08em', textTransform: 'uppercase',
-            color: '#fff', background: '#0C2340', border: 'none',
-            padding: '10px 28px', cursor: 'pointer',
-          }}>
+          <button
+            onClick={handleApply}
+            style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '12px',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: '#fff',
+              background: '#0C2340',
+              border: 'none',
+              padding: '10px 28px',
+              cursor: 'pointer',
+            }}
+          >
             Apply Filters
           </button>
-          {isFiltered && (
-            <button onClick={clearFilters} style={{
-              fontFamily: 'var(--font-sans)', fontSize: '12px', fontWeight: 700,
-              letterSpacing: '0.08em', textTransform: 'uppercase',
-              color: '#C4922A', background: '#fff', border: '1px solid #C4922A',
-              padding: '10px 28px', cursor: 'pointer',
-            }}>
+          {(applied || hasActiveFilters) && (
+            <button
+              onClick={handleClear}
+              style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: '12px',
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: '#C4922A',
+                background: '#fff',
+                border: '1px solid #C4922A',
+                padding: '10px 28px',
+                cursor: 'pointer',
+              }}
+            >
               Clear Filters
             </button>
           )}
         </div>
-
-        {/* Active filter chips */}
-        {isFiltered && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '14px' }}>
-            {currentSearch && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
-                Search: "{currentSearch}"
-              </span>
-            )}
-            {currentChamber && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
-                {currentChamber}
-              </span>
-            )}
-            {currentLegislator && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
-                {currentLegislator}
-              </span>
-            )}
-            {currentStatus && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
-                {currentStatus}
-              </span>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Results count */}
-      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: '#666', marginBottom: '16px' }}>
-        {isFiltered
-          ? `Showing ${bills.length} of ${totalCount} bills`
-          : `${totalCount} bills total`}
+      <p style={{
+        fontFamily: 'var(--font-sans)',
+        fontSize: '13px',
+        color: '#666',
+        marginBottom: '16px',
+      }}>
+        {applied
+          ? `Showing ${filteredBills.length} of ${initialBills.length} bills`
+          : `${initialBills.length} bills total`
+        }
       </p>
 
       {/* Bill grid */}
-      {bills.length === 0 ? (
-        <div style={{ background: '#fff', border: '1px solid #DDD8CE', padding: '60px 24px', textAlign: 'center' }}>
+      {filteredBills.length === 0 ? (
+        <div style={{
+          background: '#fff',
+          border: '1px solid #DDD8CE',
+          padding: '60px 24px',
+          textAlign: 'center',
+        }}>
           <p style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', color: '#0C2340', marginBottom: '8px' }}>
             No bills match your filters
           </p>
-          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: '#888', marginBottom: '16px' }}>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: '#888' }}>
             Try adjusting your search or filter criteria
           </p>
-          <button onClick={clearFilters} style={{
-            fontFamily: 'var(--font-sans)', fontSize: '12px', fontWeight: 700,
-            letterSpacing: '0.08em', textTransform: 'uppercase',
-            color: '#C4922A', background: '#fff', border: '1px solid #C4922A',
-            padding: '8px 24px', cursor: 'pointer',
+          <button onClick={handleClear} style={{
+            marginTop: '16px',
+            fontFamily: 'var(--font-sans)',
+            fontSize: '12px',
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: '#C4922A',
+            background: '#fff',
+            border: '1px solid #C4922A',
+            padding: '8px 24px',
+            cursor: 'pointer',
           }}>
             Clear Filters
           </button>
         </div>
       ) : (
         <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(3, 1fr)' }} className="bills-grid">
-          {bills.map((bill: any) => (
+          {filteredBills.map((bill: any) => (
             <BillCard key={bill.id} bill={bill} />
           ))}
         </div>
