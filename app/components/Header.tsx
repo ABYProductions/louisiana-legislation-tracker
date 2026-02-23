@@ -95,7 +95,7 @@ export default function Header() {
             </Link>
           ))}
 
-          {/* Auth links */}
+          {/* Auth / watchlist links */}
           {!loading && (
             <>
               {user ? (
@@ -135,6 +135,21 @@ export default function Header() {
                 </>
               ) : (
                 <>
+                  <Link
+                    href="/watchlist"
+                    style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '13px',
+                      color: '#444',
+                      textDecoration: 'none',
+                      letterSpacing: '0.04em',
+                      fontWeight: 500,
+                      borderBottom: pathname === '/watchlist' ? '2px solid #C4922A' : '2px solid transparent',
+                      paddingBottom: '2px',
+                    }}
+                  >
+                    My Watchlist
+                  </Link>
                   <Link
                     href="/auth/login"
                     style={{
