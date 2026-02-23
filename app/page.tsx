@@ -43,8 +43,11 @@ async function getBills(search: string, chamber: string, legislator: string, sta
   if (subject) {
     const target = subject.toLowerCase()
     bills = bills.filter((bill: any) =>
-      (bill.subjects || []).some(
-        (s: any) => typeof s?.subject_name === 'string' && s.subject_name.toLowerCase() === target
+      Array.isArray(bill.subjects) &&
+      bill.subjects.some(
+        (s: any) =>
+          typeof s?.subject_name === 'string' &&
+          s.subject_name.toLowerCase() === target
       )
     )
   }
@@ -84,8 +87,8 @@ export default async function Home({
   const statuses = [...new Set(allMeta.map((b: any) => b.status).filter(Boolean))].sort() as string[]
   const subjects = [...new Set(
     allMeta
-      .flatMap((b: any) => b.subjects || [])
-      .map((s: any) => s?.subject_name)
+      .flatMap((b: any) => (Array.isArray(b.subjects) ? b.subjects : []))
+      .map((s: any) => (typeof s?.subject_name === 'string' ? s.subject_name : null))
       .filter(Boolean)
   )].sort() as string[]
   const totalCount = allMeta.length
