@@ -1,84 +1,48 @@
 import { createClient } from '@supabase/supabase-js'
 import Header from '@/app/components/Header'
 import Footer from '@/app/components/Footer'
-import BillCard from '@/app/components/BillCard'
-import UpcomingEventsWidget from '@/app/components/UpcomingEventsWidget'
 import BillListWithFilters from '@/app/components/BillListWithFilters'
+import UpcomingEventsWidget from '@/app/components/UpcomingEventsWidget'
 
-async function getBills(search: string, chamber: string, legislator: string, status: string) {
+async function getBills() {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  let query = supabase
+  const { data, error } = await supabase
     .from('Bills')
-    .select('id, bill_number, title, description, status, author, body, last_action_date, summary')
+    .select('*')
     .order('created_at', { ascending: false })
 
-  if (search) {
-    query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,bill_number.ilike.%${search}%,author.ilike.%${search}%`)
-  }
-
-  if (chamber === 'House') {
-    query = query.or('bill_number.ilike.HB%,bill_number.ilike.HR%')
-  } else if (chamber === 'Senate') {
-    query = query.or('bill_number.ilike.SB%,bill_number.ilike.SR%')
-  }
-
-  if (legislator) {
-    query = query.eq('author', legislator)
-  }
-
-  if (status) {
-    query = query.eq('status', status)
-  }
-
-  const { data, error } = await query
   if (error) {
-    console.error('Error fetching bills:', error)
+    console.error('Error fetching bills:', JSON.stringify(error, null, 2))
     return []
   }
+
   return data || []
 }
 
-async function getAllBillsMeta() {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-  const { data } = await supabase
-    .from('Bills')
-    .select('author, status, bill_number')
-  return data || []
-}
+export default async function Home() {
+  const bills = await getBills()
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ search?: string; chamber?: string; legislator?: string; status?: string }>
-}) {
-  const params = await searchParams
-  const search = params.search || ''
-  const chamber = params.chamber || ''
-  const legislator = params.legislator || ''
-  const status = params.status || ''
+  const subjects = [...new Set(
+    bills
+      .flatMap(b => b.subjects || [])
+      .map((s: any) => s.subject_name)
+      .filter(Boolean)
+  )].sort()
 
-  const [bills, allMeta] = await Promise.all([
-    getBills(search, chamber, legislator, status),
-    getAllBillsMeta(),
-  ])
-
-  const authors = [...new Set(allMeta.map((b: any) => b.author).filter(Boolean))].sort() as string[]
-  const statuses = [...new Set(allMeta.map((b: any) => b.status).filter(Boolean))].sort() as string[]
-  const totalCount = allMeta.length
+  const authors = [...new Set(
+    bills.map(b => b.author).filter(Boolean)
+  )].sort()
 
   return (
     <>
       <Header />
       <main style={{ minHeight: '100vh', background: '#F7F4EF' }}>
 
-        {/* HERO */}
+        {/* ── HERO ── */}
         <section style={{
           background: '#F7F4EF',
           padding: '72px 48px 60px',
@@ -90,7 +54,10 @@ export default async function Home({
           maxWidth: '1400px',
           margin: '0 auto',
         }}>
+
+          {/* Left: headline + CTA */}
           <div>
+            {/* Ornament */}
             <div style={{
               fontFamily: 'var(--font-serif)',
               fontSize: '13px',
@@ -107,6 +74,8 @@ export default async function Home({
               Louisiana Legislature
               <span style={{ width: '28px', height: '1px', background: '#C4922A', opacity: 0.55, display: 'inline-block' }} />
             </div>
+
+            {/* Main headline */}
             <h1 style={{
               fontFamily: 'var(--font-serif)',
               fontSize: '88px',
@@ -119,6 +88,8 @@ export default async function Home({
             }}>
               Session<br />Source
             </h1>
+
+            {/* Sub */}
             <div style={{
               fontFamily: 'var(--font-serif)',
               fontSize: '44px',
@@ -130,6 +101,7 @@ export default async function Home({
             }}>
               Louisiana
             </div>
+
             <p style={{
               fontFamily: 'var(--font-sans)',
               fontSize: '14px',
@@ -143,42 +115,124 @@ export default async function Home({
               AI-powered summaries make complex legislation accessible to every
               citizen of the Pelican State.
             </p>
+
             <div style={{ display: 'flex', gap: '12px' }}>
               <a href="#bills" style={{
-                background: '#0C2340', color: '#fff', padding: '13px 30px',
-                fontFamily: 'var(--font-sans)', fontSize: '12px', fontWeight: 500,
-                letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none', display: 'inline-block',
-              }}>Browse Bills</a>
+                background: '#0C2340',
+                color: '#fff',
+                padding: '13px 30px',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '12px',
+                fontWeight: 500,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                textDecoration: 'none',
+                display: 'inline-block',
+              }}>
+                Browse Bills
+              </a>
               <a href="/calendar" style={{
-                background: 'transparent', color: '#0C2340', padding: '13px 30px',
-                fontFamily: 'var(--font-sans)', fontSize: '12px', fontWeight: 500,
-                letterSpacing: '0.1em', textTransform: 'uppercase', textDecoration: 'none',
-                border: '1px solid #0C2340', display: 'inline-block',
-              }}>View Calendar</a>
+                background: 'transparent',
+                color: '#0C2340',
+                padding: '13px 30px',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '12px',
+                fontWeight: 500,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                textDecoration: 'none',
+                border: '1px solid #0C2340',
+                display: 'inline-block',
+              }}>
+                View Calendar
+              </a>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div style={{ gridColumn: '1 / -1', background: '#fff', border: '1px solid #DDD8CE', padding: '28px', position: 'relative' }}>
+          {/* Right: 3 stat cards */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '16px',
+          }}>
+            {/* Bills Tracked — full width */}
+            <div style={{
+              gridColumn: '1 / -1',
+              background: '#fff',
+              border: '1px solid #DDD8CE',
+              padding: '28px 28px',
+              position: 'relative',
+            }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: '#C4922A' }} />
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '64px', fontWeight: 700, color: '#0C2340', lineHeight: 1, marginBottom: '4px' }}>{totalCount}</div>
-              <div style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: '#999', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Bills Tracked</div>
+              <div style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '64px',
+                fontWeight: 700,
+                color: '#0C2340',
+                lineHeight: 1,
+                marginBottom: '4px',
+              }}>
+                {bills.length}
+              </div>
+              <div style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: '#999', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                Bills Tracked
+              </div>
             </div>
-            <div style={{ background: '#fff', border: '1px solid #DDD8CE', padding: '26px 22px', position: 'relative' }}>
+
+            {/* Legislators */}
+            <div style={{
+              background: '#fff',
+              border: '1px solid #DDD8CE',
+              padding: '26px 22px',
+              position: 'relative',
+            }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: '#C4922A' }} />
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '52px', fontWeight: 700, color: '#0C2340', lineHeight: 1, marginBottom: '4px' }}>{authors.length}</div>
-              <div style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: '#999', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Legislators</div>
+              <div style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '52px',
+                fontWeight: 700,
+                color: '#0C2340',
+                lineHeight: 1,
+                marginBottom: '4px',
+              }}>
+                {authors.length}
+              </div>
+              <div style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: '#999', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                Legislators
+              </div>
             </div>
-            <div style={{ background: '#fff', border: '1px solid #DDD8CE', padding: '26px 22px', position: 'relative' }}>
+
+            {/* Subject Areas */}
+            <div style={{
+              background: '#fff',
+              border: '1px solid #DDD8CE',
+              padding: '26px 22px',
+              position: 'relative',
+            }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: '#C4922A' }} />
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '52px', fontWeight: 700, color: '#0C2340', lineHeight: 1, marginBottom: '4px' }}>{statuses.length}</div>
-              <div style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: '#999', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Bill Statuses</div>
+              <div style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '52px',
+                fontWeight: 700,
+                color: '#0C2340',
+                lineHeight: 1,
+                marginBottom: '4px',
+              }}>
+                {subjects.length}
+              </div>
+              <div style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: '#999', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                Subject Areas
+              </div>
             </div>
           </div>
         </section>
 
-        {/* FEATURE STRIP */}
-        <div style={{ background: '#0C2340', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)' }}>
+        {/* ── FEATURE STRIP ── */}
+        <div style={{
+          background: '#0C2340',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+        }}>
           {[
             { icon: '☰', title: 'All Bills', desc: 'Search and filter legislation' },
             { icon: '◉', title: 'AI Summaries', desc: 'Plain-English explanations' },
@@ -188,7 +242,9 @@ export default async function Home({
             <div key={i} style={{
               padding: '20px 24px',
               borderRight: i < 3 ? '1px solid rgba(255,255,255,0.08)' : 'none',
-              display: 'flex', alignItems: 'center', gap: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '14px',
             }}>
               <span style={{ fontSize: '18px', color: '#C4922A', flexShrink: 0 }}>{item.icon}</span>
               <div>
@@ -199,29 +255,32 @@ export default async function Home({
           ))}
         </div>
 
-        {/* UPCOMING EVENTS */}
+        {/* ── UPCOMING EVENTS ── */}
         <section style={{ maxWidth: '1400px', margin: '0 auto', padding: '48px 48px 0' }}>
           <UpcomingEventsWidget />
         </section>
 
-        {/* BILLS */}
+        {/* ── BILLS ── */}
         <section id="bills" style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 48px 64px' }}>
           <div style={{ marginBottom: '28px' }}>
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 700, color: '#0C2340', marginBottom: '4px' }}>All Bills</h2>
+            <h2 style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '32px',
+              fontWeight: 700,
+              color: '#0C2340',
+              marginBottom: '4px',
+            }}>
+              All Bills
+            </h2>
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: '#888' }}>
-              Browse and filter {totalCount} bills from the 2026 Regular Session
+              Browse and filter {bills.length} bills from the 2026 Regular Session
             </p>
           </div>
 
           <BillListWithFilters
-            bills={bills}
+            initialBills={bills}
             legislators={authors}
-            statuses={statuses}
-            totalCount={totalCount}
-            currentSearch={search}
-            currentChamber={chamber}
-            currentLegislator={legislator}
-            currentStatus={status}
+            subjects={subjects}
           />
         </section>
       </main>
