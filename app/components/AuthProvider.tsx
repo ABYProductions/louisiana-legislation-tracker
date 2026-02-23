@@ -27,22 +27,38 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
- const supabase = getSupabaseBrowser()
+  const supabase = getSupabaseBrowser()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }: { data: { session: any } }) => {
+    let isMounted = true
+
+    const init = async () => {
+      try {
+        const { data } = await supabase.auth.getSession()
+        if (!isMounted) return
+        setSession(data.session)
+        setUser(data.session?.user ?? null)
+      } catch (err) {
+        console.error('Error initializing auth session:', err)
+      } finally {
+        if (isMounted) setLoading(false)
+      }
+    }
+
+    init()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    return () => subscription.unsubscribe()
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signOut = async () => {
