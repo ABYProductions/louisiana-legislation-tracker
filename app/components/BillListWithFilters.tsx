@@ -6,24 +6,28 @@ interface Props {
   bills: any[]
   legislators: string[]
   statuses: string[]
+  subjects: string[]
   totalCount: number
   currentSearch: string
   currentChamber: string
   currentLegislator: string
   currentStatus: string
+  currentSubject: string
 }
 
 export default function BillListWithFilters({
   bills,
   legislators,
   statuses,
+  subjects,
   totalCount,
   currentSearch,
   currentChamber,
   currentLegislator,
   currentStatus,
+  currentSubject,
 }: Props) {
-  const isFiltered = !!(currentSearch || currentChamber || currentLegislator || currentStatus)
+  const isFiltered = !!(currentSearch || currentChamber || currentLegislator || currentStatus || currentSubject)
 
   const selectStyle = {
     width: '100%',
@@ -86,7 +90,7 @@ export default function BillListWithFilters({
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '20px' }} className="filter-grid">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }} className="filter-grid">
             <div>
               <label style={labelStyle}>Chamber</label>
               <select name="chamber" defaultValue={currentChamber} style={selectStyle}>
@@ -100,6 +104,13 @@ export default function BillListWithFilters({
               <select name="legislator" defaultValue={currentLegislator} style={selectStyle}>
                 <option value="">All Legislators</option>
                 {legislators.map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Subject</label>
+              <select name="subject" defaultValue={currentSubject} style={selectStyle}>
+                <option value="">All Subjects</option>
+                {subjects.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>
@@ -150,6 +161,11 @@ export default function BillListWithFilters({
             {currentLegislator && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
                 {currentLegislator}
+              </span>
+            )}
+            {currentSubject && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
+                {currentSubject}
               </span>
             )}
             {currentStatus && (

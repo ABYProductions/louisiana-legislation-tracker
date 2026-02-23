@@ -4,7 +4,7 @@ import Footer from '@/app/components/Footer'
 import BillListWithFilters from '@/app/components/BillListWithFilters'
 import UpcomingEventsWidget from '@/app/components/UpcomingEventsWidget'
 
-async function getBills(search: string, chamber: string, legislator: string, status: string) {
+async function getBills(search: string, chamber: string, legislator: string, status: string, subject: string) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -12,7 +12,7 @@ async function getBills(search: string, chamber: string, legislator: string, sta
 
   let query = supabase
     .from('Bills')
-    .select('id, bill_number, title, description, status, author, body, last_action_date, summary')
+    .select('id, bill_number, title, description, status, author, body, last_action_date, summary, subjects')
     .order('created_at', { ascending: false })
 
   if (search) {
@@ -28,6 +28,12 @@ async function getBills(search: string, chamber: string, legislator: string, sta
   }
   if (status) {
     query = query.eq('status', status)
+  }
+  if (subject) {
+    // Bills.subjects is a JSON array of objects like:
+    // [{ "subject_id": 3824, "subject_name": "CLERKS OF COURT" }]
+    // We filter for bills that contain an object with the matching subject_name.
+    query = query.contains('subjects', [{ subject_name: subject }])
   }
 
   const { data, error } = await query
@@ -45,28 +51,35 @@ async function getAllMeta() {
   )
   const { data } = await supabase
     .from('Bills')
-    .select('author, status')
+    .select('author, status, subjects')
   return data || []
 }
 
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; chamber?: string; legislator?: string; status?: string }>
+  searchParams: Promise<{ search?: string; chamber?: string; legislator?: string; status?: string; subject?: string }>
 }) {
   const params = await searchParams
   const search = params.search || ''
   const chamber = params.chamber || ''
   const legislator = params.legislator || ''
   const status = params.status || ''
+  const subject = params.subject || ''
 
   const [bills, allMeta] = await Promise.all([
-    getBills(search, chamber, legislator, status),
+    getBills(search, chamber, legislator, status, subject),
     getAllMeta(),
   ])
 
   const authors = [...new Set(allMeta.map((b: any) => b.author).filter(Boolean))].sort() as string[]
   const statuses = [...new Set(allMeta.map((b: any) => b.status).filter(Boolean))].sort() as string[]
+  const subjects = [...new Set(
+    allMeta
+      .flatMap((b: any) => b.subjects || [])
+      .map((s: any) => s?.subject_name)
+      .filter(Boolean)
+  )].sort() as string[]
   const totalCount = allMeta.length
 
   return (
@@ -211,11 +224,13 @@ export default async function Home({
             bills={bills}
             legislators={authors}
             statuses={statuses}
+            subjects={subjects}
             totalCount={totalCount}
             currentSearch={search}
             currentChamber={chamber}
             currentLegislator={legislator}
             currentStatus={status}
+            currentSubject={subject}
           />
         </section>
       </main>
