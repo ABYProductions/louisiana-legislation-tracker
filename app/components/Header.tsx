@@ -95,93 +95,91 @@ export default function Header() {
             </Link>
           ))}
 
-          {/* Auth / watchlist links */}
-          {!loading && (
-            <>
-              {user ? (
-                <>
-                  <Link
-                    href="/watchlist"
-                    style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '13px',
-                      color: pathname === '/watchlist' ? '#C4922A' : '#444',
-                      textDecoration: 'none',
-                      letterSpacing: '0.04em',
-                      fontWeight: pathname === '/watchlist' ? 600 : 400,
-                      borderBottom: pathname === '/watchlist' ? '2px solid #C4922A' : '2px solid transparent',
-                      paddingBottom: '2px',
-                    }}
-                  >
-                    My Watchlist
-                  </Link>
-                  <button
-                    onClick={signOut}
-                    style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '13px',
-                      color: '#fff',
-                      background: '#0C2340',
-                      border: 'none',
-                      borderRadius: '6px',
-                      padding: '6px 14px',
-                      cursor: 'pointer',
-                      letterSpacing: '0.04em',
-                      fontWeight: 500,
-                    }}
-                  >
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/watchlist"
-                    style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '13px',
-                      color: '#444',
-                      textDecoration: 'none',
-                      letterSpacing: '0.04em',
-                      fontWeight: 500,
-                      borderBottom: pathname === '/watchlist' ? '2px solid #C4922A' : '2px solid transparent',
-                      paddingBottom: '2px',
-                    }}
-                  >
-                    My Watchlist
-                  </Link>
-                  <Link
-                    href="/auth/login"
-                    style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '13px',
-                      color: '#444',
-                      textDecoration: 'none',
-                      letterSpacing: '0.04em',
-                    }}
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    href="/auth/signup"
-                    style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '13px',
-                      color: '#fff',
-                      background: '#C4922A',
-                      borderRadius: '6px',
-                      padding: '6px 14px',
-                      textDecoration: 'none',
-                      letterSpacing: '0.04em',
-                      fontWeight: 500,
-                    }}
-                  >
-                    Create Account
-                  </Link>
-                </>
-              )}
-            </>
-          )}
+          {/* Auth / watchlist links – always render; fall back to logged-out view while loading */}
+          <>
+            {user ? (
+              <>
+                <Link
+                  href="/watchlist"
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '13px',
+                    color: pathname === '/watchlist' ? '#C4922A' : '#444',
+                    textDecoration: 'none',
+                    letterSpacing: '0.04em',
+                    fontWeight: pathname === '/watchlist' ? 600 : 400,
+                    borderBottom: pathname === '/watchlist' ? '2px solid #C4922A' : '2px solid transparent',
+                    paddingBottom: '2px',
+                  }}
+                >
+                  My Watchlist
+                </Link>
+                <button
+                  onClick={signOut}
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '13px',
+                    color: '#fff',
+                    background: '#0C2340',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '6px 14px',
+                    cursor: 'pointer',
+                    letterSpacing: '0.04em',
+                    fontWeight: 500,
+                  }}
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/watchlist"
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '13px',
+                    color: '#444',
+                    textDecoration: 'none',
+                    letterSpacing: '0.04em',
+                    fontWeight: 500,
+                    borderBottom: pathname === '/watchlist' ? '2px solid #C4922A' : '2px solid transparent',
+                    paddingBottom: '2px',
+                  }}
+                >
+                  My Watchlist
+                </Link>
+                <Link
+                  href="/auth/login"
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '13px',
+                    color: '#444',
+                    textDecoration: 'none',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '13px',
+                    color: '#fff',
+                    background: '#C4922A',
+                    borderRadius: '6px',
+                    padding: '6px 14px',
+                    textDecoration: 'none',
+                    letterSpacing: '0.04em',
+                    fontWeight: 500,
+                  }}
+                >
+                  Create Account
+                </Link>
+              </>
+            )}
+          </>
         </nav>
       </header>
 

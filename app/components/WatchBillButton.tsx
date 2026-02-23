@@ -26,7 +26,7 @@ export default function WatchBillButton({ billId }: { billId: number }) {
     if (!error) setAdded(true)
   }
 
-  if (!mounted || loading) return (
+  if (!mounted) return (
     <div style={{
       padding: '10px 16px',
       border: '1px solid #DDD8CE',
