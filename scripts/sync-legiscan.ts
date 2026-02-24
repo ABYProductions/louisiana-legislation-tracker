@@ -1,18 +1,20 @@
 console.log('Script starting...')
 console.log('LEGISCAN_API_KEY exists:', !!process.env.LEGISCAN_API_KEY)
 console.log('SUPABASE_URL exists:', !!process.env.NEXT_PUBLIC_SUPABASE_URL)
-console.log('SUPABASE_KEY exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+console.log('SUPABASE_SERVICE_ROLE_KEY exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
 
 import { createClient } from '@supabase/supabase-js'
 
 // Configuration
 const LEGISCAN_API_KEY = process.env.LEGISCAN_API_KEY
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 const LOUISIANA_STATE_ID = 18 // LegiScan's ID for Louisiana
 
-// Initialize Supabase client
-const supabase = createClient(SUPABASE_URL!, SUPABASE_KEY!)
+// Initialize Supabase client with service role key for write access
+const supabase = createClient(SUPABASE_URL!, SUPABASE_KEY!, {
+  auth: { autoRefreshToken: false, persistSession: false }
+})
 
 // LegiScan API base URL
 const LEGISCAN_BASE_URL = 'https://api.legiscan.com/'

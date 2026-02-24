@@ -1,9 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseServer } from '@/lib/supabase'
 import Link from 'next/link'
 import Header from '@/app/components/Header'
 import Footer from '@/app/components/Footer'
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 function getOfficialUrl(event: any, type: 'floor_session' | 'committee_meeting' | 'session_event') {
   if (type === 'floor_session') {
@@ -27,6 +25,7 @@ function groupEventsByDate(events: any[]) {
 }
 
 export default async function CalendarPage() {
+  const supabase = getSupabaseServer()
   const [sessionEvents, floorSessions, committeeMeetings] = await Promise.all([
     supabase.from('session_events').select('*').order('event_date', { ascending: true }),
     supabase.from('floor_sessions').select('*').order('session_date', { ascending: true }),

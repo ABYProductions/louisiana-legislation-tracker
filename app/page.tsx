@@ -1,14 +1,11 @@
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseServer } from '@/lib/supabase'
 import Header from '@/app/components/Header'
 import Footer from '@/app/components/Footer'
 import BillListWithFilters from '@/app/components/BillListWithFilters'
 import UpcomingEventsWidget from '@/app/components/UpcomingEventsWidget'
 
 async function getBills(search: string, chamber: string, legislator: string, status: string, subject: string) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = getSupabaseServer()
 
   let query = supabase
     .from('Bills')
@@ -56,10 +53,7 @@ async function getBills(search: string, chamber: string, legislator: string, sta
 }
 
 async function getAllMeta() {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = getSupabaseServer()
   const { data } = await supabase
     .from('Bills')
     .select('author, status, subjects')

@@ -1,7 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseServer } from '@/lib/supabase'
 import Link from 'next/link'
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 function getOfficialUrl(event: any, type: string) {
   if (type === 'floor_session') {
@@ -15,6 +13,7 @@ function getOfficialUrl(event: any, type: string) {
 }
 
 export default async function UpcomingEventsWidget() {
+  const supabase = getSupabaseServer()
   const today = new Date().toISOString().split('T')[0]
   const sevenDaysFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   const { data: floorSessions } = await supabase.from('floor_sessions').select('*').gte('session_date', today).lte('session_date', sevenDaysFromNow).order('session_date', { ascending: true })

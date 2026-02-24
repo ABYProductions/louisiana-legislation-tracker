@@ -1,18 +1,14 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+import { getSupabaseServer } from '@/lib/supabase'
 
 interface BillScheduleBadgeProps {
   billId: number
 }
 
 export default async function BillScheduleBadge({ billId }: BillScheduleBadgeProps) {
+  const supabase = getSupabaseServer()
   // Get next scheduled event
   const today = new Date().toISOString().split('T')[0]
-  
+
   const { data: nextEvent } = await supabase
     .from('bill_schedule')
     .select('*')

@@ -1,10 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseServer } from '@/lib/supabase'
 import Link from 'next/link'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 interface BillScheduleTimelineProps {
   billId: number
@@ -17,6 +12,7 @@ function getOfficialBillUrl(billNumber: string) {
 }
 
 export default async function BillScheduleTimeline({ billId, billNumber }: BillScheduleTimelineProps) {
+  const supabase = getSupabaseServer()
   const { data: pastEvents } = await supabase
     .from('bill_events')
     .select('*')

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseServer } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/app/components/Header'
@@ -6,11 +6,6 @@ import Footer from '@/app/components/Footer'
 import BillTimeline from '@/app/components/BillTimeline'
 import BillScheduleTimeline from '@/app/components/BillScheduleTimeline'
 import WatchBillButton from '@/app/components/WatchBillButton'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 interface Bill {
   id: number
@@ -50,6 +45,7 @@ const clean = (s: string | null) => s ? s.replace(/\*\*/g, '').trim() : null
 
 export default async function BillDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
+  const supabase = getSupabaseServer()
 
   const { data: bill, error } = await supabase
     .from('Bills')

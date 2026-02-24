@@ -1,14 +1,10 @@
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseServer } from '@/lib/supabase'
 import Link from 'next/link'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
 export default async function LegislatorsPage() {
+  const supabase = getSupabaseServer()
   const { data: bills, error } = await supabase
     .from('Bills')
     .select('author')
