@@ -17,6 +17,7 @@ type WatchedBill = {
   last_action_date: string | null
   last_action: string | null
   summary: string | null
+  subjects: { subject_name: string }[] | null
 }
 
 export default function WatchlistPage() {
@@ -24,6 +25,7 @@ export default function WatchlistPage() {
   const router = useRouter()
   const [bills, setBills] = useState<WatchedBill[]>([])
   const [billsLoading, setBillsLoading] = useState(true)
+  const [removing, setRemoving] = useState<number | null>(null)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -36,7 +38,6 @@ export default function WatchlistPage() {
       if (!user) return
       const supabase = getSupabaseBrowser()
 
-      // First get the list of bill IDs this user is watching
       const { data: links, error: linksError } = await supabase
         .from('user_bills')
         .select('bill_id')
@@ -56,17 +57,15 @@ export default function WatchlistPage() {
         return
       }
 
-      // Then fetch the actual bill records
       const { data: billData, error: billsError } = await supabase
         .from('Bills')
-        .select('id, bill_number, title, description, status, author, body, last_action_date, last_action, summary')
+        .select('id, bill_number, title, description, status, author, body, last_action_date, last_action, summary, subjects')
         .in('id', billIds)
 
       if (billsError) {
         console.error('Error loading watched bills:', billsError)
         setBills([])
       } else {
-        // Sort by most recent activity first
         const sorted = (billData || []).sort((a: any, b: any) => {
           const da = a.last_action_date ? new Date(a.last_action_date).getTime() : 0
           const db = b.last_action_date ? new Date(b.last_action_date).getTime() : 0
@@ -82,6 +81,21 @@ export default function WatchlistPage() {
       loadWatchlist()
     }
   }, [user, loading])
+
+  const removeFromWatchlist = async (billId: number) => {
+    if (!user) return
+    setRemoving(billId)
+    const supabase = getSupabaseBrowser()
+    const { error } = await supabase
+      .from('user_bills')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('bill_id', billId)
+    if (!error) {
+      setBills(prev => prev.filter(b => b.id !== billId))
+    }
+    setRemoving(null)
+  }
 
   const upcomingActivityCount = useMemo(() => {
     const now = Date.now()
@@ -106,6 +120,7 @@ export default function WatchlistPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7F4EF' }}>
       <div className="max-w-6xl mx-auto px-6 py-12 space-y-10">
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -182,52 +197,194 @@ export default function WatchlistPage() {
         ) : (
           <div className="grid md:grid-cols-3 gap-6">
             {/* Watched bills list */}
-            <div className="md:col-span-2 space-y-4">
-              {bills.map(bill => (
+            <div className="md:col-span-2">
+              <div
+                className="bg-white border border-[#DDD8CE] rounded-xl overflow-hidden"
+              >
+                {/* List header */}
                 <div
-                  key={bill.id}
-                  className="bg-white border border-[#DDD8CE] rounded-xl p-5 hover:border-[#C4922A] transition-colors"
+                  style={{
+                    padding: '12px 20px',
+                    borderBottom: '1px solid #DDD8CE',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto',
+                    alignItems: 'center',
+                  }}
                 >
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <div>
-                      <div className="text-xs font-semibold tracking-[0.14em] uppercase text-[#C4922A] mb-1">
-                        {bill.bill_number}
-                      </div>
-                      <Link
-                        href={`/bill/${bill.id}`}
-                        className="text-base font-semibold"
-                        style={{ color: '#0C2340', textDecoration: 'none' }}
-                      >
-                        {bill.title}
-                      </Link>
-                    </div>
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#C4922A]">
-                      {bill.status || 'Pre-filed'}
-                    </span>
-                  </div>
-                  {(bill.summary || bill.description) && (
-                    <p className="text-xs mb-2" style={{ color: '#6B7280' }}>
-                      {bill.summary || bill.description}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between text-xs" style={{ color: '#6B7280' }}>
-                    <span>{bill.author}</span>
-                    {bill.last_action_date && (
-                      <span>
-                        Last action:{' '}
-                        {new Date(bill.last_action_date + 'T00:00:00').toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </span>
-                    )}
-                  </div>
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', fontWeight: 700, color: '#888', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+                    {bills.length} Bill{bills.length !== 1 ? 's' : ''} Tracked
+                  </span>
                 </div>
-              ))}
+
+                {/* Bill rows */}
+                {bills.map((bill, idx) => {
+                  const primarySubject = Array.isArray(bill.subjects) && bill.subjects.length > 0
+                    ? bill.subjects[0].subject_name
+                    : null
+                  const excerpt = (bill.summary || bill.description || '')
+                  const shortExcerpt = excerpt.length > 160 ? excerpt.slice(0, 160).trim() + '…' : excerpt
+
+                  return (
+                    <div
+                      key={bill.id}
+                      style={{
+                        position: 'relative',
+                        padding: '14px 20px 14px 24px',
+                        borderBottom: idx < bills.length - 1 ? '1px solid #F0EDE8' : 'none',
+                        display: 'flex',
+                        gap: '12px',
+                        alignItems: 'flex-start',
+                      }}
+                    >
+                      {/* Left gold accent */}
+                      <div style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: '3px',
+                        background: '#C4922A',
+                        borderRadius: '0 2px 2px 0',
+                      }} />
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {/* Top row: bill number + status */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px', gap: '8px' }}>
+                          <span style={{
+                            fontFamily: 'var(--font-sans)',
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            color: '#C4922A',
+                            letterSpacing: '0.12em',
+                            textTransform: 'uppercase',
+                            flexShrink: 0,
+                          }}>
+                            {bill.bill_number}
+                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{
+                              fontFamily: 'var(--font-sans)',
+                              fontSize: '9px',
+                              fontWeight: 700,
+                              color: '#888',
+                              letterSpacing: '0.1em',
+                              textTransform: 'uppercase',
+                            }}>
+                              {bill.status || 'Pre-filed'}
+                            </span>
+                            <button
+                              onClick={() => removeFromWatchlist(bill.id)}
+                              disabled={removing === bill.id}
+                              title="Remove from watchlist"
+                              style={{
+                                fontFamily: 'var(--font-sans)',
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                color: removing === bill.id ? '#aaa' : '#B91C1C',
+                                background: 'none',
+                                border: '1px solid',
+                                borderColor: removing === bill.id ? '#ddd' : '#FCA5A5',
+                                borderRadius: '4px',
+                                padding: '2px 8px',
+                                cursor: removing === bill.id ? 'default' : 'pointer',
+                                letterSpacing: '0.04em',
+                                whiteSpace: 'nowrap',
+                                transition: 'all 0.15s',
+                              }}
+                            >
+                              {removing === bill.id ? 'Removing…' : '× Remove'}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Title */}
+                        <Link
+                          href={`/bill/${bill.id}`}
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: '15px',
+                            fontWeight: 600,
+                            color: '#0C2340',
+                            textDecoration: 'none',
+                            lineHeight: 1.3,
+                            display: 'block',
+                            marginBottom: '6px',
+                          }}
+                        >
+                          {bill.title}
+                        </Link>
+
+                        {/* Labels row: author + subject */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: shortExcerpt ? '6px' : '0' }}>
+                          {bill.author && (
+                            <Link
+                              href={`/legislator/${encodeURIComponent(bill.author)}`}
+                              style={{
+                                fontFamily: 'var(--font-sans)',
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                color: '#0C2340',
+                                background: '#F7F4EF',
+                                border: '1px solid #DDD8CE',
+                                borderRadius: '3px',
+                                padding: '2px 7px',
+                                textDecoration: 'none',
+                                letterSpacing: '0.04em',
+                              }}
+                            >
+                              {bill.author}
+                            </Link>
+                          )}
+                          {primarySubject && (
+                            <span style={{
+                              fontFamily: 'var(--font-sans)',
+                              fontSize: '10px',
+                              fontWeight: 600,
+                              color: '#C4922A',
+                              background: '#FDF8F0',
+                              border: '1px solid #F5E6C8',
+                              borderRadius: '3px',
+                              padding: '2px 7px',
+                              letterSpacing: '0.04em',
+                            }}>
+                              {primarySubject}
+                            </span>
+                          )}
+                          {bill.last_action_date && (
+                            <span style={{
+                              fontFamily: 'var(--font-sans)',
+                              fontSize: '10px',
+                              color: '#9CA3AF',
+                              padding: '2px 0',
+                            }}>
+                              {new Date(bill.last_action_date + 'T00:00:00').toLocaleDateString('en-US', {
+                                month: 'short', day: 'numeric', year: 'numeric',
+                              })}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Summary excerpt */}
+                        {shortExcerpt && (
+                          <p style={{
+                            fontFamily: 'var(--font-sans)',
+                            fontSize: '11px',
+                            color: '#6B7280',
+                            lineHeight: 1.55,
+                            margin: 0,
+                            fontWeight: 300,
+                          }}>
+                            {shortExcerpt}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
 
-            {/* Sidebar: link to full calendar */}
+            {/* Sidebar */}
             <div className="space-y-4">
               <div className="bg-white rounded-xl border border-[#DDD8CE] p-5">
                 <h2

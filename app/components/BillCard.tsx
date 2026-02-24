@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import BillScheduleBadge from './BillScheduleBadge'
 import { useAuth } from './AuthProvider'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { getSupabaseBrowser } from '@/lib/supabase'
 
 interface BillCardProps {
@@ -22,10 +22,24 @@ interface BillCardProps {
 
 export default function BillCard({ bill }: BillCardProps) {
   const { user, loading } = useAuth()
-  const [watching, setWatching] = useState(false)
-  const [added, setAdded] = useState(false)
+  const [isWatching, setIsWatching] = useState(false)
+  const [actionLoading, setActionLoading] = useState(false)
 
-const supabase = getSupabaseBrowser()
+  const supabase = getSupabaseBrowser()
+
+  // Check if user is already watching this bill
+  useEffect(() => {
+    if (!user || loading) return
+    supabase
+      .from('user_bills')
+      .select('bill_id')
+      .eq('user_id', user.id)
+      .eq('bill_id', bill.id)
+      .maybeSingle()
+      .then(({ data }: { data: unknown }) => {
+        setIsWatching(!!data)
+      })
+  }, [user, loading, bill.id])
 
   const chamber =
     bill.bill_number?.startsWith('HB') || bill.bill_number?.startsWith('HR')
@@ -34,23 +48,29 @@ const supabase = getSupabaseBrowser()
       ? 'Senate'
       : bill.body || ''
 
-  const handleWatch = async (e: React.MouseEvent) => {
+  const handleWatchToggle = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    // If auth state is still loading, don't redirect yet.
-    if (loading) {
-      return
-    }
+    if (loading) return
     if (!user) {
       window.location.href = '/auth/login'
       return
     }
-    setWatching(true)
-    const { error } = await supabase
-      .from('user_bills')
-      .upsert({ user_id: user.id, bill_id: bill.id }, { onConflict: 'user_id,bill_id' })
-    setWatching(false)
-    if (!error) setAdded(true)
+    setActionLoading(true)
+    if (isWatching) {
+      const { error } = await supabase
+        .from('user_bills')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('bill_id', bill.id)
+      if (!error) setIsWatching(false)
+    } else {
+      const { error } = await supabase
+        .from('user_bills')
+        .upsert({ user_id: user.id, bill_id: bill.id }, { onConflict: 'user_id,bill_id' })
+      if (!error) setIsWatching(true)
+    }
+    setActionLoading(false)
   }
 
   return (
@@ -123,27 +143,32 @@ const supabase = getSupabaseBrowser()
         )}
       </Link>
 
-      {/* Watch Bill button */}
+      {/* Watch / Remove button */}
       <button
-        onClick={handleWatch}
-        disabled={watching || added}
+        onClick={handleWatchToggle}
+        disabled={actionLoading}
         style={{
           width: '100%',
           marginBottom: '10px',
           padding: '7px',
           borderRadius: '5px',
-          border: added ? '1px solid #C4922A' : '1px solid #DDD8CE',
-          background: added ? '#FDF8F0' : '#fff',
-          color: added ? '#C4922A' : '#0C2340',
+          border: isWatching ? '1px solid #FCA5A5' : '1px solid #DDD8CE',
+          background: isWatching ? '#FFF5F5' : '#fff',
+          color: isWatching ? '#B91C1C' : '#0C2340',
           fontFamily: 'var(--font-sans)',
           fontSize: '11px',
           fontWeight: 600,
           letterSpacing: '0.06em',
-          cursor: added ? 'default' : 'pointer',
+          cursor: actionLoading ? 'default' : 'pointer',
           transition: 'all 0.15s',
         }}
+        className={isWatching ? 'watch-btn-watching' : ''}
       >
-        {added ? '✓ Watching' : watching ? 'Adding...' : '+ Watch Bill'}
+        {actionLoading
+          ? '…'
+          : isWatching
+          ? '✓ Watching — click to remove'
+          : '+ Watch Bill'}
       </button>
 
       {/* Schedule badge */}
@@ -186,6 +211,10 @@ const supabase = getSupabaseBrowser()
         .bill-card-hover:hover {
           border-color: #C4922A;
           box-shadow: 0 4px 16px rgba(12,35,64,0.08);
+        }
+        .watch-btn-watching:hover {
+          background: #FEE2E2 !important;
+          border-color: #F87171 !important;
         }
       `}</style>
     </div>
