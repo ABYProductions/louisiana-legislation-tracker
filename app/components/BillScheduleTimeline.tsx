@@ -17,19 +17,51 @@ function getOfficialBillUrl(billNumber: string, year: number | null | undefined)
   return `https://legis.la.gov/legis/BillInfo.aspx?s=${sessionCode(year)}&b=${cleanNumber}&sbi=y`
 }
 
+// Classify history actions into icon/color types
+function classifyAction(action: string): { icon: string; color: string; label: string } {
+  const a = action.toLowerCase()
+  if (a.includes('passed') || a.includes('enrolled') || a.includes('chaptered')) {
+    return { icon: '✓', color: 'bg-green-600 border-green-600', label: 'passed' }
+  }
+  if (a.includes('vetoed') || a.includes('failed') || a.includes('defeated') || a.includes('rejected')) {
+    return { icon: '✗', color: 'bg-red-500 border-red-500', label: 'failed' }
+  }
+  if (a.includes('signed') || a.includes('governor')) {
+    return { icon: '✍', color: 'bg-purple-600 border-purple-600', label: 'executive' }
+  }
+  if (a.includes('vote') || a.includes('yeas') || a.includes('nays')) {
+    return { icon: '⬤', color: 'bg-blue-600 border-blue-600', label: 'vote' }
+  }
+  if (a.includes('committee') || a.includes('referred') || a.includes('assigned')) {
+    return { icon: '◆', color: 'bg-amber-500 border-amber-500', label: 'committee' }
+  }
+  if (a.includes('introduced') || a.includes('filed') || a.includes('pre-filed')) {
+    return { icon: '●', color: 'bg-slate-400 border-slate-400', label: 'filed' }
+  }
+  if (a.includes('amended') || a.includes('amendment')) {
+    return { icon: '✎', color: 'bg-orange-500 border-orange-500', label: 'amended' }
+  }
+  return { icon: '●', color: 'bg-[#0C2340] border-[#0C2340]', label: 'action' }
+}
+
+// Find vote record closest to a history entry date
+function findVoteForAction(votes: any[], date: string) {
+  return votes.find(v => v.date === date || (v.date && Math.abs(new Date(v.date).getTime() - new Date(date).getTime()) < 2 * 24 * 60 * 60 * 1000))
+}
+
 export default async function BillScheduleTimeline({ billId, billNumber }: BillScheduleTimelineProps) {
   const supabase = getSupabaseServer()
 
-  // Read calendar and history from the Bills table — populated by enhanced-sync.ts
-  // from LegiScan on every sync. Avoids dependency on bill_events/bill_schedule tables.
   const { data: bill } = await supabase
     .from('Bills')
-    .select('calendar, history, session_year')
+    .select('calendar, history, votes, amendments, session_year')
     .eq('id', billId)
     .single()
 
   const calendar: any[] = bill?.calendar || []
   const history: any[] = bill?.history || []
+  const votes: any[] = bill?.votes || []
+  const amendments: any[] = bill?.amendments || []
   const year: number | null = bill?.session_year ?? null
 
   const today = new Date().toISOString().split('T')[0]
@@ -37,16 +69,22 @@ export default async function BillScheduleTimeline({ billId, billNumber }: BillS
   // Map LegiScan history entries → past legislative actions
   const pastEvents = history
     .filter(h => h.date && h.action)
-    .map(h => ({
-      date: h.date as string,
-      type: 'history' as const,
-      description: h.action as string,
-      chamber: (h.chamber as string) || null,
-      importance: (h.importance as number) || 0,
-      isPast: true,
-      time: null,
-      location: null,
-    }))
+    .map(h => {
+      const actionClass = classifyAction(h.action as string)
+      const vote = findVoteForAction(votes, h.date as string)
+      return {
+        date: h.date as string,
+        type: 'history' as const,
+        description: h.action as string,
+        chamber: (h.chamber as string) || null,
+        importance: (h.importance as number) || 0,
+        isPast: true,
+        time: null,
+        location: null,
+        actionClass,
+        vote,
+      }
+    })
 
   // Map LegiScan calendar entries → upcoming hearings/floor sessions
   const calendarEvents = calendar
@@ -60,11 +98,16 @@ export default async function BillScheduleTimeline({ billId, billNumber }: BillS
       isPast: (c.date as string) < today,
       time: (c.time as string) || null,
       location: (c.location as string) || null,
+      actionClass: { icon: '◆', color: 'bg-blue-500 border-blue-500', label: 'scheduled' },
+      vote: null,
     }))
 
   const allEvents = [...pastEvents, ...calendarEvents].sort((a, b) =>
     a.date.localeCompare(b.date)
   )
+
+  // Pending amendments (not yet incorporated)
+  const pendingAmendments = amendments.filter((a: any) => a.adopted === 0)
 
   const officialUrl = billNumber ? getOfficialBillUrl(billNumber, year) : null
   const upcomingCount = calendarEvents.filter(e => !e.isPast).length
@@ -109,6 +152,14 @@ export default async function BillScheduleTimeline({ billId, billNumber }: BillS
         )}
       </div>
 
+      {/* Pending amendments notice */}
+      {pendingAmendments.length > 0 && (
+        <div className="mb-4 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg text-xs text-orange-700">
+          <span className="font-semibold">{pendingAmendments.length} pending amendment{pendingAmendments.length !== 1 ? 's' : ''}</span>
+          {' '}— not yet adopted
+        </div>
+      )}
+
       <div className="relative">
         <div className="absolute left-[15px] top-4 bottom-4 w-0.5 bg-slate-200" />
 
@@ -122,16 +173,17 @@ export default async function BillScheduleTimeline({ billId, billNumber }: BillS
               ? 'bg-[#C4922A] border-[#0C2340]'
               : isFuture
               ? 'bg-white border-slate-300'
-              : 'bg-[#0C2340] border-[#0C2340]'
+              : event.actionClass.color
 
             return (
               <div key={idx} className="relative pl-10">
-                <div className={`absolute left-0 w-8 h-8 rounded-full border-4 flex items-center justify-center ${dotClass}`}>
+                <div className={`absolute left-0 w-8 h-8 rounded-full border-4 flex items-center justify-center text-white text-xs font-bold ${dotClass}`}>
                   {isToday && <div className="w-3 h-3 bg-[#0C2340] rounded-full" />}
                   {!isToday && !isFuture && (
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
+                    <span>{event.actionClass.icon}</span>
+                  )}
+                  {isFuture && !isToday && (
+                    <span className="text-slate-400 text-xs">→</span>
                   )}
                 </div>
 
@@ -163,6 +215,17 @@ export default async function BillScheduleTimeline({ billId, billNumber }: BillS
                   </div>
 
                   <p className="text-sm text-slate-700 leading-relaxed">{event.description}</p>
+
+                  {/* Vote counts */}
+                  {event.vote && (event.vote.yea > 0 || event.vote.nay > 0) && (
+                    <div className="mt-1 flex gap-3 text-xs">
+                      <span className="text-green-700 font-semibold">✓ {event.vote.yea} Yea</span>
+                      <span className="text-red-600 font-semibold">✗ {event.vote.nay} Nay</span>
+                      {event.vote.absent > 0 && (
+                        <span className="text-slate-500">{event.vote.absent} Absent</span>
+                      )}
+                    </div>
+                  )}
 
                   {event.location && (
                     <p className="text-xs text-slate-500 mt-0.5">📍 {event.location}</p>

@@ -12,7 +12,7 @@ async function getBills(search: string, chamber: string, legislator: string, sta
 
   let query = supabase
     .from('Bills')
-    .select('id, bill_number, title, description, status, author, body, last_action_date, summary, summary_status, subjects')
+    .select('id, bill_number, title, description, status, author, body, last_action_date, summary, summary_status, subjects, next_event')
     .order('created_at', { ascending: false })
     .limit(2000)
 

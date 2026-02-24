@@ -1,59 +1,44 @@
 'use client'
-import { getSupabaseBrowser } from '@/lib/supabase'
-import { useState, useEffect } from 'react'
 
-interface BillScheduleBadgeProps {
-  billId: number
+interface NextEvent {
+  date: string
+  time: string | null
+  type: string
+  description: string
+  location: string | null
 }
 
-export default function BillScheduleBadge({ billId }: BillScheduleBadgeProps) {
-  const [nextEvent, setNextEvent] = useState<any>(null)
-  const [loaded, setLoaded] = useState(false)
+interface BillScheduleBadgeProps {
+  nextEvent: NextEvent | null | undefined
+}
 
-  useEffect(() => {
-    const today = new Date().toISOString().split('T')[0]
-    const supabase = getSupabaseBrowser()
-    supabase
-      .from('bill_schedule')
-      .select('*')
-      .eq('bill_id', billId)
-      .gte('scheduled_date', today)
-      .order('scheduled_date', { ascending: true })
-      .limit(1)
-      .single()
-      .then(({ data }: { data: any }) => {
-        setNextEvent(data ?? null)
-        setLoaded(true)
-      })
-      .catch(() => setLoaded(true))
-  }, [billId])
+export default function BillScheduleBadge({ nextEvent }: BillScheduleBadgeProps) {
+  if (!nextEvent) return null
 
-  if (!loaded || !nextEvent) return null
-
-  const eventDate = new Date(nextEvent.scheduled_date + 'T00:00:00')
   const today = new Date().toISOString().split('T')[0]
-  const isToday = nextEvent.scheduled_date === today
-  const isTomorrow =
-    nextEvent.scheduled_date ===
-    new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const isToday = nextEvent.date === today
+  const isTomorrow = nextEvent.date === tomorrow
+
+  const eventDate = new Date(nextEvent.date + 'T00:00:00')
+  const label = isToday ? 'TODAY' : isTomorrow ? 'TOMORROW' : 'UPCOMING'
 
   return (
     <div className={`mt-3 px-3 py-2 rounded-lg border-l-4 text-xs ${
       isToday
-        ? 'bg-yellow-50 border-[#FDD023]'
+        ? 'bg-yellow-50 border-[#C4922A]'
         : 'bg-blue-50 border-[#0C2340]'
     }`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <div className={`font-semibold mb-0.5 ${isToday ? 'text-[#0C2340]' : 'text-slate-700'}`}>
-            {isToday ? 'TODAY' : isTomorrow ? 'TOMORROW' : 'UPCOMING'}
-            {nextEvent.scheduled_time && ` at ${nextEvent.scheduled_time}`}
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <div className={`font-semibold mb-0.5 ${isToday ? 'text-[#C4922A]' : 'text-slate-700'}`}>
+            {label}{nextEvent.time && ` · ${nextEvent.time}`}
           </div>
-          <div className="text-slate-600">
-            {nextEvent.action_expected || nextEvent.event_type?.replace('_', ' ')}
+          <div className="text-slate-600 truncate">
+            {nextEvent.description}
           </div>
         </div>
-        <div className="text-right">
+        <div className="flex-shrink-0 text-right">
           <div className="font-semibold text-[#0C2340]">
             {eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
           </div>

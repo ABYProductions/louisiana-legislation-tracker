@@ -18,6 +18,13 @@ interface BillCardProps {
     summary?: string
     summary_status?: string
     subjects?: { subject_name: string }[]
+    next_event?: {
+      date: string
+      time: string | null
+      type: string
+      description: string
+      location: string | null
+    } | null
   }
 }
 
@@ -151,7 +158,7 @@ export default function BillCard({ bill }: BillCardProps) {
       </button>
 
       {/* Schedule badge */}
-      <BillScheduleBadge billId={bill.id} />
+      <BillScheduleBadge nextEvent={bill.next_event} />
 
       {/* Footer */}
       <div style={{

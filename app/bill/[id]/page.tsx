@@ -5,6 +5,7 @@ import Header from '@/app/components/Header'
 import Footer from '@/app/components/Footer'
 import BillTimeline from '@/app/components/BillTimeline'
 import BillScheduleTimeline from '@/app/components/BillScheduleTimeline'
+import UpcomingEventsPanel from '@/app/components/UpcomingEventsPanel'
 import WatchBillButton from '@/app/components/WatchBillButton'
 import SummaryPending from '@/app/components/SummaryPending'
 
@@ -388,7 +389,12 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
               </div>
             </div>
 
-            <div>
+            <div className="flex flex-col gap-6">
+              <UpcomingEventsPanel
+                billId={typedBill.id}
+                billNumber={typedBill.bill_number}
+                sessionYear={typedBill.session_year}
+              />
               <BillScheduleTimeline billId={typedBill.id} billNumber={typedBill.bill_number} />
             </div>
           </div>

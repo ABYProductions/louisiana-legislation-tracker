@@ -8,6 +8,14 @@ import Link from 'next/link'
 import Header from '../components/Header'
 import { getSupabaseBrowser } from '@/lib/supabase'
 
+type NextEvent = {
+  date: string
+  time: string | null
+  type: string
+  description: string
+  location: string | null
+}
+
 type WatchedBill = {
   id: number
   bill_number: string
@@ -16,11 +24,14 @@ type WatchedBill = {
   author: string | null
   status: string
   body: string | null
+  current_body: string | null
+  committee: string | null
   last_action_date: string | null
   last_action: string | null
   summary: string | null
   summary_status: string | null
   subjects: { subject_name: string }[] | null
+  next_event: NextEvent | null
 }
 
 export default function WatchlistPage() {
@@ -63,7 +74,7 @@ export default function WatchlistPage() {
 
       const { data: billData, error: billsError } = await supabase
         .from('Bills')
-        .select('id, bill_number, title, description, status, author, body, last_action_date, last_action, summary, summary_status, subjects')
+        .select('id, bill_number, title, description, status, author, body, current_body, committee, last_action_date, last_action, summary, summary_status, subjects, next_event')
         .in('id', billIds)
 
       if (billsError) {
@@ -96,13 +107,7 @@ export default function WatchlistPage() {
   }
 
   const upcomingActivityCount = useMemo(() => {
-    const now = Date.now()
-    const thirtyDays = 30 * 24 * 60 * 60 * 1000
-    return bills.filter(b => {
-      if (!b.last_action_date) return false
-      const t = new Date(b.last_action_date).getTime()
-      return t >= now - thirtyDays
-    }).length
+    return bills.filter(b => b.next_event != null).length
   }, [bills])
 
   if (loading || billsLoading) {
@@ -153,7 +158,7 @@ export default function WatchlistPage() {
           </div>
           <div className="bg-white border border-[#DDD8CE] rounded-xl p-5">
             <div className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 mb-2">
-              Recent Activity (30 Days)
+              With Upcoming Events
             </div>
             <div className="text-4xl font-bold" style={{ color: '#0C2340' }}>
               {upcomingActivityCount}
@@ -373,6 +378,87 @@ export default function WatchlistPage() {
                             {shortExcerpt}
                           </p>
                         )}
+
+                        {/* Current status / next scheduled event — mirrors "Current Status" on legis.la.gov */}
+                        {(() => {
+                          // Prefer a real scheduled upcoming event
+                          if (bill.next_event) {
+                            const today = new Date().toISOString().split('T')[0]
+                            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+                            const isToday = bill.next_event.date === today
+                            const isTomorrow = bill.next_event.date === tomorrow
+                            const label = isToday ? 'TODAY' : isTomorrow ? 'TOMORROW' : new Date(bill.next_event.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                            return (
+                              <div style={{
+                                marginTop: '6px',
+                                padding: '4px 8px',
+                                background: isToday ? '#FFFBEB' : '#EFF6FF',
+                                borderLeft: `3px solid ${isToday ? '#C4922A' : '#0C2340'}`,
+                                borderRadius: '0 4px 4px 0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                              }}>
+                                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '9px', fontWeight: 700, color: isToday ? '#C4922A' : '#0C2340', letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>
+                                  {label}
+                                </span>
+                                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {bill.next_event.description}
+                                </span>
+                              </div>
+                            )
+                          }
+                          // Fall back to committee assignment — mirrors "Current Status" on legis.la.gov
+                          // e.g., "Pending House Appropriations"
+                          if (bill.committee) {
+                            const chamberName = bill.current_body === 'H' ? 'House' : bill.current_body === 'S' ? 'Senate' : null
+                            const statusText = chamberName
+                              ? `Pending ${chamberName} ${bill.committee}`
+                              : `Pending ${bill.committee}`
+                            return (
+                              <div style={{
+                                marginTop: '6px',
+                                padding: '4px 8px',
+                                background: '#F0F4FF',
+                                borderLeft: '3px solid #6B7280',
+                                borderRadius: '0 4px 4px 0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                              }}>
+                                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '9px', fontWeight: 700, color: '#6B7280', letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>
+                                  STATUS
+                                </span>
+                                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {statusText}
+                                </span>
+                              </div>
+                            )
+                          }
+                          // Last resort: show status field if meaningful
+                          if (bill.status && bill.status !== 'Introduced') {
+                            return (
+                              <div style={{
+                                marginTop: '6px',
+                                padding: '4px 8px',
+                                background: '#F9FAFB',
+                                borderLeft: '3px solid #9CA3AF',
+                                borderRadius: '0 4px 4px 0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                              }}>
+                                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '9px', fontWeight: 700, color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>
+                                  STATUS
+                                </span>
+                                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {bill.status}
+                                </span>
+                              </div>
+                            )
+                          }
+                          return null
+                        })()}
                       </div>
                     </div>
                   )
