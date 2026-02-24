@@ -2,6 +2,7 @@
 import { useAuth } from './AuthProvider'
 import { useWatchlist } from './WatchlistProvider'
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 
 export default function WatchBillButton({ billId }: { billId: number }) {
   const { user, loading } = useAuth()
@@ -13,9 +14,11 @@ export default function WatchBillButton({ billId }: { billId: number }) {
 
   const isWatching = watchedIds.has(billId)
 
+  const pathname = usePathname()
+
   const handleToggle = async () => {
     if (!user) {
-      window.location.href = '/auth/login'
+      window.location.href = `/auth/login?redirectTo=${encodeURIComponent(pathname)}`
       return
     }
     setActionLoading(true)

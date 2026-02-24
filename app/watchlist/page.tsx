@@ -32,7 +32,7 @@ export default function WatchlistPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/auth/login')
+      router.push('/auth/login?redirectTo=/watchlist')
     }
   }, [user, loading, router])
 

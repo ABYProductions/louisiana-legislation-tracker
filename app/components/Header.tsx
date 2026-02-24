@@ -1,11 +1,17 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from './AuthProvider'
 
 export default function Header() {
   const pathname = usePathname()
+  const router = useRouter()
   const { user, loading, signOut } = useAuth()
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push('/')
+  }
 
   const links = [
     { href: '/#bills', label: 'All Bills' },
@@ -115,7 +121,7 @@ export default function Header() {
                   My Watchlist
                 </Link>
                 <button
-                  onClick={signOut}
+                  onClick={handleSignOut}
                   style={{
                     fontFamily: 'var(--font-sans)',
                     fontSize: '13px',

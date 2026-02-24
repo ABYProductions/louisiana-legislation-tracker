@@ -22,7 +22,9 @@ export default function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/watchlist')
+      const params = new URLSearchParams(window.location.search)
+      const redirectTo = params.get('redirectTo') || '/'
+      router.push(redirectTo)
     }
   }
 

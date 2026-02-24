@@ -40,7 +40,7 @@ export default function BillCard({ bill }: BillCardProps) {
     e.stopPropagation()
     if (loading) return
     if (!user) {
-      window.location.href = '/auth/login'
+      window.location.href = `/auth/login?redirectTo=${encodeURIComponent(window.location.pathname)}`
       return
     }
     setActionLoading(true)
