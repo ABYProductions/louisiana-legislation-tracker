@@ -1,37 +1,39 @@
-name: Enhanced Bill Sync
+name: Bill Sync
 
 on:
   schedule:
-    - cron: '0 13,17,21,1 * * 1-5'
-    - cron: '0 12 * * 0,6'
+    # Every 4 hours on weekdays (legislature most active Mon-Fri)
+    - cron: '0 */4 * * 1-5'
+    # Every 8 hours on weekends
+    - cron: '0 0,8,16 * * 0,6'
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 60
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Install dependencies
         run: npm install
-      
-      - name: Run enhanced sync
+
+      - name: Sync bills from LegiScan
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           LEGISCAN_API_KEY: ${{ secrets.LEGISCAN_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: npx tsx scripts/enhanced-sync.ts
-        
-        - name: Generate bill summaries
+
+      - name: Generate AI summaries for new bills
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
