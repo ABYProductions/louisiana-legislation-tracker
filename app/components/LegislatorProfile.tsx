@@ -26,6 +26,41 @@ const BG    = '#F7F4EF'
 const SERIF = 'Cormorant Garamond, Georgia, serif'
 const SANS  = 'DM Sans, system-ui, sans-serif'
 
+// Louisiana legislative election cycles (4-year, odd years)
+const LA_ELECTION_CYCLES = [1999, 2003, 2007, 2011, 2015, 2019, 2023, 2027, 2031]
+
+interface TermInfo {
+  firstElected: number
+  reElections: number[]    // subsequent regular-cycle elections
+  termLengthYears: 4
+  termLabel: string        // e.g. "1st term" / "2nd term" / "3rd term (final)"
+}
+
+function computeTermInfo(yearElected: number | null): TermInfo | null {
+  if (!yearElected) return null
+  const now = new Date().getFullYear()
+
+  // All regular-cycle election years from first elected through the last completed cycle
+  const reElections = LA_ELECTION_CYCLES.filter(y => y > yearElected && y <= now)
+
+  // Total terms = first election + subsequent re-elections
+  const totalTerms = 1 + reElections.length
+  // Louisiana constitution: max 3 consecutive terms (12 years) per chamber
+  const isFinalTerm = totalTerms >= 3
+
+  const ordinal = totalTerms === 1 ? '1st term'
+    : totalTerms === 2 ? '2nd term'
+    : totalTerms === 3 ? '3rd term'
+    : `${totalTerms}th term`
+
+  return {
+    firstElected: yearElected,
+    reElections,
+    termLengthYears: 4,
+    termLabel: isFinalTerm ? `${ordinal} (consecutive term limit)` : ordinal,
+  }
+}
+
 function initials(name: string): string {
   const parts = name.replace(/[^a-zA-Z\s]/g, '').trim().split(/\s+/)
   if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
@@ -84,7 +119,6 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
   const caucuses = legislator?.caucuses ?? []
   const parishes = legislator?.parishes_represented ?? []
   const yearElected = legislator?.year_elected
-  const termEnd = legislator?.term_end
 
   const partyColor = party === 'Republican' ? '#DC2626'
     : party === 'Democrat' ? '#2563EB'
@@ -300,23 +334,44 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
                 </div>
               )}
 
-              {yearElected && (
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
-                    First Elected
+              {yearElected && (() => {
+                const termInfo = computeTermInfo(yearElected)
+                if (!termInfo) return null
+                return (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                      Term Information
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {termInfo.reElections.length === 0 ? (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                          <span style={{ fontSize: 13, color: '#64748b' }}>Elected</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{termInfo.firstElected}</span>
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                            <span style={{ fontSize: 13, color: '#64748b' }}>First elected</span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{termInfo.firstElected}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                            <span style={{ fontSize: 13, color: '#64748b' }}>Re-elected</span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{termInfo.reElections.join(', ')}</span>
+                          </div>
+                        </>
+                      )}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                        <span style={{ fontSize: 13, color: '#64748b' }}>Term length</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>4 years</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, paddingTop: 2 }}>
+                        <span style={{ fontSize: 13, color: '#64748b' }}>Current term</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{termInfo.termLabel}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ fontSize: 15, color: '#1e293b' }}>{yearElected}</div>
-                </div>
-              )}
-
-              {termEnd && (
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
-                    Term Through
-                  </div>
-                  <div style={{ fontSize: 15, color: '#1e293b' }}>{termEnd}</div>
-                </div>
-              )}
+                )
+              })()}
 
               <div style={{ paddingTop: 8 }}>
                 <a

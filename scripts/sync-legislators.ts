@@ -351,8 +351,8 @@ async function scrapeHouseProfile(id: number): Promise<ProfileDetail> {
   // Year elected + term end
   const yearM = body.match(/Year Elected:?\s*(\d{4})/i)
   if (yearM) d.year_elected = parseInt(yearM[1])
-  const termM = body.match(/Eligible to serve through\s+([^.]{5,40})/i)
-  if (termM) d.term_end = termM[1].trim()
+  const termM = body.match(/Eligible to serve through[^.]*?\b(20\d{2})\b/i)
+  if (termM) d.term_end = termM[1]
 
   // Committees — extracted from the span with id matching COMMITTEEASSIGNMENTS
   const cmteSpan = $('[id*="COMMITTEEASSIGNMENTS"]').first()
@@ -416,8 +416,8 @@ async function scrapeSenateProfile(id: number): Promise<ProfileDetail> {
   // Year elected + term end
   const yearM = body.match(/Year Elected:?\s*(\d{4})/i)
   if (yearM) d.year_elected = parseInt(yearM[1])
-  const termM = body.match(/Eligible to serve through\s+([^.]{5,40})/i)
-  if (termM) d.term_end = termM[1].trim()
+  const termM = body.match(/Eligible to serve through[^.]*?\b(20\d{2})\b/i)
+  if (termM) d.term_end = termM[1]
 
   // Committees — try span with id matching COMMITTEEASSIGNMENTS, then by heading
   const cmteSpan = $('[id*="COMMITTEEASSIGNMENT"], [id*="committee"]').first()
