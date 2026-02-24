@@ -21,7 +21,7 @@ export default function BillScheduleBadge({ billId }: BillScheduleBadgeProps) {
       .order('scheduled_date', { ascending: true })
       .limit(1)
       .single()
-      .then(({ data }) => {
+      .then(({ data }: { data: any }) => {
         setNextEvent(data ?? null)
         setLoaded(true)
       })
