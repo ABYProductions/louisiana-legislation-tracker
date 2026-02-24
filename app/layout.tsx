@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import DisclaimerModal from "./components/DisclaimerModal";
-import BetaBanner from "./components/BetaBanner";
 import AuthProvider from "@/app/components/AuthProvider";
 import WatchlistProvider from "@/app/components/WatchlistProvider";
 import ErrorBoundary from "@/app/components/ErrorBoundary";
@@ -36,7 +35,6 @@ export default function RootLayout({
         <AuthProvider>
           <WatchlistProvider>
             <ErrorBoundary>
-              <BetaBanner />
               <DisclaimerModal />
               {children}
             </ErrorBoundary>
