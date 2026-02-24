@@ -2,8 +2,8 @@
 import Link from 'next/link'
 import BillScheduleBadge from './BillScheduleBadge'
 import { useAuth } from './AuthProvider'
-import { useState, useEffect } from 'react'
-import { getSupabaseBrowser } from '@/lib/supabase'
+import { useWatchlist } from './WatchlistProvider'
+import { useState } from 'react'
 
 interface BillCardProps {
   bill: {
@@ -22,27 +22,10 @@ interface BillCardProps {
 
 export default function BillCard({ bill }: BillCardProps) {
   const { user, loading } = useAuth()
-  const [isWatching, setIsWatching] = useState(false)
+  const { watchedIds, addWatch, removeWatch } = useWatchlist()
   const [actionLoading, setActionLoading] = useState(false)
 
-  const supabase = getSupabaseBrowser()
-
-  // Check if user is already watching this bill
-  useEffect(() => {
-    if (!user || loading) return
-    supabase
-      .from('user_bills')
-      .select('bill_id')
-      .eq('user_id', user.id)
-      .eq('bill_id', bill.id)
-      .maybeSingle()
-      .then(({ data }: { data: unknown }) => {
-        setIsWatching(!!data)
-      })
-      .catch(() => {
-        // silent – watch status just stays false
-      })
-  }, [user, loading, bill.id])
+  const isWatching = watchedIds.has(bill.id)
 
   const chamber =
     bill.bill_number?.startsWith('HB') || bill.bill_number?.startsWith('HR')
@@ -61,17 +44,9 @@ export default function BillCard({ bill }: BillCardProps) {
     }
     setActionLoading(true)
     if (isWatching) {
-      const { error } = await supabase
-        .from('user_bills')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('bill_id', bill.id)
-      if (!error) setIsWatching(false)
+      await removeWatch(bill.id)
     } else {
-      const { error } = await supabase
-        .from('user_bills')
-        .upsert({ user_id: user.id, bill_id: bill.id }, { onConflict: 'user_id,bill_id' })
-      if (!error) setIsWatching(true)
+      await addWatch(bill.id)
     }
     setActionLoading(false)
   }

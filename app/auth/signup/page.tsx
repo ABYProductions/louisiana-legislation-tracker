@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
 import Link from 'next/link'
+import { getSupabaseBrowser } from '@/lib/supabase'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -11,15 +11,11 @@ export default function SignupPage() {
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    const supabase = getSupabaseBrowser()
     const { error } = await supabase.auth.signUp({
       email,
       password,

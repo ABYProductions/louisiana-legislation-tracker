@@ -4,6 +4,7 @@ import "./globals.css";
 import DisclaimerModal from "./components/DisclaimerModal";
 import BetaBanner from "./components/BetaBanner";
 import AuthProvider from "@/app/components/AuthProvider";
+import WatchlistProvider from "@/app/components/WatchlistProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,9 +33,11 @@ export default function RootLayout({
         style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
       >
         <AuthProvider>
-          <BetaBanner />
-          <DisclaimerModal />
-          {children}
+          <WatchlistProvider>
+            <BetaBanner />
+            <DisclaimerModal />
+            {children}
+          </WatchlistProvider>
         </AuthProvider>
       </body>
     </html>

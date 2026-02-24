@@ -1,9 +1,11 @@
 'use client'
 
 import { useAuth } from '../components/AuthProvider'
+import { useWatchlist } from '../components/WatchlistProvider'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import Header from '../components/Header'
 import { getSupabaseBrowser } from '@/lib/supabase'
 
 type WatchedBill = {
@@ -21,7 +23,8 @@ type WatchedBill = {
 }
 
 export default function WatchlistPage() {
-  const { user, loading, signOut } = useAuth()
+  const { user, loading } = useAuth()
+  const { removeWatch } = useWatchlist()
   const router = useRouter()
   const [bills, setBills] = useState<WatchedBill[]>([])
   const [billsLoading, setBillsLoading] = useState(true)
@@ -83,15 +86,9 @@ export default function WatchlistPage() {
   }, [user, loading])
 
   const removeFromWatchlist = async (billId: number) => {
-    if (!user) return
     setRemoving(billId)
-    const supabase = getSupabaseBrowser()
-    const { error } = await supabase
-      .from('user_bills')
-      .delete()
-      .eq('user_id', user.id)
-      .eq('bill_id', billId)
-    if (!error) {
+    const ok = await removeWatch(billId)
+    if (ok) {
       setBills(prev => prev.filter(b => b.id !== billId))
     }
     setRemoving(null)
@@ -109,8 +106,11 @@ export default function WatchlistPage() {
 
   if (loading || billsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F4EF' }}>
-        <p style={{ color: '#0C2340' }}>Loading your watchlist…</p>
+      <div className="min-h-screen" style={{ backgroundColor: '#F7F4EF' }}>
+        <Header />
+        <div className="flex items-center justify-center" style={{ minHeight: 'calc(100vh - 120px)' }}>
+          <p style={{ color: '#0C2340' }}>Loading your watchlist…</p>
+        </div>
       </div>
     )
   }
@@ -119,9 +119,10 @@ export default function WatchlistPage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7F4EF' }}>
+      <Header />
       <div className="max-w-6xl mx-auto px-6 py-12 space-y-10">
 
-        {/* Header */}
+        {/* Page title row */}
         <div className="flex items-center justify-between">
           <div>
             <h1
@@ -134,18 +135,9 @@ export default function WatchlistPage() {
               {user.email}
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-sm font-medium" style={{ color: '#0C2340' }}>
-              ← Browse Bills
-            </Link>
-            <button
-              onClick={signOut}
-              className="text-sm px-4 py-2 rounded-lg border border-[#DDD8CE] bg-white"
-              style={{ color: '#6B7280' }}
-            >
-              Sign Out
-            </button>
-          </div>
+          <Link href="/" className="text-sm font-medium" style={{ color: '#0C2340' }}>
+            ← Browse Bills
+          </Link>
         </div>
 
         {/* Dashboard summary */}

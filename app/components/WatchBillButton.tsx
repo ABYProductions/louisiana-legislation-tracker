@@ -1,29 +1,30 @@
 'use client'
 import { useAuth } from './AuthProvider'
+import { useWatchlist } from './WatchlistProvider'
 import { useState, useEffect } from 'react'
-import { getSupabaseBrowser } from '@/lib/supabase'
 
 export default function WatchBillButton({ billId }: { billId: number }) {
   const { user, loading } = useAuth()
-  const [watching, setWatching] = useState(false)
-  const [added, setAdded] = useState(false)
+  const { watchedIds, addWatch, removeWatch } = useWatchlist()
+  const [actionLoading, setActionLoading] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
 
- const supabase = getSupabaseBrowser()
+  const isWatching = watchedIds.has(billId)
 
-  const handleWatch = async () => {
+  const handleToggle = async () => {
     if (!user) {
       window.location.href = '/auth/login'
       return
     }
-    setWatching(true)
-    const { error } = await supabase
-      .from('user_bills')
-      .upsert({ user_id: user.id, bill_id: billId }, { onConflict: 'user_id,bill_id' })
-    setWatching(false)
-    if (!error) setAdded(true)
+    setActionLoading(true)
+    if (isWatching) {
+      await removeWatch(billId)
+    } else {
+      await addWatch(billId)
+    }
+    setActionLoading(false)
   }
 
   if (!mounted) return (
@@ -42,25 +43,29 @@ export default function WatchBillButton({ billId }: { billId: number }) {
 
   return (
     <button
-      onClick={handleWatch}
-      disabled={watching || added}
+      onClick={handleToggle}
+      disabled={actionLoading || loading}
       style={{
         fontFamily: 'var(--font-sans)',
         fontSize: '11px',
         fontWeight: 700,
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
-        color: added ? '#C4922A' : '#fff',
-        background: added ? '#FDF8F0' : '#C4922A',
-        border: added ? '1px solid #C4922A' : '1px solid #C4922A',
+        color: isWatching ? '#B91C1C' : '#fff',
+        background: isWatching ? '#FFF5F5' : '#C4922A',
+        border: isWatching ? '1px solid #FCA5A5' : '1px solid #C4922A',
         padding: '10px 16px',
         textAlign: 'center',
-        cursor: added ? 'default' : 'pointer',
+        cursor: actionLoading ? 'default' : 'pointer',
         width: '100%',
         transition: 'all 0.15s',
       }}
     >
-      {added ? '✓ Watching this Bill' : watching ? 'Adding...' : '+ Watch this Bill'}
+      {actionLoading
+        ? 'Updating…'
+        : isWatching
+        ? '✓ Watching — click to remove'
+        : '+ Watch this Bill'}
     </button>
   )
 }
