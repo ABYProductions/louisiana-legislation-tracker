@@ -19,6 +19,7 @@ type WatchedBill = {
   last_action_date: string | null
   last_action: string | null
   summary: string | null
+  summary_status: string | null
   subjects: { subject_name: string }[] | null
 }
 
@@ -62,7 +63,7 @@ export default function WatchlistPage() {
 
       const { data: billData, error: billsError } = await supabase
         .from('Bills')
-        .select('id, bill_number, title, description, status, author, body, last_action_date, last_action, summary, subjects')
+        .select('id, bill_number, title, description, status, author, body, last_action_date, last_action, summary, summary_status, subjects')
         .in('id', billIds)
 
       if (billsError) {
@@ -213,8 +214,11 @@ export default function WatchlistPage() {
                   const primarySubject = Array.isArray(bill.subjects) && bill.subjects.length > 0
                     ? bill.subjects[0].subject_name
                     : null
-                  const excerpt = (bill.summary || bill.description || '')
-                  const shortExcerpt = excerpt.length > 160 ? excerpt.slice(0, 160).trim() + '…' : excerpt
+                  // Use description when summary is pending to avoid showing the placeholder text
+                  const excerptText = bill.summary_status === 'complete' && bill.summary
+                    ? bill.summary
+                    : (bill.description || '')
+                  const shortExcerpt = excerptText.length > 160 ? excerptText.slice(0, 160).trim() + '…' : excerptText
 
                   return (
                     <div

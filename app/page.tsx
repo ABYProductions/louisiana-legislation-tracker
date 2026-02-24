@@ -11,14 +11,17 @@ async function getBills(search: string, chamber: string, legislator: string, sta
     .from('Bills')
     .select('id, bill_number, title, description, status, author, body, last_action_date, summary, summary_status, subjects')
     .order('created_at', { ascending: false })
+    .limit(2000)
 
   if (search) {
     query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,bill_number.ilike.%${search}%,author.ilike.%${search}%`)
   }
   if (chamber === 'House') {
-    query = query.or('bill_number.ilike.HB%,bill_number.ilike.HR%')
+    // Includes HB (House Bills), HR (House Resolutions), HCR (House Concurrent Resolutions)
+    query = query.or('bill_number.ilike.HB%,bill_number.ilike.HR%,bill_number.ilike.HCR%')
   } else if (chamber === 'Senate') {
-    query = query.or('bill_number.ilike.SB%,bill_number.ilike.SR%')
+    // Includes SB (Senate Bills), SR (Senate Resolutions), SCR (Senate Concurrent Resolutions)
+    query = query.or('bill_number.ilike.SB%,bill_number.ilike.SR%,bill_number.ilike.SCR%')
   }
   if (legislator) {
     query = query.eq('author', legislator)
@@ -57,6 +60,7 @@ async function getAllMeta() {
   const { data } = await supabase
     .from('Bills')
     .select('author, status, subjects')
+    .limit(2000)
   return data || []
 }
 

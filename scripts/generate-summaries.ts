@@ -216,6 +216,7 @@ export async function processPendingBills(verbose = true): Promise<{
     .select('*')
     .neq('summary_status', 'complete')
     .order('bill_number', { ascending: true })
+    .limit(2000)
 
   if (error) {
     console.error('Error fetching pending bills:', error)

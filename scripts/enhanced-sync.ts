@@ -86,9 +86,11 @@ async function enhancedSync() {
   console.log(`LegiScan: ${masterList.length} bills in session`)
 
   // 3. Load existing DB records (legiscan_bill_id → change_hash)
+  // limit(2000) guards against Supabase's default 1000-row cap as bill count grows
   const { data: existing, error: dbErr } = await supabase
     .from('Bills')
     .select('legiscan_bill_id, change_hash')
+    .limit(2000)
   if (dbErr) throw new Error(`DB read failed: ${dbErr.message}`)
 
   const existingMap = new Map((existing || []).map(b => [b.legiscan_bill_id, b.change_hash]))
@@ -114,6 +116,18 @@ async function enhancedSync() {
       const detail = await retry(() => legiscan('getBill', { id: billSummary.bill_id }))
       const b = detail.bill
 
+      // Find the most recent history entry (LegiScan orders oldest-first)
+      const history = b.history || []
+      const latestHistory = history.length > 0 ? history[history.length - 1] : null
+      const texts = b.texts || []
+
+      // When an existing bill with text is updated, reset summary_status so the
+      // generate-summaries script regenerates the analysis from the latest text.
+      // New bills get the DB default ('pending') and don't need this override.
+      const summaryReset = !isNew && texts.length > 0
+        ? { summary_status: 'pending' }
+        : {}
+
       const { error } = await supabase.from('Bills').upsert(
         {
           legiscan_bill_id: b.bill_id,
@@ -133,19 +147,21 @@ async function enhancedSync() {
           url:              b.url,
           change_hash:      b.change_hash,
           committee:        b.committee?.name || null,
-          last_action:      b.history?.[0]?.action || null,
-          last_action_date: b.history?.[0]?.date || null,
+          last_action:      latestHistory?.action || null,
+          last_action_date: latestHistory?.date || null,
           author:           b.sponsors?.[0]?.name || null,
           sponsors:         b.sponsors || [],
-          history:          b.history || [],
+          history,
           votes:            b.votes || [],
           amendments:       b.amendments || [],
-          texts:            b.texts || [],
+          texts,
           calendar:         b.calendar || [],
           subjects:         b.subjects || [],
           updated_at:       new Date().toISOString(),
-          // NOTE: summary, full_text, and summary_status are intentionally
-          // omitted here — they are managed by generate-summaries.ts
+          // summary and full_text are managed by generate-summaries.ts.
+          // summary_status is reset to 'pending' only when updated bill has text,
+          // so the AI analysis stays current with the latest bill language.
+          ...summaryReset,
         },
         { onConflict: 'legiscan_bill_id' }
       )

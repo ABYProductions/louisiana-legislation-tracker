@@ -302,22 +302,17 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <BillTimeline
-                history={[
-                  {
-                    date: typedBill.created_at,
-                    action: 'Bill Introduced',
-                    chamber: typedBill.body,
-                    chamber_id: 1,
-                    importance: 3
-                  },
-                  {
-                    date: typedBill.last_action_date || typedBill.created_at,
-                    action: typedBill.last_action || typedBill.status,
-                    chamber: typedBill.body,
-                    chamber_id: 1,
-                    importance: 2
-                  }
-                ]}
+                history={
+                  Array.isArray((typedBill as any).history) && (typedBill as any).history.length > 0
+                    ? (typedBill as any).history
+                    : [{
+                        date: typedBill.last_action_date || typedBill.created_at,
+                        action: typedBill.last_action || typedBill.status || 'Pre-filed',
+                        chamber: typedBill.body,
+                        chamber_id: 1,
+                        importance: 2,
+                      }]
+                }
               />
 
               {typedBill.last_action && (
