@@ -6,6 +6,7 @@ import Footer from '@/app/components/Footer'
 import BillTimeline from '@/app/components/BillTimeline'
 import BillScheduleTimeline from '@/app/components/BillScheduleTimeline'
 import WatchBillButton from '@/app/components/WatchBillButton'
+import SummaryPending from '@/app/components/SummaryPending'
 
 interface Bill {
   id: number
@@ -17,30 +18,13 @@ interface Bill {
   author: string
   body: string
   summary: string
+  summary_status?: string
   last_action_date: string
   last_action: string
   created_at: string
   url: string
   state_link: string
   subjects?: any[]
-}
-
-// Parse the three sections from the AI summary
-function parseSummary(summary: string): {
-  overview: string | null
-  impact: string | null
-  legislation: string | null
-} {
-  const overviewMatch = summary.match(/Bill Overview:\s*([\s\S]*?)(?=\n\nPotential Impact:|Potential Impact:|$)/i)
-  const impactMatch = summary.match(/Potential Impact:\s*([\s\S]*?)(?=\n\nAffected Legislation:|Affected Legislation:|$)/i)
-  const legislationMatch = summary.match(/Affected Legislation:\s*([\s\S]*?)$/i)
-
-const clean = (s: string | null) => s ? s.replace(/\*\*/g, '').trim() : null
-  return {
-    overview: clean(overviewMatch ? overviewMatch[1] : null),
-    impact: clean(impactMatch ? impactMatch[1] : null),
-    legislation: clean(legislationMatch ? legislationMatch[1] : null),
-  }
 }
 
 export default async function BillDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -59,7 +43,10 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
   }
 
   const typedBill = bill as Bill
-  const summaryParsed = typedBill.summary ? parseSummary(typedBill.summary) : null
+  const summaryComplete = typedBill.summary_status === 'complete' && !!typedBill.summary
+  const summaryParagraphs = summaryComplete
+    ? typedBill.summary.split(/\n\n+/).map(p => p.trim()).filter(Boolean)
+    : []
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F7F4EF' }}>
@@ -236,165 +223,79 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
           </div>
 
           {/* AI Bill Summary — main feature */}
-          {summaryParsed && (
+          <div style={{
+            background: '#fff',
+            border: '1px solid #DDD8CE',
+            borderTop: '3px solid #C4922A',
+            marginBottom: '24px',
+            overflow: 'hidden',
+          }}>
+            {/* Summary header */}
             <div style={{
-              background: '#fff',
-              border: '1px solid #DDD8CE',
-              borderTop: '3px solid #C4922A',
-              marginBottom: '24px',
-              overflow: 'hidden',
+              background: '#0C2340',
+              padding: '18px 32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '8px',
             }}>
-              {/* Summary header */}
-              <div style={{
-                background: '#0C2340',
-                padding: '18px 32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '8px',
-              }}>
-                <div>
-                  <h2 style={{
-                    fontFamily: 'var(--font-serif)',
-                    fontSize: '20px',
-                    fontWeight: 700,
-                    color: '#fff',
-                    margin: 0,
-                    letterSpacing: '0.01em',
-                  }}>
-                    Bill Summary
-                  </h2>
-                  <p style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '11px',
-                    color: '#C4922A',
-                    margin: '2px 0 0',
-                    fontStyle: 'italic',
-                    fontWeight: 400,
-                  }}>
-                    AI-generated analysis — not legal advice. Verify with official sources.
-                  </p>
-                </div>
-                <div style={{
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '9px',
-                  fontWeight: 700,
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                  color: '#0C2340',
-                  background: '#C4922A',
-                  padding: '4px 10px',
-                }}>
-                  AI Analysis
-                </div>
-              </div>
-
-              {/* Three sections */}
               <div>
-
-                {/* Bill Overview */}
-                {summaryParsed.overview && (
-                  <div style={{
-                    padding: '28px 32px',
-                    borderBottom: '1px solid #F0EDE8',
-                  }}>
-                    <h3 style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      letterSpacing: '0.14em',
-                      textTransform: 'uppercase',
-                      color: '#C4922A',
-                      marginBottom: '12px',
-                    }}>
-                      Bill Overview
-                    </h3>
-                    <p style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '14px',
-                      color: '#333',
-                      lineHeight: 1.8,
-                      margin: 0,
-                      fontWeight: 300,
-                    }}>
-                      {summaryParsed.overview}
-                    </p>
-                  </div>
-                )}
-
-                {/* Potential Impact */}
-                {summaryParsed.impact && (
-                  <div style={{
-                    padding: '28px 32px',
-                    borderBottom: '1px solid #F0EDE8',
-                    background: '#FDFCFA',
-                  }}>
-                    <h3 style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      letterSpacing: '0.14em',
-                      textTransform: 'uppercase',
-                      color: '#C4922A',
-                      marginBottom: '12px',
-                    }}>
-                      Potential Impact
-                    </h3>
-                    <p style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '14px',
-                      color: '#333',
-                      lineHeight: 1.8,
-                      margin: 0,
-                      fontWeight: 300,
-                    }}>
-                      {summaryParsed.impact}
-                    </p>
-                  </div>
-                )}
-
-                {/* Affected Legislation */}
-                {summaryParsed.legislation && (
-                  <div style={{
-                    padding: '28px 32px',
-                  }}>
-                    <h3 style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      letterSpacing: '0.14em',
-                      textTransform: 'uppercase',
-                      color: '#C4922A',
-                      marginBottom: '12px',
-                    }}>
-                      Affected Legislation
-                    </h3>
-                    <p style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '14px',
-                      color: '#333',
-                      lineHeight: 1.8,
-                      margin: 0,
-                      fontWeight: 300,
-                      whiteSpace: 'pre-line',
-                    }}>
-                      {summaryParsed.legislation}
-                    </p>
-                  </div>
-                )}
-
-                {/* Fallback if section parsing fails */}
-                {!summaryParsed.overview && !summaryParsed.impact && !summaryParsed.legislation && (
-                  <div style={{ padding: '28px 32px' }}>
-                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: '#333', lineHeight: 1.8, fontWeight: 300 }}>
-                      {typedBill.summary}
-                    </p>
-                  </div>
-                )}
+                <h2 style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '20px',
+                  fontWeight: 700,
+                  color: '#fff',
+                  margin: 0,
+                  letterSpacing: '0.01em',
+                }}>
+                  Bill Analysis
+                </h2>
+                <p style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '11px',
+                  color: '#C4922A',
+                  margin: '2px 0 0',
+                  fontStyle: 'italic',
+                  fontWeight: 400,
+                }}>
+                  AI-generated analysis — not legal advice. Verify with official sources.
+                </p>
+              </div>
+              <div style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: '9px',
+                fontWeight: 700,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: '#0C2340',
+                background: '#C4922A',
+                padding: '4px 10px',
+              }}>
+                AI Analysis
               </div>
             </div>
-          )}
+
+            {/* Summary body */}
+            <div style={{ padding: '28px 32px' }}>
+              {summaryComplete ? (
+                summaryParagraphs.map((para, i) => (
+                  <p key={i} style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '14px',
+                    color: '#333',
+                    lineHeight: 1.8,
+                    fontWeight: 300,
+                    marginBottom: i < summaryParagraphs.length - 1 ? '16px' : 0,
+                  }}>
+                    {para}
+                  </p>
+                ))
+              ) : (
+                <SummaryPending />
+              )}
+            </div>
+          </div>
 
           {/* Two-column layout for timeline + schedule */}
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }} className="bill-detail-grid">

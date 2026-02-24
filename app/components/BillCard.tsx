@@ -16,6 +16,7 @@ interface BillCardProps {
     body: string
     last_action_date: string
     summary?: string
+    summary_status?: string
     subjects?: { subject_name: string }[]
   }
 }
@@ -107,7 +108,7 @@ export default function BillCard({ bill }: BillCardProps) {
         </h3>
 
         {/* Summary or description */}
-        {(bill.summary || bill.description) && (
+        {(bill.summary_status === 'complete' ? bill.summary : bill.description) && (
           <p style={{
             fontFamily: 'var(--font-sans)',
             fontSize: '12px',
@@ -116,7 +117,7 @@ export default function BillCard({ bill }: BillCardProps) {
             marginBottom: '14px',
             fontWeight: 300,
           }} className="line-clamp-2">
-            {bill.summary || bill.description}
+            {bill.summary_status === 'complete' ? bill.summary : bill.description}
           </p>
         )}
       </Link>
