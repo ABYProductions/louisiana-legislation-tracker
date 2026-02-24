@@ -11,38 +11,41 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
   const resolvedParams = await params
   const legislatorName = decodeURIComponent(resolvedParams.name)
 
-  // Fetch bills and legislator record in parallel
-  const [{ data: bills, error }, { data: legislatorRows }] = await Promise.all([
-    supabase
-      .from('Bills')
-      .select('id, bill_number, title, status, last_action, last_action_date, body, subjects, next_event')
-      .ilike('author', legislatorName)
-      .order('bill_number', { ascending: true }),
+  // Fetch legislators table record and bills in parallel
+  const [{ data: legislatorRows }, { data: billsRaw }] = await Promise.all([
     supabase
       .from('legislators')
       .select('name, chamber, party, district_number, photo_url, committees, caucuses, parishes_represented, year_elected, term_end')
       .ilike('name', legislatorName)
       .limit(1),
+    supabase
+      .from('Bills')
+      .select('id, bill_number, title, status, last_action, last_action_date, body, subjects, next_event')
+      .ilike('author', legislatorName)
+      .order('bill_number', { ascending: true }),
   ])
 
-  if (error || !bills || bills.length === 0) {
+  const legislator = legislatorRows?.[0] ?? null
+  const bills = billsRaw ?? []
+
+  // 404 only if unknown to both the legislators table and Bills — handles pre-session
+  // (most legislators have 0 bills until the session opens March 9)
+  if (!legislator && bills.length === 0) {
     notFound()
   }
 
-  const legislator = legislatorRows?.[0] ?? null
-
-  // Derive legislative focus topics from bill subjects
+  // Derive policy topics from bill subjects
   const topicSet = new Set<string>()
-  bills.forEach(bill => {
+  bills.forEach((bill: any) => {
     if (Array.isArray(bill.subjects)) {
       bill.subjects.forEach((s: any) => { if (s.subject_name) topicSet.add(s.subject_name) })
     }
   })
   const topics = Array.from(topicSet).slice(0, 6)
 
-  const activeBills   = bills.filter(b => b.status !== 'Dead' && b.status !== 'Failed').length
-  const houseBills    = bills.filter(b => b.body === 'H' || b.body === 'House').length
-  const senateBills   = bills.filter(b => b.body === 'S' || b.body === 'Senate').length
+  const activeBills = bills.filter((b: any) => b.status !== 'Dead' && b.status !== 'Failed').length
+  const houseBills  = bills.filter((b: any) => b.body === 'H' || b.body === 'House').length
+  const senateBills = bills.filter((b: any) => b.body === 'S' || b.body === 'Senate').length
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -63,7 +66,7 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
             billCount={bills.length}
           />
 
-          {/* Legislative Focus */}
+          {/* Legislative Focus — only shown once bills exist */}
           {topics.length > 0 && (
             <div className="mt-10 bg-white rounded-2xl border border-slate-200 p-8">
               <h2 className="text-xl font-bold text-[#0C2340] mb-6">Legislative Focus — 2026 Session</h2>
@@ -107,13 +110,15 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
             </div>
           )}
 
-          {/* Bills list */}
-          <div className="mt-10">
-            <h2 className="text-xl font-bold text-[#0C2340] mb-6">
-              Bills Filed — 2026 Regular Session ({bills.length})
-            </h2>
-            <LegislatorBills bills={bills} />
-          </div>
+          {/* Bills list — shown only when bills exist */}
+          {bills.length > 0 && (
+            <div className="mt-10">
+              <h2 className="text-xl font-bold text-[#0C2340] mb-6">
+                Bills Filed — 2026 Regular Session ({bills.length})
+              </h2>
+              <LegislatorBills bills={bills} />
+            </div>
+          )}
         </div>
       </main>
 
