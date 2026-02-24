@@ -25,9 +25,18 @@ CREATE TABLE IF NOT EXISTS legislative_calendar (
   updated_at     TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 3. Unique constraint so upserts deduplicate by event identity
-CREATE UNIQUE INDEX IF NOT EXISTS legislative_calendar_event_key
-  ON legislative_calendar (event_date, event_type, COALESCE(committee_name, ''), COALESCE(chamber, ''));
+-- 3. Unique constraint for upsert deduplication.
+--    NULLS NOT DISTINCT (PostgreSQL 15 / Supabase) makes NULL=NULL so that
+--    rows with the same date+type but null committee_name/chamber are treated
+--    as the same event. This is required for Supabase's onConflict column-list
+--    syntax to correctly reference the constraint.
+--    (A COALESCE expression index cannot be used by ON CONFLICT column lists.)
+DROP INDEX IF EXISTS legislative_calendar_event_key;
+ALTER TABLE legislative_calendar
+  DROP CONSTRAINT IF EXISTS legislative_calendar_event_key;
+ALTER TABLE legislative_calendar
+  ADD CONSTRAINT legislative_calendar_event_key
+  UNIQUE NULLS NOT DISTINCT (event_date, event_type, committee_name, chamber);
 
 -- 4. Index for date-range queries (calendar page)
 CREATE INDEX IF NOT EXISTS legislative_calendar_date_idx
