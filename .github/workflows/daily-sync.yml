@@ -1,17 +1,22 @@
-name: Bill Sync
+name: Bill Sync Pipeline
 
 on:
   schedule:
-    # Every 4 hours on weekdays (legislature most active Mon-Fri)
-    - cron: '0 */4 * * 1-5'
-    # Every 8 hours on weekends
-    - cron: '0 0,8,16 * * 0,6'
+    # Session months (March–June): every 6 hours, all week
+    - cron: '0 */6 * * *'
+    # Low-priority bills: weekly sweep (runs inside the nightly 0:00 UTC slot above,
+    # but the extract step uses --high-priority flag during the other runs)
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Extraction mode (test | high-priority | all)'
+        required: false
+        default: 'high-priority'
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     steps:
       - name: Checkout code
@@ -25,7 +30,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Sync bills from LegiScan
+      # Step 1: Metadata sync (LegiScan — discovery, status, votes, history)
+      - name: Sync bill metadata from LegiScan
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -33,7 +39,22 @@ jobs:
           LEGISCAN_API_KEY: ${{ secrets.LEGISCAN_API_KEY }}
         run: npx tsx scripts/enhanced-sync.ts
 
-      - name: Generate AI summaries for new bills
+      # Step 2: PDF extraction (primary text source — high-priority bills only during regular runs)
+      - name: Extract PDF text for new and changed bills
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          MODE="${{ github.event.inputs.mode || 'high-priority' }}"
+          if [ "$MODE" = "all" ]; then
+            npx tsx scripts/extract-bill-text.ts
+          else
+            npx tsx scripts/extract-bill-text.ts --high-priority
+          fi
+
+      # Step 3: Summary generation (tiered: PDF → digest → LegiScan fallback)
+      - name: Generate AI summaries for new and updated bills
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -42,9 +63,45 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: npx tsx scripts/generate-summaries.ts
 
+      # Step 4: Calendar and scheduling events
       - name: Sync calendar events and upcoming schedules
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: npx tsx scripts/sync-events.ts
+
+  # Step 5: Legislator sync — weekly only (Mondays)
+  sync-legislators:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: github.event_name == 'schedule' && (github.event.schedule == '0 */6 * * *')
+    steps:
+      - name: Check if Monday
+        id: check_day
+        run: |
+          DAY=$(date +%u)
+          echo "is_monday=$([[ $DAY == 1 ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+
+      - name: Checkout code
+        if: steps.check_day.outputs.is_monday == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        if: steps.check_day.outputs.is_monday == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        if: steps.check_day.outputs.is_monday == 'true'
+        run: npm install
+
+      - name: Sync legislator data
+        if: steps.check_day.outputs.is_monday == 'true'
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          LEGISCAN_API_KEY: ${{ secrets.LEGISCAN_API_KEY }}
+        run: npx tsx scripts/sync-legislators.ts

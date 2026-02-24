@@ -85,19 +85,19 @@ async function enhancedSync() {
   )
   console.log(`LegiScan: ${masterList.length} bills in session`)
 
-  // 3. Load existing DB records (legiscan_bill_id → change_hash)
+  // 3. Load existing DB records (legiscan_bill_id → {change_hash, last_action_date})
   // limit(2000) guards against Supabase's default 1000-row cap as bill count grows
   const { data: existing, error: dbErr } = await supabase
     .from('Bills')
-    .select('legiscan_bill_id, change_hash')
+    .select('legiscan_bill_id, change_hash, last_action_date')
     .limit(2000)
   if (dbErr) throw new Error(`DB read failed: ${dbErr.message}`)
 
-  const existingMap = new Map((existing || []).map(b => [b.legiscan_bill_id, b.change_hash]))
+  const existingMap = new Map((existing || []).map(b => [b.legiscan_bill_id, b]))
   console.log(`Database: ${existingMap.size} bills currently stored`)
 
   // 4. Determine which bills need work
-  const toUpdate = masterList.filter(b => existingMap.get(b.bill_id) !== b.change_hash)
+  const toUpdate = masterList.filter(b => existingMap.get(b.bill_id)?.change_hash !== b.change_hash)
   const skipped = masterList.length - toUpdate.length
   console.log(`To sync: ${toUpdate.length} | Unchanged: ${skipped}`)
   console.log('---')
@@ -121,47 +121,60 @@ async function enhancedSync() {
       const latestHistory = history.length > 0 ? history[history.length - 1] : null
       const texts = b.texts || []
 
-      // When an existing bill with text is updated, reset summary_status so the
-      // generate-summaries script regenerates the analysis from the latest text.
-      // New bills get the DB default ('pending') and don't need this override.
-      const summaryReset = !isNew && texts.length > 0
-        ? { summary_status: 'pending' }
-        : {}
+      // Determine sync_priority based on recency of last action.
+      // 'high' bills are re-fetched on every sync run (6-hour intervals during session).
+      // Summary reset is now driven by pdf_text_hash change in extract-bill-text.ts,
+      // not by LegiScan change_hash alone.
+      const lastActionDate = latestHistory?.date ?? null
+      const daysSinceAction = lastActionDate
+        ? Math.floor((Date.now() - new Date(lastActionDate).getTime()) / 86_400_000)
+        : 999
+      const syncPriority = daysSinceAction <= 7 ? 'high'
+        : daysSinceAction <= 30 ? 'normal'
+        : 'low'
+
+      // Store LegiScan text docs as backup metadata (doc_id + mime_type — NOT the full text content).
+      // Full text sourcing is handled exclusively by extract-bill-text.ts via PDF.
+      const legiscanTextBackup = JSON.stringify(
+        texts.map((t: any) => ({ doc_id: t.doc_id, type: t.type, date: t.date, mime: t.mime }))
+      )
 
       const { error } = await supabase.from('Bills').upsert(
         {
-          legiscan_bill_id: b.bill_id,
-          bill_number:      b.bill_number,
-          title:            b.title,
-          description:      b.description || b.title,
-          session_id:       session.session_id,
-          session_year:     session.year_start,
-          body:             b.body,
-          body_id:          b.body_id,
-          current_body:     b.current_body,
-          current_body_id:  b.current_body_id,
-          bill_type:        b.bill_type,
-          bill_type_id:     b.bill_type_id,
-          status:           b.status_desc || String(b.status),
-          state_link:       b.state_link,
-          url:              b.url,
-          change_hash:      b.change_hash,
-          committee:        b.committee?.name || null,
-          last_action:      latestHistory?.action || null,
-          last_action_date: latestHistory?.date || null,
-          author:           b.sponsors?.[0]?.name || null,
-          sponsors:         b.sponsors || [],
+          legiscan_bill_id:     b.bill_id,
+          bill_number:          b.bill_number,
+          title:                b.title,
+          description:          b.description || b.title,
+          session_id:           session.session_id,
+          session_year:         session.year_start,
+          body:                 b.body,
+          body_id:              b.body_id,
+          current_body:         b.current_body,
+          current_body_id:      b.current_body_id,
+          bill_type:            b.bill_type,
+          bill_type_id:         b.bill_type_id,
+          status:               b.status_desc || String(b.status),
+          state_link:           b.state_link,
+          url:                  b.url,
+          change_hash:          b.change_hash,
+          committee:            b.committee?.name || null,
+          last_action:          latestHistory?.action || null,
+          last_action_date:     lastActionDate,
+          last_legiscan_action: latestHistory?.action || null,
+          author:               b.sponsors?.[0]?.name || null,
+          sponsors:             b.sponsors || [],
           history,
-          votes:            b.votes || [],
-          amendments:       b.amendments || [],
+          votes:                b.votes || [],
+          amendments:           b.amendments || [],
           texts,
-          calendar:         b.calendar || [],
-          subjects:         b.subjects || [],
-          updated_at:       new Date().toISOString(),
-          // summary and full_text are managed by generate-summaries.ts.
-          // summary_status is reset to 'pending' only when updated bill has text,
-          // so the AI analysis stays current with the latest bill language.
-          ...summaryReset,
+          calendar:             b.calendar || [],
+          subjects:             b.subjects || [],
+          sync_priority:        syncPriority,
+          legiscan_text_backup: legiscanTextBackup,
+          updated_at:           new Date().toISOString(),
+          // NOTE: summary, full_text, abstract, digest, and summary_status are
+          // managed exclusively by extract-bill-text.ts and generate-summaries.ts.
+          // LegiScan sync NEVER overwrites those columns.
         },
         { onConflict: 'legiscan_bill_id' }
       )
@@ -170,7 +183,7 @@ async function enhancedSync() {
         console.error(`  ✗ ${label}: ${error.message}`)
         errors++
       } else {
-        console.log(`  ${isNew ? '+' : '~'} ${b.bill_number} (${b.title?.slice(0, 60)})`)
+        console.log(`  ${isNew ? '+' : '~'} ${b.bill_number} [${syncPriority}] (${b.title?.slice(0, 55)})`)
         isNew ? inserted++ : updated++
       }
     } catch (e: any) {

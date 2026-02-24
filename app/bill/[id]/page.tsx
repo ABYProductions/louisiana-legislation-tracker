@@ -23,6 +23,11 @@ interface Bill {
   body: string
   summary: string
   summary_status?: string
+  summary_updated_at?: string
+  previous_summary?: string
+  digest?: string
+  abstract?: string
+  extraction_quality?: string
   last_action_date: string
   last_action: string
   created_at: string
@@ -54,10 +59,19 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
   }
 
   const typedBill = bill as Bill
-  const summaryComplete = typedBill.summary_status === 'complete' && !!typedBill.summary
+  const summaryComplete  = typedBill.summary_status === 'complete' && !!typedBill.summary
   const summaryParagraphs = summaryComplete
     ? typedBill.summary.split(/\n\n+/).map(p => p.trim()).filter(Boolean)
     : []
+  const digestParagraphs  = typedBill.digest
+    ? typedBill.digest.split(/\n\n+/).map(p => p.trim()).filter(Boolean)
+    : []
+  const isAmended      = !!typedBill.previous_summary && summaryComplete
+  const isProvisional  = summaryComplete && !typedBill.extraction_quality  // LegiScan fallback
+  const showDigestCard = typedBill.extraction_quality === 'digest_only' && digestParagraphs.length > 0
+  const summaryDate    = typedBill.summary_updated_at
+    ? new Date(typedBill.summary_updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : null
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#F7F4EF' }}>
@@ -233,7 +247,68 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
             </div>
           </div>
 
-          {/* AI Bill Summary — main feature */}
+          {/* Amendment notice */}
+          {isAmended && (
+            <div style={{
+              background: '#FEF3C7',
+              border: '1px solid #C4922A',
+              borderLeft: '4px solid #C4922A',
+              padding: '12px 20px',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#C4922A" style={{ flexShrink: 0 }}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: '#92400E', fontWeight: 600 }}>
+                Bill Amended — Analysis Updated{summaryDate ? ` ${summaryDate}` : ''}
+              </span>
+            </div>
+          )}
+
+          {/* Louisiana Legislative Bureau Digest — shown when full AI analysis unavailable */}
+          {showDigestCard && (
+            <div style={{
+              background: '#fff',
+              border: '1px solid #DDD8CE',
+              borderTop: '3px solid #0C2340',
+              marginBottom: '24px',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                background: '#0C2340',
+                padding: '18px 32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '8px',
+              }}>
+                <div>
+                  <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 700, color: '#fff', margin: 0 }}>
+                    Louisiana Legislative Bureau Summary
+                  </h2>
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: '#C4922A', margin: '2px 0 0', fontWeight: 400 }}>
+                    Prepared by Louisiana Legislative Bureau attorneys
+                  </p>
+                </div>
+                <div style={{ fontFamily: 'var(--font-sans)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#0C2340', background: '#C4922A', padding: '4px 10px' }}>
+                  Official Digest
+                </div>
+              </div>
+              <div style={{ padding: '28px 32px' }}>
+                {digestParagraphs.map((para, i) => (
+                  <p key={i} style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: '#333', lineHeight: 1.8, fontWeight: 300, marginBottom: i < digestParagraphs.length - 1 ? '16px' : 0 }}>
+                    {para}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* AI Bill Analysis */}
           <div style={{
             background: '#fff',
             border: '1px solid #DDD8CE',
@@ -252,53 +327,28 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
               gap: '8px',
             }}>
               <div>
-                <h2 style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: '20px',
-                  fontWeight: 700,
-                  color: '#fff',
-                  margin: 0,
-                  letterSpacing: '0.01em',
-                }}>
+                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '0.01em' }}>
                   Bill Analysis
                 </h2>
-                <p style={{
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '11px',
-                  color: '#C4922A',
-                  margin: '2px 0 0',
-                  fontStyle: 'italic',
-                  fontWeight: 400,
-                }}>
-                  AI-generated analysis — not legal advice. Verify with official sources.
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: '#C4922A', margin: '2px 0 0', fontStyle: 'italic', fontWeight: 400 }}>
+                  {summaryDate ? `Analysis as of ${summaryDate} · ` : ''}AI-generated analysis — not legal advice. Verify with official sources.
                 </p>
               </div>
-              <div style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: '9px',
-                fontWeight: 700,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                color: '#0C2340',
-                background: '#C4922A',
-                padding: '4px 10px',
-              }}>
+              <div style={{ fontFamily: 'var(--font-sans)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#0C2340', background: '#C4922A', padding: '4px 10px' }}>
                 AI Analysis
               </div>
             </div>
 
             {/* Summary body */}
             <div style={{ padding: '28px 32px' }}>
+              {isProvisional && (
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: '#888', fontStyle: 'italic', marginBottom: '16px' }}>
+                  Preliminary analysis — full review in progress as PDF text becomes available.
+                </p>
+              )}
               {summaryComplete ? (
                 summaryParagraphs.map((para, i) => (
-                  <p key={i} style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '14px',
-                    color: '#333',
-                    lineHeight: 1.8,
-                    fontWeight: 300,
-                    marginBottom: i < summaryParagraphs.length - 1 ? '16px' : 0,
-                  }}>
+                  <p key={i} style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: '#333', lineHeight: 1.8, fontWeight: 300, marginBottom: i < summaryParagraphs.length - 1 ? '16px' : 0 }}>
                     {para}
                   </p>
                 ))
