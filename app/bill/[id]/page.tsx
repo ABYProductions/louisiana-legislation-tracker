@@ -8,6 +8,9 @@ import BillScheduleTimeline from '@/app/components/BillScheduleTimeline'
 import WatchBillButton from '@/app/components/WatchBillButton'
 import SummaryPending from '@/app/components/SummaryPending'
 
+// Always fetch fresh data — bill details change throughout session
+export const revalidate = 0
+
 interface Bill {
   id: number
   bill_id: number
@@ -24,7 +27,14 @@ interface Bill {
   created_at: string
   url: string
   state_link: string
+  session_year?: number
   subjects?: any[]
+}
+
+function laLegisUrl(billNumber: string, sessionYear?: number): string {
+  const year = sessionYear ?? new Date().getFullYear()
+  const code = `${String(year).slice(-2)}RS`
+  return `https://legis.la.gov/legis/BillInfo.aspx?s=${code}&b=${billNumber.replace(/\s+/g, '')}&sbi=y`
 }
 
 export default async function BillDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -174,7 +184,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
               {/* Action buttons */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '180px' }}>
                 <a
-                  href={typedBill.state_link || `https://legis.la.gov/legis/BillInfo.aspx?s=26RS&b=${(typedBill.bill_number || '').replace(/\s+/g, '')}&sbi=y`}
+                  href={typedBill.state_link || laLegisUrl(typedBill.bill_number || '', typedBill.session_year)}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{

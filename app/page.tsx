@@ -4,6 +4,9 @@ import Footer from '@/app/components/Footer'
 import BillListWithFilters from '@/app/components/BillListWithFilters'
 import UpcomingEventsWidget from '@/app/components/UpcomingEventsWidget'
 
+// Always fetch fresh data — bill status changes every few hours during session
+export const revalidate = 0
+
 async function getBills(search: string, chamber: string, legislator: string, status: string, subject: string) {
   const supabase = getSupabaseServer()
 
