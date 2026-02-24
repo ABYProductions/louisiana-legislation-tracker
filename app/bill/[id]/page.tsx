@@ -191,7 +191,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
               {/* Action buttons */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '180px' }}>
                 <a
-                  href={typedBill.state_link || `https://legis.la.gov/legis/BillInfo.aspx?s=26RS&b=${typedBill.bill_number.replace(/\s+/g, '')}&sbi=y`}
+                  href={typedBill.state_link || `https://legis.la.gov/legis/BillInfo.aspx?s=26RS&b=${(typedBill.bill_number || '').replace(/\s+/g, '')}&sbi=y`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{

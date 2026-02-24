@@ -54,7 +54,12 @@ export default async function BillScheduleTimeline({ billId, billNumber }: BillS
       location: e.location,
       action_expected: e.action_expected
     }))
-  ].sort((a, b) => a.date.localeCompare(b.date))
+  ].sort((a, b) => {
+    if (!a.date && !b.date) return 0
+    if (!a.date) return -1
+    if (!b.date) return 1
+    return a.date.localeCompare(b.date)
+  })
 
   if (allEvents.length === 0) {
     return (

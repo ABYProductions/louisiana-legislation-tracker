@@ -39,6 +39,9 @@ export default function BillCard({ bill }: BillCardProps) {
       .then(({ data }: { data: unknown }) => {
         setIsWatching(!!data)
       })
+      .catch(() => {
+        // silent – watch status just stays false
+      })
   }, [user, loading, bill.id])
 
   const chamber =
