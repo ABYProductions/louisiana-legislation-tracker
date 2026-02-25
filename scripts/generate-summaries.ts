@@ -28,6 +28,14 @@ const LEGISCAN_API_KEY = process.env.LEGISCAN_API_KEY!
 // ─── Quality gate ─────────────────────────────────────────────────────────────
 
 const BANNED_PHRASES = [
+  'INSUFFICIENT_DATA',
+  'I apologize',
+  'corrupted',
+  'I must note',
+  '**',
+  '## ',
+  '# ',
+  '2025 Regular Session',
   'metadata',
   'limited information',
   'full text of the bill',
@@ -43,6 +51,12 @@ const BANNED_PHRASES = [
   'as an ai',
   'i cannot',
   'i don\'t have',
+  'appears to be',
+  'seems to be',
+  'without the full',
+  'bill text',
+  'improperly formatted',
+  'cannot be determined',
 ]
 
 export function isGoodSummary(text: string | null): boolean {
@@ -106,24 +120,24 @@ CITATION IDENTIFICATION: Explicitly identify every R.S. (Louisiana Revised Statu
 
 AMENDMENT ANALYSIS: When the bill text includes [DELETED: ...] markers, analyze what the deleted language currently provides under Louisiana law and explain the legal significance of its removal. When it includes [ADDED: ...] markers, analyze the legal effect of the new language being inserted. The interplay between what is removed and what is added often reveals the core legislative intent.
 
-For each bill, your analysis must:
+For each bill, your analysis must cover:
 
-STEP 1 — STATUTORY CONTEXT
-Identify every specific statute, code article, or constitutional provision being amended, enacted, or repealed. State the Title, Chapter, Part, and Section numbers explicitly. Describe what current law provides before this bill's changes — give the reader the legal baseline so they understand what is being modified and why it matters.
+STATUTORY CONTEXT: Identify every specific statute, code article, or constitutional provision being amended, enacted, or repealed. State the Title, Chapter, Part, and Section numbers explicitly. Describe what current law provides before this bill's changes.
 
-STEP 2 — SCOPE AND NATURE OF THE CHANGE
-Analyze the precise language changes being made. Distinguish between: (a) substantive changes to legal rights, duties, or remedies, (b) procedural changes to how law is administered or enforced, (c) definitional changes that expand or narrow the scope of existing law, and (d) structural reorganizations with no substantive effect. If [DELETED] and [ADDED] markers are present, analyze each explicitly.
+SCOPE AND NATURE OF THE CHANGE: Analyze the precise language changes being made. Distinguish between substantive changes to legal rights, duties, or remedies; procedural changes; definitional changes; and structural reorganizations. If [DELETED] and [ADDED] markers are present, analyze each explicitly.
 
-STEP 3 — PURPOSE AND LEGISLATIVE INTENT
-Based on the bill text and digest, identify the apparent legislative purpose. What problem or gap in existing law is this bill designed to address? Note if the bill appears to reverse, expand, or contract prior recent legislation in this area. Reference the specific area of Louisiana law and explain how this bill fits within or departs from existing doctrine.
+PURPOSE AND LEGISLATIVE INTENT: Based on the bill text and digest, identify the apparent legislative purpose. What problem or gap in existing law is this bill designed to address?
 
-STEP 4 — PRACTICAL IMPACT AND AFFECTED PARTIES
-Identify specifically who is affected: which individuals, professions, industries, government entities, or classes of persons will experience changed legal rights, obligations, or exposure. Explain practical real-world consequences. Note any potential constitutional implications, conflicts with federal law, or tension with existing Louisiana jurisprudence if apparent from the text.
+PRACTICAL IMPACT AND AFFECTED PARTIES: Identify specifically who is affected: which individuals, professions, industries, government entities, or classes of persons will experience changed legal rights, obligations, or exposure. Note any potential constitutional implications or conflicts with federal law if apparent from the text.
 
-STEP 5 — CURRENT STATUS
-State the bill's current procedural posture based on available information.
+CURRENT STATUS: State the bill's current procedural posture based on available information.
 
-Write in clear, precise legal prose suitable for a professional audience. Be direct and analytical. Do not pad with generalities. Do not use bullet points — write in paragraphs. Never reference your data sources, never mention limitations of your access, never use phrases like "based on available metadata" or "the provided document." Never say you lack information or cannot perform analysis. If bill text is sufficient to perform this analysis, perform it completely and professionally.`
+FORMATTING RULES — STRICTLY ENFORCED:
+Output plain prose paragraphs only. No markdown syntax of any kind. No asterisks, no bold, no headers using pound signs. No bullet points or numbered lists anywhere in the analysis. Use section labels as plain text followed by a colon, then continue in prose on the same or next line.
+Do not begin any sentence with the word I.
+Do not reference source material quality, format, or availability in any way.
+Do not use phrases containing: appears to, seems to, without the full, based on available, I must note, bill text, corrupted, improperly formatted, cannot be determined.
+If you cannot write at least three substantive paragraphs about what this bill does and its legal effect, return only the text: INSUFFICIENT_DATA`
 
 // ─── Summary generation ───────────────────────────────────────────────────────
 
