@@ -28,6 +28,7 @@
     "pdfjs-dist": "^5.4.624",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
     "resend": "^6.9.2",
     "tsx": "^4.21.0"
   },

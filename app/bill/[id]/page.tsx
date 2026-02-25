@@ -8,6 +8,7 @@ import BillScheduleTimeline from '@/app/components/BillScheduleTimeline'
 import UpcomingEventsPanel from '@/app/components/UpcomingEventsPanel'
 import WatchBillButton from '@/app/components/WatchBillButton'
 import SummaryPending from '@/app/components/SummaryPending'
+import ReactMarkdown from 'react-markdown'
 
 // Always fetch fresh data — bill details change throughout session
 export const revalidate = 0
@@ -59,10 +60,18 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
   }
 
   const typedBill = bill as Bill
-  const summaryComplete  = typedBill.summary_status === 'complete' && !!typedBill.summary
-  const summaryParagraphs = summaryComplete
-    ? typedBill.summary.split(/\n\n+/).map(p => p.trim()).filter(Boolean)
-    : []
+
+  const BAD_PHRASES = [
+    'I apologize', 'I cannot provide',
+    'corrupted', 'I must note',
+    'SessionSource is preparing',
+    'full legislative text',
+  ]
+  const summaryIsClean = (s: string | null | undefined) =>
+    !!s && s.trim().length > 100 &&
+    !BAD_PHRASES.some(p => s.toLowerCase().includes(p.toLowerCase()))
+
+  const summaryComplete = typedBill.summary_status === 'complete' && summaryIsClean(typedBill.summary)
   const digestParagraphs  = typedBill.digest
     ? typedBill.digest.split(/\n\n+/).map(p => p.trim()).filter(Boolean)
     : []
@@ -347,11 +356,9 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
                 </p>
               )}
               {summaryComplete ? (
-                summaryParagraphs.map((para, i) => (
-                  <p key={i} style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'var(--text-primary)', lineHeight: 1.8, fontWeight: 300, marginBottom: i < summaryParagraphs.length - 1 ? '16px' : 0 }}>
-                    {para}
-                  </p>
-                ))
+                <div className="bill-summary-content">
+                  <ReactMarkdown>{typedBill.summary}</ReactMarkdown>
+                </div>
               ) : (
                 <SummaryPending />
               )}

@@ -357,3 +357,24 @@ html {
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
+
+/* ── Bill summary markdown rendering ── */
+.bill-summary-content p {
+  margin-bottom: var(--space-4);
+  line-height: var(--leading-relaxed);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+}
+.bill-summary-content strong {
+  font-weight: var(--weight-semibold);
+  color: var(--navy);
+}
+.bill-summary-content h2,
+.bill-summary-content h3 {
+  font-family: var(--font-serif);
+  font-weight: var(--weight-semibold);
+  color: var(--navy);
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-3);
+}
