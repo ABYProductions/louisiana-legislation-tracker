@@ -9,7 +9,7 @@
 // PDF URL pattern: https://legis.la.gov/Legis/ViewDocument.aspx?d={docId}
 //   docId discovered by scraping BillInfo page; cached in pdf_url column.
 //
-// Rate limiting: 1500ms delay between fetches, max 40 PDFs/hour.
+// Rate limiting: 1500ms delay between fetches, max 40 PDFs/hour (raise to 500 for bulk loads).
 // Retries: up to 3 attempts with 5s / 15s / 45s exponential backoff.
 // =============================================================================
 
@@ -64,7 +64,7 @@ async function fetchWithRetry(url: string, opts: RequestInit = {}, label = ''): 
       const resp = await fetch(url, {
         ...opts,
         headers: { 'User-Agent': UA, ...(opts.headers ?? {}) },
-        signal:  AbortSignal.timeout(20_000),
+        signal:  AbortSignal.timeout(60_000),
       })
       if (resp.status === 429) { console.warn(`    429 — backing off 120s (${label})`); await sleep(120_000); continue }
       if (resp.status === 503) { console.warn(`    503 — backing off 60s (${label})`);  await sleep(60_000);  continue }
@@ -494,7 +494,15 @@ async function runProductionMode(limit: number, priorityOnly: boolean) {
       }
     }
 
-    const result = await processBill(bill)
+    let result: Awaited<ReturnType<typeof processBill>>
+    try {
+      result = await processBill(bill)
+    } catch (e: any) {
+      console.error(`  ✗ ${bill.bill_number}: unhandled error — ${e.message}`)
+      stats.failed++; stats.processed++; fetchedThisHour++
+      await sleep(FETCH_DELAY_MS)
+      continue
+    }
     if (result.quality === 'skipped') { stats.skipped++; continue }
     fetchedThisHour++
     stats.processed++
