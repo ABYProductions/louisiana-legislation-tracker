@@ -1,98 +1,73 @@
+import { Suspense } from 'react'
 import { getSupabaseServer } from '@/lib/supabase'
 import Header from '@/app/components/Header'
 import Footer from '@/app/components/Footer'
-import BillListWithFilters from '@/app/components/BillListWithFilters'
+import BillSearch from '@/app/components/BillSearch'
 import UpcomingEventsWidget from '@/app/components/UpcomingEventsWidget'
+import type { SearchFilterState } from '@/app/components/SearchFilters'
 
 // Always fetch fresh data — bill status changes every few hours during session
 export const revalidate = 0
 
-async function getBills(search: string, chamber: string, legislator: string, status: string, subject: string) {
-  const supabase = getSupabaseServer()
-
-  let query = supabase
-    .from('Bills')
-    .select('id, bill_number, title, description, status, author, body, last_action_date, summary, summary_status, subjects, next_event')
-    .order('created_at', { ascending: false })
-    .limit(2000)
-
-  if (search) {
-    query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,bill_number.ilike.%${search}%,author.ilike.%${search}%`)
-  }
-  if (chamber === 'House') {
-    // Includes HB (House Bills), HR (House Resolutions), HCR (House Concurrent Resolutions)
-    query = query.or('bill_number.ilike.HB%,bill_number.ilike.HR%,bill_number.ilike.HCR%')
-  } else if (chamber === 'Senate') {
-    // Includes SB (Senate Bills), SR (Senate Resolutions), SCR (Senate Concurrent Resolutions)
-    query = query.or('bill_number.ilike.SB%,bill_number.ilike.SR%,bill_number.ilike.SCR%')
-  }
-  if (legislator) {
-    query = query.eq('author', legislator)
-  }
-  if (status) {
-    query = query.eq('status', status)
-  }
-
-  const { data, error } = await query
-  if (error) {
-    console.error('Error fetching bills:', error)
-    return []
-  }
-
-  let bills = data || []
-
-  // Apply subject filter in application code to avoid any quirks
-  // with Supabase's JSON containment operators across environments.
-  if (subject) {
-    const target = subject.toLowerCase()
-    bills = bills.filter((bill: any) =>
-      Array.isArray(bill.subjects) &&
-      bill.subjects.some(
-        (s: any) =>
-          typeof s?.subject_name === 'string' &&
-          s.subject_name.toLowerCase() === target
-      )
-    )
-  }
-
-  return bills
-}
-
-async function getAllMeta() {
-  const supabase = getSupabaseServer()
-  const { data } = await supabase
-    .from('Bills')
-    .select('author, status, subjects')
-    .limit(2000)
-  return data || []
-}
-
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; chamber?: string; legislator?: string; status?: string; subject?: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const params = await searchParams
-  const search = params.search || ''
-  const chamber = params.chamber || ''
-  const legislator = params.legislator || ''
-  const status = params.status || ''
-  const subject = params.subject || ''
 
-  const [bills, allMeta] = await Promise.all([
-    getBills(search, chamber, legislator, status, subject),
-    getAllMeta(),
-  ])
+  // Parse initial values from URL for SSR
+  const initialQuery = (params.q as string) || ''
+  const rawSubject = params.subject
+  const rawBillType = params.bill_type
 
-  const authors = [...new Set(allMeta.map((b: any) => b.author).filter(Boolean))].sort() as string[]
-  const statuses = [...new Set(allMeta.map((b: any) => b.status).filter(Boolean))].sort() as string[]
-  const subjects = [...new Set(
-    allMeta
-      .flatMap((b: any) => (Array.isArray(b.subjects) ? b.subjects : []))
-      .map((s: any) => (typeof s?.subject_name === 'string' ? s.subject_name : null))
-      .filter(Boolean)
-  )].sort() as string[]
-  const totalCount = allMeta.length
+  const initialFilters: SearchFilterState = {
+    chamber: (params.chamber as string) || '',
+    status: (params.status as string) || '',
+    committee: (params.committee as string) || '',
+    sponsor: (params.sponsor as string) || '',
+    subject: rawSubject
+      ? Array.isArray(rawSubject)
+        ? rawSubject
+        : [rawSubject]
+      : [],
+    bill_type: rawBillType
+      ? Array.isArray(rawBillType)
+        ? rawBillType
+        : [rawBillType]
+      : [],
+    has_event: (params.has_event as string) || '',
+    date_from: (params.date_from as string) || '',
+    date_to: (params.date_to as string) || '',
+    sort: (params.sort as string) || 'date_desc',
+  }
+
+  // Get total count for hero stat card
+  const supabase = getSupabaseServer()
+  const { count } = await supabase
+    .from('Bills')
+    .select('*', { count: 'exact', head: true })
+  const totalCount = count || 0
+
+  // Get distinct authors count for legislator stat
+  const { data: authorData } = await supabase
+    .from('Bills')
+    .select('author')
+    .not('author', 'is', null)
+    .limit(2000)
+  const authorCount = new Set(
+    (authorData || []).map((r: { author: string | null }) => r.author).filter(Boolean)
+  ).size
+
+  // Get distinct statuses count for stat card
+  const { data: statusData } = await supabase
+    .from('Bills')
+    .select('status')
+    .not('status', 'is', null)
+    .limit(2000)
+  const statusCount = new Set(
+    (statusData || []).map((r: { status: string | null }) => r.status).filter(Boolean)
+  ).size
 
   return (
     <>
@@ -177,12 +152,12 @@ export default async function Home({
             </div>
             <div style={{ background: 'var(--white)', border: '1px solid var(--border)', padding: '26px 22px', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'var(--gold)' }} />
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '52px', fontWeight: 700, color: 'var(--navy)', lineHeight: 1, marginBottom: '4px' }}>{authors.length}</div>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '52px', fontWeight: 700, color: 'var(--navy)', lineHeight: 1, marginBottom: '4px' }}>{authorCount}</div>
               <div style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Legislators</div>
             </div>
             <div style={{ background: 'var(--white)', border: '1px solid var(--border)', padding: '26px 22px', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'var(--gold)' }} />
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '52px', fontWeight: 700, color: 'var(--navy)', lineHeight: 1, marginBottom: '4px' }}>{statuses.length}</div>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '52px', fontWeight: 700, color: 'var(--navy)', lineHeight: 1, marginBottom: '4px' }}>{statusCount}</div>
               <div style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Bill Statuses</div>
             </div>
           </div>
@@ -215,26 +190,11 @@ export default async function Home({
           <UpcomingEventsWidget />
         </section>
 
-        {/* BILLS */}
+        {/* BILLS SEARCH */}
         <section id="bills" style={{ maxWidth: 'var(--width-content)', margin: '0 auto', padding: '40px 48px 64px' }}>
-          <div style={{ marginBottom: '28px' }}>
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 700, color: 'var(--navy)', marginBottom: '4px' }}>All Bills</h2>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--text-muted)' }}>
-              Browse and filter {totalCount} bills from the 2026 Regular Session
-            </p>
-          </div>
-          <BillListWithFilters
-            bills={bills}
-            legislators={authors}
-            statuses={statuses}
-            subjects={subjects}
-            totalCount={totalCount}
-            currentSearch={search}
-            currentChamber={chamber}
-            currentLegislator={legislator}
-            currentStatus={status}
-            currentSubject={subject}
-          />
+          <Suspense fallback={<div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'var(--text-muted)', padding: '32px 0' }}>Loading search...</div>}>
+            <BillSearch initialQuery={initialQuery} initialFilters={initialFilters} />
+          </Suspense>
         </section>
       </main>
       <Footer />

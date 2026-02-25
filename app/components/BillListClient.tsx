@@ -3,7 +3,6 @@
 
 import { useState, useMemo } from 'react'
 import BillCard from './BillCard'
-import SearchFilters from './SearchFilters'
 
 interface Bill {
   id: number
@@ -129,11 +128,44 @@ export default function BillListClient({ bills }: BillListClientProps) {
   return (
     <div className="space-y-6">
       {/* Search Filters */}
-      <SearchFilters
-        authors={authors}
-        subjects={subjects}
-        statuses={statuses}
-      />
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+        <h3 className="text-lg font-bold text-[#002868] mb-4">Filter Bills</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Author</label>
+            <select
+              value={filters.author}
+              onChange={(e) => setFilters({ ...filters, author: e.target.value })}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#002868]"
+            >
+              <option value="all">All Authors</option>
+              {authors.map((a) => <option key={a} value={a}>{a}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Subject</label>
+            <select
+              value={filters.subject}
+              onChange={(e) => setFilters({ ...filters, subject: e.target.value })}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#002868]"
+            >
+              <option value="all">All Subjects</option>
+              {subjects.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
+            <select
+              value={filters.status}
+              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#002868]"
+            >
+              <option value="all">All Statuses</option>
+              {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
 
       {/* Results Count */}
       <div className="flex items-center justify-between">
