@@ -31,23 +31,23 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F4EF' }}>
-        <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md border border-[#DDD8CE] text-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--cream)' }}>
+        <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md border border-[var(--border)] text-center">
           <div className="text-4xl mb-4">📬</div>
-          <h1 className="text-2xl font-bold mb-3" style={{ color: '#0C2340', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>Check your email</h1>
-          <p className="text-sm" style={{ color: '#6B7280' }}>We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account.</p>
+          <h1 className="text-2xl font-bold mb-3" style={{ color: 'var(--navy)', fontFamily: 'var(--font-serif)' }}>Check your email</h1>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account.</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F4EF' }}>
-      <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md border border-[#DDD8CE]">
-        <h1 className="text-3xl font-bold mb-2 text-center" style={{ color: '#0C2340', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--cream)' }}>
+      <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md border border-[var(--border)]">
+        <h1 className="text-3xl font-bold mb-2 text-center" style={{ color: 'var(--navy)', fontFamily: 'var(--font-serif)' }}>
           Create Account
         </h1>
-        <p className="text-center text-sm mb-8" style={{ color: '#6B7280' }}>
+        <p className="text-center text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
           Free for the entire 2026 session
         </p>
         {error && (
@@ -55,38 +55,37 @@ export default function SignupPage() {
         )}
         <form onSubmit={handleSignup} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: '#0C2340' }}>Email</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>Email</label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              className="w-full border border-[#DDD8CE] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4922A]"
+              className="w-full border border-[var(--border)] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--gold)]"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: '#0C2340' }}>Password</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>Password</label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full border border-[#DDD8CE] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4922A]"
+              className="w-full border border-[var(--border)] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--gold)]"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-lg font-semibold text-white transition-opacity"
-            style={{ backgroundColor: '#C4922A' }}
+            className="btn btn-primary w-full"
           >
             {loading ? 'Creating account...' : 'Create Free Account'}
           </button>
         </form>
-        <p className="text-center text-sm mt-6" style={{ color: '#6B7280' }}>
+        <p className="text-center text-sm mt-6" style={{ color: 'var(--text-secondary)' }}>
           Already have an account?{' '}
-          <Link href="/auth/login" className="font-medium" style={{ color: '#0C2340' }}>Sign in</Link>
+          <Link href="/auth/login" className="font-medium" style={{ color: 'var(--navy)' }}>Sign in</Link>
         </p>
       </div>
     </div>

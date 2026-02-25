@@ -16,12 +16,12 @@ export default function LegislatorBills({ bills }: { bills: Bill[] }) {
         <Link
           key={bill.id}
           href={`/bill/${bill.id}`}
-          className="block bg-white rounded-xl border border-slate-200 p-6 hover:border-[#0C2340] hover:shadow-lg transition-all"
+          className="block bg-white rounded-xl border border-[var(--border)] p-6 hover:border-[var(--navy)] hover:shadow-lg transition-all"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <span className="px-3 py-1 bg-[#0C2340] text-white rounded-full text-sm font-semibold">
+                <span className="px-3 py-1 rounded-full text-sm font-semibold" style={{ background: 'var(--navy)', color: 'var(--white)' }}>
                   {bill.bill_number}
                 </span>
                 <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm font-semibold">
@@ -52,7 +52,7 @@ export default function LegislatorBills({ bills }: { bills: Bill[] }) {
             </div>
 
             <div className="flex-shrink-0">
-              <span className="inline-flex items-center text-[#0C2340] font-medium">
+              <span className="inline-flex items-center font-medium" style={{ color: 'var(--navy)' }}>
                 View Details →
               </span>
             </div>

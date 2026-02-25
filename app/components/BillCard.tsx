@@ -61,8 +61,8 @@ export default function BillCard({ bill }: BillCardProps) {
 
   return (
     <div style={{
-      background: '#fff',
-      border: '1px solid #DDD8CE',
+      background: 'var(--white)',
+      border: '1px solid var(--border)',
       padding: '22px',
       position: 'relative',
       transition: 'border-color 0.15s, box-shadow 0.15s',
@@ -72,7 +72,7 @@ export default function BillCard({ bill }: BillCardProps) {
       {/* Gold top accent bar */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0,
-        height: '2px', background: '#C4922A',
+        height: '2px', background: 'var(--gold)',
       }} />
 
       <Link href={`/bill/${bill.id}`} style={{ textDecoration: 'none', display: 'block' }}>
@@ -81,9 +81,9 @@ export default function BillCard({ bill }: BillCardProps) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
           <span style={{
             fontFamily: 'var(--font-sans)',
-            fontSize: '11px',
+            fontSize: 'var(--text-xs)',
             fontWeight: 600,
-            color: '#C4922A',
+            color: 'var(--gold)',
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
           }}>
@@ -92,8 +92,8 @@ export default function BillCard({ bill }: BillCardProps) {
           {chamber && (
             <span style={{
               fontFamily: 'var(--font-sans)',
-              fontSize: '10px',
-              color: '#888',
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-muted)',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
             }}>
@@ -107,7 +107,7 @@ export default function BillCard({ bill }: BillCardProps) {
           fontFamily: 'var(--font-serif)',
           fontSize: '17px',
           fontWeight: 600,
-          color: '#0C2340',
+          color: 'var(--navy)',
           lineHeight: 1.3,
           marginBottom: '8px',
         }} className="line-clamp-2">
@@ -119,7 +119,7 @@ export default function BillCard({ bill }: BillCardProps) {
           <p style={{
             fontFamily: 'var(--font-sans)',
             fontSize: '12px',
-            color: '#666',
+            color: 'var(--text-secondary)',
             lineHeight: 1.65,
             marginBottom: '14px',
             fontWeight: 300,
@@ -138,11 +138,11 @@ export default function BillCard({ bill }: BillCardProps) {
           marginBottom: '10px',
           padding: '7px',
           borderRadius: '5px',
-          border: isWatching ? '1px solid #FCA5A5' : '1px solid #DDD8CE',
-          background: isWatching ? '#FFF5F5' : '#fff',
-          color: isWatching ? '#B91C1C' : '#0C2340',
+          border: isWatching ? '1px solid #FCA5A5' : '1px solid var(--border)',
+          background: isWatching ? '#FFF5F5' : 'var(--white)',
+          color: isWatching ? '#B91C1C' : 'var(--navy)',
           fontFamily: 'var(--font-sans)',
-          fontSize: '11px',
+          fontSize: 'var(--text-xs)',
           fontWeight: 600,
           letterSpacing: '0.06em',
           cursor: actionLoading ? 'default' : 'pointer',
@@ -165,7 +165,7 @@ export default function BillCard({ bill }: BillCardProps) {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        borderTop: '1px solid #F0EDE8',
+        borderTop: '1px solid var(--cream-dark)',
         paddingTop: '12px',
         marginTop: '12px',
       }}>
@@ -173,8 +173,8 @@ export default function BillCard({ bill }: BillCardProps) {
           href={`/legislator/${encodeURIComponent(bill.author)}`}
           style={{
             fontFamily: 'var(--font-sans)',
-            fontSize: '11px',
-            color: '#0C2340',
+            fontSize: 'var(--text-xs)',
+            color: 'var(--navy)',
             textDecoration: 'none',
             fontWeight: 500,
           }}
@@ -183,9 +183,9 @@ export default function BillCard({ bill }: BillCardProps) {
         </Link>
         <span style={{
           fontFamily: 'var(--font-sans)',
-          fontSize: '10px',
+          fontSize: 'var(--text-xs)',
           fontWeight: 600,
-          color: '#C4922A',
+          color: 'var(--gold)',
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
         }}>

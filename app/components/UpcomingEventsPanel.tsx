@@ -61,9 +61,9 @@ export default async function UpcomingEventsPanel({ billId, billNumber, sessionY
     : null
 
   return (
-    <div className="bg-white rounded-xl border-2 border-[#C4922A] overflow-hidden">
+    <div className="bg-white rounded-xl border-2 border-[var(--gold)] overflow-hidden">
       {/* Header */}
-      <div className="bg-[#0C2340] px-5 py-3 flex items-center justify-between">
+      <div className="px-5 py-3 flex items-center justify-between" style={{ background: 'var(--navy)' }}>
         <h3 className="text-white font-bold text-base">Upcoming Events</h3>
         <span className="text-xs text-blue-200">{upcomingEvents.length} scheduled</span>
       </div>
@@ -71,7 +71,7 @@ export default async function UpcomingEventsPanel({ billId, billNumber, sessionY
       {/* Next event — gold accent */}
       <div className="bg-amber-50 border-b border-amber-200 px-5 py-4">
         <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 bg-[#C4922A] text-white rounded-lg px-2 py-1 text-center min-w-[48px]">
+          <div className="flex-shrink-0 rounded-lg px-2 py-1 text-center min-w-[48px]" style={{ background: 'var(--gold)', color: 'var(--navy)' }}>
             <div className="text-xs font-bold uppercase">
               {new Date(nextEvent.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short' })}
             </div>
@@ -82,7 +82,7 @@ export default async function UpcomingEventsPanel({ billId, billNumber, sessionY
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap gap-1 mb-1">
               {isToday && (
-                <span className="px-2 py-0.5 bg-[#C4922A] text-white text-xs font-bold rounded-full">TODAY</span>
+                <span className="px-2 py-0.5 text-xs font-bold rounded-full" style={{ background: 'var(--gold)', color: 'var(--navy)' }}>TODAY</span>
               )}
               {isTomorrow && (
                 <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">TOMORROW</span>
@@ -91,7 +91,7 @@ export default async function UpcomingEventsPanel({ billId, billNumber, sessionY
                 <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full">NEXT UP</span>
               )}
             </div>
-            <p className="text-sm font-semibold text-[#0C2340] leading-snug">{nextEvent.description}</p>
+            <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--navy)' }}>{nextEvent.description}</p>
             {nextEvent.time && (
               <p className="text-xs text-slate-500 mt-0.5">{nextEvent.time}</p>
             )}
@@ -113,7 +113,7 @@ export default async function UpcomingEventsPanel({ billId, billNumber, sessionY
                   <div className="text-xs text-slate-500 uppercase font-semibold">
                     {evtDate.toLocaleDateString('en-US', { month: 'short' })}
                   </div>
-                  <div className="text-sm font-bold text-[#0C2340]">{evtDate.getDate()}</div>
+                  <div className="text-sm font-bold" style={{ color: 'var(--navy)' }}>{evtDate.getDate()}</div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-slate-700 font-medium leading-snug truncate">{evt.description}</p>
@@ -132,12 +132,12 @@ export default async function UpcomingEventsPanel({ billId, billNumber, sessionY
             href={officialUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-[#0C2340] font-semibold hover:underline"
+            className="text-xs font-semibold hover:underline" style={{ color: 'var(--navy)' }}
           >
             Official Bill Page →
           </a>
         )}
-        <Link href="/calendar" className="text-xs text-slate-500 hover:text-[#0C2340] hover:underline ml-auto">
+        <Link href="/calendar" className="text-xs hover:underline ml-auto" style={{ color: 'var(--text-muted)' }}>
           Full Calendar
         </Link>
       </div>

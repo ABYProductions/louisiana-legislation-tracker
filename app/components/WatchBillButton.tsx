@@ -31,15 +31,7 @@ export default function WatchBillButton({ billId }: { billId: number }) {
   }
 
   if (!mounted) return (
-    <div style={{
-      padding: '10px 16px',
-      border: '1px solid #DDD8CE',
-      background: '#fff',
-      textAlign: 'center',
-      fontFamily: 'var(--font-sans)',
-      fontSize: '11px',
-      color: '#888',
-    }}>
+    <div className="btn btn-ghost w-full" style={{ color: 'var(--text-muted)', justifyContent: 'center' }}>
       Loading...
     </div>
   )
@@ -48,21 +40,10 @@ export default function WatchBillButton({ billId }: { billId: number }) {
     <button
       onClick={handleToggle}
       disabled={actionLoading || loading}
-      style={{
-        fontFamily: 'var(--font-sans)',
-        fontSize: '11px',
-        fontWeight: 700,
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase',
-        color: isWatching ? '#B91C1C' : '#fff',
-        background: isWatching ? '#FFF5F5' : '#C4922A',
-        border: isWatching ? '1px solid #FCA5A5' : '1px solid #C4922A',
-        padding: '10px 16px',
-        textAlign: 'center',
-        cursor: actionLoading ? 'default' : 'pointer',
-        width: '100%',
-        transition: 'all 0.15s',
-      }}
+      aria-pressed={isWatching}
+      aria-label={actionLoading ? 'Updating…' : isWatching ? 'Unwatch this bill' : 'Watch this bill'}
+      className={`w-full ${isWatching ? 'btn btn-danger' : 'btn btn-gold'}`}
+      style={{ letterSpacing: '0.08em', textTransform: 'uppercase', justifyContent: 'center' }}
     >
       {actionLoading
         ? 'Updating…'

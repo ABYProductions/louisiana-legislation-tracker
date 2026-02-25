@@ -20,11 +20,11 @@ interface LegislatorProfileProps {
   billCount: number
 }
 
-const NAVY  = '#0C2340'
-const GOLD  = '#C4922A'
-const BG    = '#F7F4EF'
-const SERIF = 'Cormorant Garamond, Georgia, serif'
-const SANS  = 'DM Sans, system-ui, sans-serif'
+const NAVY  = 'var(--navy)'
+const GOLD  = 'var(--gold)'
+const BG    = 'var(--cream)'
+const SERIF = 'var(--font-serif)'
+const SANS  = 'var(--font-sans)'
 
 // Louisiana legislative election cycles (4-year, odd years)
 const LA_ELECTION_CYCLES = [1999, 2003, 2007, 2011, 2015, 2019, 2023, 2027, 2031]
@@ -101,7 +101,7 @@ function PhotoOrMonogram({ photoUrl, name, size = 128 }: { photoUrl: string | nu
         fontFamily: SERIF,
         fontSize: size * 0.34,
         fontWeight: 700,
-        color: '#fff',
+        color: 'var(--white)',
         lineHeight: 1,
       }}>
         {initials(name)}
@@ -126,11 +126,11 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
 
   const chamberLabel = chamber === 'house' ? 'House' : chamber === 'senate' ? 'Senate' : null
   return (
-    <div style={{ fontFamily: SANS, borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 16px rgba(12,35,64,0.10)' }}>
+    <div style={{ fontFamily: SANS, borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}>
 
       {/* ── Hero ── */}
       <div style={{
-        background: `linear-gradient(135deg, ${NAVY} 0%, #1a3a5c 100%)`,
+        background: `linear-gradient(135deg, ${NAVY} 0%, var(--navy-light) 100%)`,
         padding: '40px 48px',
       }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 32, flexWrap: 'wrap' }}>
@@ -142,7 +142,7 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
               fontFamily: SERIF,
               fontSize: 'clamp(28px, 4vw, 44px)',
               fontWeight: 700,
-              color: '#fff',
+              color: 'var(--white)',
               margin: '0 0 14px',
               lineHeight: 1.1,
             }}>
@@ -153,7 +153,7 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
               {party && (
                 <span style={{
                   padding: '4px 14px',
-                  borderRadius: 999,
+                  borderRadius: 'var(--radius-full)',
                   background: partyColor,
                   color: '#fff',
                   fontSize: 13,
@@ -166,7 +166,7 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
               {chamberLabel && (
                 <span style={{
                   padding: '4px 14px',
-                  borderRadius: 999,
+                  borderRadius: 'var(--radius-full)',
                   background: 'rgba(255,255,255,0.15)',
                   color: '#fff',
                   fontSize: 13,
@@ -178,7 +178,7 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
               {district != null && (
                 <span style={{
                   padding: '4px 14px',
-                  borderRadius: 999,
+                  borderRadius: 'var(--radius-full)',
                   background: 'rgba(255,255,255,0.15)',
                   color: '#fff',
                   fontSize: 13,
@@ -189,9 +189,9 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
               )}
               <span style={{
                 padding: '4px 14px',
-                borderRadius: 999,
+                borderRadius: 'var(--radius-full)',
                 background: GOLD,
-                color: '#fff',
+                color: 'var(--navy)',
                 fontSize: 13,
                 fontWeight: 700,
               }}>
@@ -204,7 +204,7 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
 
       {/* ── Body ── */}
       <div style={{ background: BG, padding: '40px 48px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 48 }}>
+        <div className="profile-body-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 48 }}>
 
           {/* Left — Committees */}
           <div>
@@ -231,7 +231,7 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
                         flexShrink: 0,
                         marginTop: 7,
                       }} />
-                      <span style={{ fontSize: 15, color: '#1e293b', lineHeight: 1.5 }}>
+                      <span style={{ fontSize: 15, color: 'var(--navy)', lineHeight: 1.5 }}>
                         {c.committee_name}
                         {c.role !== 'Member' && (
                           <span style={{
@@ -271,11 +271,11 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
                       <span style={{
                         width: 6, height: 6,
                         borderRadius: '50%',
-                        background: '#94a3b8',
+                        background: 'var(--text-muted)',
                         flexShrink: 0,
                         marginTop: 7,
                       }} />
-                      <span style={{ fontSize: 15, color: '#475569' }}>{c}</span>
+                      <span style={{ fontSize: 15, color: 'var(--text-secondary)' }}>{c}</span>
                     </li>
                   ))}
                 </ul>
@@ -286,9 +286,9 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
               <div style={{
                 padding: 24,
                 background: '#fff',
-                borderRadius: 12,
-                border: '1px solid #e2e8f0',
-                color: '#94a3b8',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-muted)',
                 fontSize: 14,
                 textAlign: 'center',
               }}>
@@ -314,10 +314,10 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {(chamberLabel || district != null) && (
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
                     District
                   </div>
-                  <div style={{ fontSize: 15, color: '#1e293b', fontWeight: 600 }}>
+                  <div style={{ fontSize: 15, color: 'var(--navy)', fontWeight: 600 }}>
                     {chamberLabel}{district != null ? ` District ${district}` : ''}
                   </div>
                 </div>
@@ -325,10 +325,10 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
 
               {parishes.length > 0 && (
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
                     Parishes Represented
                   </div>
-                  <div style={{ fontSize: 14, color: '#475569', lineHeight: 1.6 }}>
+                  <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                     {parishes.join(', ')}
                   </div>
                 </div>
@@ -339,34 +339,34 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
                 if (!termInfo) return null
                 return (
                   <div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
                       Term Information
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {termInfo.reElections.length === 0 ? (
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                          <span style={{ fontSize: 13, color: '#64748b' }}>Elected</span>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{termInfo.firstElected}</span>
+                          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Elected</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--navy)' }}>{termInfo.firstElected}</span>
                         </div>
                       ) : (
                         <>
                           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                            <span style={{ fontSize: 13, color: '#64748b' }}>First elected</span>
-                            <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{termInfo.firstElected}</span>
+                            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>First elected</span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--navy)' }}>{termInfo.firstElected}</span>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                            <span style={{ fontSize: 13, color: '#64748b' }}>Re-elected</span>
-                            <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{termInfo.reElections.join(', ')}</span>
+                            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Re-elected</span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--navy)' }}>{termInfo.reElections.join(', ')}</span>
                           </div>
                         </>
                       )}
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                        <span style={{ fontSize: 13, color: '#64748b' }}>Term length</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>4 years</span>
+                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Term length</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--navy)' }}>4 years</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, paddingTop: 2 }}>
-                        <span style={{ fontSize: 13, color: '#64748b' }}>Current term</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>{termInfo.termLabel}</span>
+                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Current term</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--navy)' }}>{termInfo.termLabel}</span>
                       </div>
                     </div>
                   </div>
@@ -388,7 +388,7 @@ export default function LegislatorProfile({ legislator, legislatorName, billCoun
                     textDecoration: 'none',
                     padding: '8px 14px',
                     border: `1px solid ${NAVY}`,
-                    borderRadius: 8,
+                    borderRadius: 'var(--radius-lg)',
                     transition: 'all 0.15s',
                   }}
                 >

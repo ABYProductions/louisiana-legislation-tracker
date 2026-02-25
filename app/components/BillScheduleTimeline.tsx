@@ -41,7 +41,7 @@ function classifyAction(action: string): { icon: string; color: string; label: s
   if (a.includes('amended') || a.includes('amendment')) {
     return { icon: '✎', color: 'bg-orange-500 border-orange-500', label: 'amended' }
   }
-  return { icon: '●', color: 'bg-[#0C2340] border-[#0C2340]', label: 'action' }
+  return { icon: '●', color: 'bg-[var(--navy)] border-[var(--navy)]', label: 'action' }
 }
 
 // Find vote record closest to a history entry date
@@ -115,7 +115,7 @@ export default async function BillScheduleTimeline({ billId, billNumber }: BillS
   if (allEvents.length === 0) {
     return (
       <div className="bg-slate-50 border border-slate-200 rounded-xl p-6">
-        <h3 className="text-lg font-bold text-[#0C2340] mb-4">Bill Schedule</h3>
+        <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--navy)' }}>Bill Schedule</h3>
         <p className="text-slate-500 text-sm text-center py-4">
           No events recorded yet. Committee assignments and floor session dates appear here as the bill progresses.
         </p>
@@ -124,7 +124,7 @@ export default async function BillScheduleTimeline({ billId, billNumber }: BillS
             href={officialUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="block mt-4 text-center text-sm text-[#0C2340] font-semibold hover:underline"
+            className="block mt-4 text-center text-sm font-semibold hover:underline" style={{ color: 'var(--navy)' }}
           >
             View Official Bill Page →
           </a>
@@ -136,13 +136,13 @@ export default async function BillScheduleTimeline({ billId, billNumber }: BillS
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-[#0C2340]">Bill Schedule</h3>
+        <h3 className="text-lg font-bold" style={{ color: 'var(--navy)' }}>Bill Schedule</h3>
         {officialUrl && (
           <a
             href={officialUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-[#0C2340] font-semibold flex items-center gap-1 hover:underline"
+            className="text-xs font-semibold flex items-center gap-1 hover:underline" style={{ color: 'var(--navy)' }}
           >
             Official Page
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -170,7 +170,7 @@ export default async function BillScheduleTimeline({ billId, billNumber }: BillS
             const isHistory = event.type === 'history'
 
             const dotClass = isToday
-              ? 'bg-[#C4922A] border-[#0C2340]'
+              ? 'bg-[var(--gold)] border-[var(--navy)]'
               : isFuture
               ? 'bg-white border-slate-300'
               : event.actionClass.color
@@ -178,7 +178,7 @@ export default async function BillScheduleTimeline({ billId, billNumber }: BillS
             return (
               <div key={idx} className="relative pl-10">
                 <div className={`absolute left-0 w-8 h-8 rounded-full border-4 flex items-center justify-center text-white text-xs font-bold ${dotClass}`}>
-                  {isToday && <div className="w-3 h-3 bg-[#0C2340] rounded-full" />}
+                  {isToday && <div className="w-3 h-3 rounded-full" style={{ background: 'var(--navy)' }} />}
                   {!isToday && !isFuture && (
                     <span>{event.actionClass.icon}</span>
                   )}
@@ -189,14 +189,14 @@ export default async function BillScheduleTimeline({ billId, billNumber }: BillS
 
                 <div className={`pb-1 ${isFuture && !isToday ? 'opacity-80' : ''}`}>
                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <span className={`text-sm font-semibold ${isToday ? 'text-[#C4922A]' : isFuture ? 'text-slate-600' : 'text-[#0C2340]'}`}>
+                    <span className="text-sm font-semibold" style={{ color: isToday ? 'var(--gold)' : isFuture ? 'var(--text-secondary)' : 'var(--navy)' }}>
                       {new Date(event.date + 'T00:00:00').toLocaleDateString('en-US', {
                         month: 'short', day: 'numeric', year: 'numeric',
                       })}
                     </span>
 
                     {isToday && (
-                      <span className="px-2 py-0.5 bg-[#C4922A] text-white text-xs font-bold rounded-full">TODAY</span>
+                      <span className="px-2 py-0.5 text-xs font-bold rounded-full" style={{ background: 'var(--gold)', color: 'var(--navy)' }}>TODAY</span>
                     )}
                     {isFuture && !isToday && (
                       <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">UPCOMING</span>
@@ -241,10 +241,10 @@ export default async function BillScheduleTimeline({ billId, billNumber }: BillS
         {upcomingCount > 0 && (
           <div className="flex items-center justify-between text-sm">
             <span className="text-slate-600">
-              <span className="font-semibold text-[#0C2340]">{upcomingCount}</span>{' '}
+              <span className="font-semibold" style={{ color: 'var(--navy)' }}>{upcomingCount}</span>{' '}
               upcoming event{upcomingCount !== 1 ? 's' : ''}
             </span>
-            <Link href="/calendar" className="text-[#0C2340] font-semibold hover:underline">
+            <Link href="/calendar" className="font-semibold hover:underline" style={{ color: 'var(--navy)' }}>
               View Calendar →
             </Link>
           </div>
@@ -255,7 +255,7 @@ export default async function BillScheduleTimeline({ billId, billNumber }: BillS
             href={officialUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-[#0C2340] text-white rounded-lg text-sm font-semibold hover:bg-[#1a3a5c] transition-colors"
+            className="btn btn-primary w-full"
           >
             View Full Bill Details on legis.la.gov
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

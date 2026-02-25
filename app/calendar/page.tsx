@@ -73,32 +73,32 @@ export default async function CalendarPage() {
   ).size
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--cream)' }}>
       <Header />
       <main className="flex-1 py-10">
-        <div className="container mx-auto px-4 max-w-7xl">
+        <div className="container mx-auto px-4" style={{ maxWidth: 'var(--width-wide)' }}>
 
           {/* Page header */}
           <div className="mb-8">
-            <Link href="/" className="inline-flex items-center gap-2 text-[#C4922A] hover:underline mb-4 font-medium text-sm uppercase tracking-wider">
+            <Link href="/" className="inline-flex items-center gap-2 hover:underline mb-4 font-medium text-sm uppercase tracking-wider" style={{ color: 'var(--gold)' }}>
               ← All Bills
             </Link>
-            <div className="bg-[#0C2340] rounded-2xl p-8 text-white">
-              <h1 className="text-4xl font-bold mb-2" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>
+            <div className="rounded-2xl p-8" style={{ backgroundColor: 'var(--navy)', color: 'var(--white)' }}>
+              <h1 className="text-4xl font-bold mb-2" style={{ fontFamily: 'var(--font-serif)' }}>
                 Legislative Calendar
               </h1>
               <p className="text-blue-200 text-base mb-4">2026 Regular Session — Next 30 Days</p>
               <div className="flex flex-wrap gap-6 text-sm">
                 <div>
-                  <span className="text-[#C4922A] font-bold text-2xl">{events.length}</span>
+                  <span className="font-bold text-2xl" style={{ color: 'var(--gold)' }}>{events.length}</span>
                   <span className="text-blue-200 ml-2">scheduled events</span>
                 </div>
                 <div>
-                  <span className="text-[#C4922A] font-bold text-2xl">{totalBillsInCalendar}</span>
+                  <span className="font-bold text-2xl" style={{ color: 'var(--gold)' }}>{totalBillsInCalendar}</span>
                   <span className="text-blue-200 ml-2">bills with hearings</span>
                 </div>
                 <div>
-                  <span className="text-[#C4922A] font-bold text-2xl">{dateGroups.length}</span>
+                  <span className="font-bold text-2xl" style={{ color: 'var(--gold)' }}>{dateGroups.length}</span>
                   <span className="text-blue-200 ml-2">active days</span>
                 </div>
               </div>
@@ -110,19 +110,20 @@ export default async function CalendarPage() {
             {/* Left column: 30-day event feed */}
             <div className="lg:col-span-2">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-[#0C2340]">Upcoming Schedule</h2>
+                <h2 className="text-xl font-bold" style={{ color: 'var(--navy)' }}>Upcoming Schedule</h2>
                 <a
                   href="https://legis.la.gov/legis/SessionInfo.aspx"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-[#0C2340] font-semibold hover:underline"
+                  className="text-xs font-semibold hover:underline"
+                  style={{ color: 'var(--navy)' }}
                 >
                   Official Legislature Calendar →
                 </a>
               </div>
 
               {dateGroups.length === 0 ? (
-                <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+                <div className="bg-white rounded-xl border border-[var(--border)] p-12 text-center">
                   <p className="text-slate-500 text-lg mb-2">No scheduled events in the next 30 days</p>
                   <p className="text-slate-400 text-sm">
                     Events appear here after each sync as the legislature schedules hearings and floor sessions.
@@ -131,7 +132,7 @@ export default async function CalendarPage() {
                     href="https://legis.la.gov/legis/SessionInfo.aspx"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block mt-6 px-4 py-2 bg-[#0C2340] text-white rounded-lg text-sm font-semibold hover:bg-[#1a3a5c] transition-colors"
+                    className="btn btn-primary mt-6"
                   >
                     View Official Legislature Calendar
                   </a>
@@ -144,29 +145,29 @@ export default async function CalendarPage() {
                     const isTomorrow = date === new Date(Date.now() + 86400000).toISOString().split('T')[0]
 
                     return (
-                      <div key={date} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                      <div key={date} className="bg-white rounded-xl border border-[var(--border)] overflow-hidden">
                         {/* Date header */}
-                        <div className={`px-5 py-3 flex items-center justify-between ${isToday ? 'bg-[#C4922A]' : 'bg-[#0C2340]'}`}>
+                        <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: isToday ? 'var(--gold)' : 'var(--navy)' }}>
                           <div className="flex items-center gap-3">
-                            <div className="text-white text-center min-w-[36px]">
+                            <div className="text-center min-w-[36px]" style={{ color: isToday ? 'var(--navy)' : 'var(--white)' }}>
                               <div className="text-xs font-bold uppercase opacity-80">
                                 {dateObj.toLocaleDateString('en-US', { month: 'short' })}
                               </div>
                               <div className="text-2xl font-bold leading-none">{dateObj.getDate()}</div>
                             </div>
                             <div>
-                              <div className="text-white font-semibold">
+                              <div className="font-semibold" style={{ color: isToday ? 'var(--navy)' : 'var(--white)' }}>
                                 {dateObj.toLocaleDateString('en-US', { weekday: 'long' })}
                               </div>
                               {isToday && (
-                                <span className="text-xs font-bold text-white/80 uppercase tracking-wider">Today</span>
+                                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--navy)', opacity: 0.8 }}>Today</span>
                               )}
                               {isTomorrow && (
-                                <span className="text-xs font-bold text-blue-200 uppercase tracking-wider">Tomorrow</span>
+                                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--white)', opacity: 0.8 }}>Tomorrow</span>
                               )}
                             </div>
                           </div>
-                          <div className="text-white/70 text-sm">
+                          <div className="text-sm" style={{ color: isToday ? 'rgba(12,35,64,0.7)' : 'rgba(255,255,255,0.7)' }}>
                             {dayEvents.length} event{dayEvents.length !== 1 ? 's' : ''}
                           </div>
                         </div>
@@ -193,7 +194,7 @@ export default async function CalendarPage() {
                                 </div>
 
                                 <div className="mt-2">
-                                  <h4 className="font-semibold text-[#0C2340] text-sm">
+                                  <h4 className="font-semibold text-sm" style={{ color: 'var(--navy)' }}>
                                     {evt.committee_name || eventTypeLabel(evt.event_type)}
                                   </h4>
                                   {evt.event_time && (
@@ -211,7 +212,7 @@ export default async function CalendarPage() {
                                       <Link
                                         key={i}
                                         href={billIds[i] ? `/bill/${billIds[i]}` : '#'}
-                                        className="px-2 py-0.5 bg-slate-100 text-[#0C2340] text-xs font-semibold rounded hover:bg-[#0C2340] hover:text-white transition-colors"
+                                        className="px-2 py-0.5 text-xs font-semibold rounded transition-colors" style={{ background: 'var(--cream)', color: 'var(--navy)' }}
                                       >
                                         {num}
                                       </Link>
@@ -236,14 +237,14 @@ export default async function CalendarPage() {
 
             {/* Right column: bills with next events */}
             <div>
-              <h2 className="text-xl font-bold text-[#0C2340] mb-4">Bills With Hearings</h2>
+              <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--navy)' }}>Bills With Hearings</h2>
 
               {billsScheduled.length === 0 ? (
-                <div className="bg-white rounded-xl border border-slate-200 p-6 text-center">
+                <div className="bg-white rounded-xl border border-[var(--border)] p-6 text-center">
                   <p className="text-slate-400 text-sm">No bills have upcoming events scheduled yet.</p>
                 </div>
               ) : (
-                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div className="bg-white rounded-xl border border-[var(--border)] overflow-hidden">
                   <div className="divide-y divide-slate-100">
                     {billsScheduled.slice(0, 30).map((bill: any) => {
                       const evt = bill.next_event as any
@@ -263,17 +264,17 @@ export default async function CalendarPage() {
                               <div className="text-xs text-slate-500 uppercase font-semibold">
                                 {evtDate.toLocaleDateString('en-US', { month: 'short' })}
                               </div>
-                              <div className={`text-lg font-bold ${isToday ? 'text-[#C4922A]' : 'text-[#0C2340]'}`}>
+                              <div className="text-lg font-bold" style={{ color: isToday ? 'var(--gold)' : 'var(--navy)' }}>
                                 {evtDate.getDate()}
                               </div>
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-xs font-bold text-[#C4922A] uppercase tracking-wide">
+                                <span className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--gold)' }}>
                                   {bill.bill_number}
                                 </span>
                                 {isToday && (
-                                  <span className="px-1.5 py-0.5 bg-[#C4922A] text-white text-xs font-bold rounded">TODAY</span>
+                                  <span className="px-1.5 py-0.5 text-xs font-bold rounded" style={{ background: 'var(--gold)', color: 'var(--navy)' }}>TODAY</span>
                                 )}
                                 {isTomorrow && (
                                   <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded">TOMORROW</span>
@@ -300,8 +301,8 @@ export default async function CalendarPage() {
               )}
 
               {/* Official links */}
-              <div className="mt-6 bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-                <h3 className="text-sm font-bold text-[#0C2340] uppercase tracking-wide">Official Resources</h3>
+              <div className="mt-6 bg-white rounded-xl border border-[var(--border)] p-5 space-y-3">
+                <h3 className="text-sm font-bold uppercase tracking-wide" style={{ color: 'var(--navy)' }}>Official Resources</h3>
                 {[
                   { label: 'House Committee Agendas', href: 'https://house.louisiana.gov/H_Cmtes/H_CmteAgendasPending' },
                   { label: 'Senate Committee Agendas', href: 'https://senate.la.gov/Committees/Agenda.asp' },
@@ -314,7 +315,7 @@ export default async function CalendarPage() {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between text-sm text-[#0C2340] hover:text-[#C4922A] font-medium transition-colors"
+                    className="flex items-center justify-between text-sm font-medium transition-colors" style={{ color: 'var(--navy)' }}
                   >
                     {link.label}
                     <svg className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

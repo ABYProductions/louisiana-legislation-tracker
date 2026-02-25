@@ -16,8 +16,8 @@ interface BillTimelineProps {
 export default function BillTimeline({ history }: BillTimelineProps) {
   if (!history || history.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h3 className="text-lg font-bold text-[#0C2340] mb-4">Bill History</h3>
+      <div className="bg-white rounded-2xl border-[var(--border)] border p-6">
+        <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--navy)' }}>Bill History</h3>
         <p className="text-slate-500 text-sm">No history available yet.</p>
       </div>
     )
@@ -51,10 +51,10 @@ export default function BillTimeline({ history }: BillTimelineProps) {
       return { dot: 'bg-blue-600', bg: 'bg-blue-50', text: 'text-blue-900' }
     }
     if (a.includes('committee') || a.includes('referred') || a.includes('assigned')) {
-      return { dot: 'bg-[#0C2340]', bg: 'bg-slate-50', text: 'text-slate-800' }
+      return { dot: 'bg-[var(--navy)]', bg: 'bg-slate-50', text: 'text-slate-800' }
     }
     if (a.includes('calendar') || a.includes('hearing') || a.includes('scheduled')) {
-      return { dot: 'bg-[#C4922A]', bg: 'bg-amber-50', text: 'text-amber-900' }
+      return { dot: 'bg-[var(--gold)]', bg: 'bg-amber-50', text: 'text-amber-900' }
     }
     if (a.includes('amended') || a.includes('amendment')) {
       return { dot: 'bg-orange-500', bg: 'bg-orange-50', text: 'text-orange-900' }
@@ -63,8 +63,8 @@ export default function BillTimeline({ history }: BillTimelineProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6">
-      <h3 className="text-lg font-bold text-[#0C2340] mb-6">Bill History</h3>
+    <div className="bg-white rounded-2xl border-[var(--border)] border p-6">
+      <h3 className="text-lg font-bold mb-6" style={{ color: 'var(--navy)' }}>Bill History</h3>
 
       <div className="relative">
         <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-slate-200" />
@@ -79,7 +79,7 @@ export default function BillTimeline({ history }: BillTimelineProps) {
               <div key={index} className="relative flex gap-4">
                 <div className={`relative z-10 w-4 h-4 rounded-full ${style.dot} flex-shrink-0 mt-1.5 ring-4 ring-white`} />
 
-                <div className={`flex-1 ${style.bg} rounded-lg px-3 py-2.5 ${isLatest ? 'ring-2 ring-[#C4922A]' : 'border border-slate-100'}`}>
+                <div className={`flex-1 ${style.bg} rounded-lg px-3 py-2.5 ${isLatest ? 'ring-2 ring-[var(--gold)]' : 'border border-slate-100'}`}>
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <span className="text-xs font-semibold text-slate-700">
                       {formatDate(event.date)}
@@ -90,7 +90,7 @@ export default function BillTimeline({ history }: BillTimelineProps) {
                       </span>
                     )}
                     {isLatest && (
-                      <span className="text-xs px-1.5 py-0.5 rounded bg-[#C4922A] text-white font-semibold">
+                      <span className="text-xs px-1.5 py-0.5 rounded font-semibold" style={{ background: 'var(--gold)', color: 'var(--navy)' }}>
                         Latest
                       </span>
                     )}

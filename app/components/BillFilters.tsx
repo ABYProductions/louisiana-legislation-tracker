@@ -102,11 +102,11 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
   const selectStyle = {
     width: '100%',
     padding: '9px 12px',
-    border: '1px solid #DDD8CE',
-    background: '#fff',
+    border: '1px solid var(--border)',
+    background: 'var(--white)',
     fontFamily: 'var(--font-sans)',
     fontSize: '13px',
-    color: '#333',
+    color: 'var(--text-primary)',
     outline: 'none',
     appearance: 'none' as const,
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
@@ -114,13 +114,14 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
     backgroundPosition: 'right 10px center',
     paddingRight: '32px',
     cursor: 'pointer',
+    minHeight: '44px',
   }
 
   const labelStyle = {
     fontFamily: 'var(--font-sans)',
-    fontSize: '10px',
+    fontSize: 'var(--text-xs)',
     fontWeight: 600,
-    color: '#888',
+    color: 'var(--text-muted)',
     letterSpacing: '0.1em',
     textTransform: 'uppercase' as const,
     marginBottom: '6px',
@@ -129,8 +130,8 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
 
   return (
     <div style={{
-      background: '#fff',
-      border: '1px solid #DDD8CE',
+      background: 'var(--white)',
+      border: '1px solid var(--border)',
       padding: '24px',
       marginBottom: '24px',
     }}>
@@ -144,7 +145,7 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
           fontFamily: 'var(--font-serif)',
           fontSize: '18px',
           fontWeight: 700,
-          color: '#0C2340',
+          color: 'var(--navy)',
           margin: 0,
         }}>
           Filter Bills
@@ -154,11 +155,11 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
             onClick={clearFilters}
             style={{
               fontFamily: 'var(--font-sans)',
-              fontSize: '11px',
+              fontSize: 'var(--text-xs)',
               fontWeight: 600,
-              color: '#C4922A',
+              color: 'var(--gold)',
               background: 'none',
-              border: '1px solid #C4922A',
+              border: '1px solid var(--gold)',
               padding: '4px 12px',
               cursor: 'pointer',
               letterSpacing: '0.06em',
@@ -176,7 +177,7 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
           left: '12px',
           top: '50%',
           transform: 'translateY(-50%)',
-          color: '#888',
+          color: 'var(--text-muted)',
           pointerEvents: 'none',
         }}>
           <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -191,13 +192,13 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
           style={{
             width: '100%',
             padding: '10px 12px 10px 36px',
-            border: search ? '1px solid #C4922A' : '1px solid #DDD8CE',
+            border: search ? '1px solid var(--gold)' : '1px solid var(--border)',
             fontFamily: 'var(--font-sans)',
             fontSize: '13px',
-            color: '#333',
+            color: 'var(--text-primary)',
             outline: 'none',
             boxSizing: 'border-box',
-            background: '#FDFCFA',
+            background: 'var(--cream)',
           }}
         />
         {search && (
@@ -210,7 +211,7 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
               transform: 'translateY(-50%)',
               background: 'none',
               border: 'none',
-              color: '#888',
+              color: 'var(--text-muted)',
               cursor: 'pointer',
               fontSize: '16px',
               lineHeight: 1,
@@ -261,33 +262,33 @@ export default function BillFilters({ bills, onFilterChange, legislators, subjec
       {hasActiveFilters && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '14px' }}>
           {search && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--navy)', color: 'var(--white)', padding: '3px 10px', fontSize: 'var(--text-xs)', fontFamily: 'var(--font-sans)' }}>
               Search: "{search}"
-              <button onClick={() => handleSearch('')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+              <button onClick={() => handleSearch('')} style={{ background: 'none', border: 'none', color: 'var(--gold)', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
             </span>
           )}
           {selectedChamber !== 'all' && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--navy)', color: 'var(--white)', padding: '3px 10px', fontSize: 'var(--text-xs)', fontFamily: 'var(--font-sans)' }}>
               {selectedChamber}
-              <button onClick={() => handleChamberChange('all')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+              <button onClick={() => handleChamberChange('all')} style={{ background: 'none', border: 'none', color: 'var(--gold)', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
             </span>
           )}
           {selectedLegislator !== 'all' && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--navy)', color: 'var(--white)', padding: '3px 10px', fontSize: 'var(--text-xs)', fontFamily: 'var(--font-sans)' }}>
               {selectedLegislator}
-              <button onClick={() => handleLegislatorChange('all')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+              <button onClick={() => handleLegislatorChange('all')} style={{ background: 'none', border: 'none', color: 'var(--gold)', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
             </span>
           )}
           {selectedSubject !== 'all' && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--navy)', color: 'var(--white)', padding: '3px 10px', fontSize: 'var(--text-xs)', fontFamily: 'var(--font-sans)' }}>
               {selectedSubject}
-              <button onClick={() => handleSubjectChange('all')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+              <button onClick={() => handleSubjectChange('all')} style={{ background: 'none', border: 'none', color: 'var(--gold)', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
             </span>
           )}
           {selectedStatus !== 'all' && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0C2340', color: '#fff', padding: '3px 10px', fontSize: '11px', fontFamily: 'var(--font-sans)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--navy)', color: 'var(--white)', padding: '3px 10px', fontSize: 'var(--text-xs)', fontFamily: 'var(--font-sans)' }}>
               {selectedStatus}
-              <button onClick={() => handleStatusChange('all')} style={{ background: 'none', border: 'none', color: '#C4922A', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+              <button onClick={() => handleStatusChange('all')} style={{ background: 'none', border: 'none', color: 'var(--gold)', cursor: 'pointer', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
             </span>
           )}
         </div>

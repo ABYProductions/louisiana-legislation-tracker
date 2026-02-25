@@ -24,22 +24,21 @@ export default function BillScheduleBadge({ nextEvent }: BillScheduleBadgeProps)
   const label = isToday ? 'TODAY' : isTomorrow ? 'TOMORROW' : 'UPCOMING'
 
   return (
-    <div className={`mt-3 px-3 py-2 rounded-lg border-l-4 text-xs ${
-      isToday
-        ? 'bg-yellow-50 border-[#C4922A]'
-        : 'bg-blue-50 border-[#0C2340]'
-    }`}>
+    <div className="mt-3 px-3 py-2 rounded-lg border-l-4 text-xs" style={{
+      background: isToday ? 'var(--warning-bg)' : 'var(--info-bg)',
+      borderLeftColor: isToday ? 'var(--gold)' : 'var(--navy)',
+    }}>
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <div className={`font-semibold mb-0.5 ${isToday ? 'text-[#C4922A]' : 'text-slate-700'}`}>
+          <div className="font-semibold mb-0.5" style={{ color: isToday ? 'var(--gold)' : 'var(--text-primary)' }}>
             {label}{nextEvent.time && ` · ${nextEvent.time}`}
           </div>
-          <div className="text-slate-600 truncate">
+          <div className="truncate" style={{ color: 'var(--text-secondary)' }}>
             {nextEvent.description}
           </div>
         </div>
         <div className="flex-shrink-0 text-right">
-          <div className="font-semibold text-[#0C2340]">
+          <div className="font-semibold" style={{ color: 'var(--navy)' }}>
             {eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
           </div>
         </div>

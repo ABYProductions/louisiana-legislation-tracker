@@ -48,14 +48,14 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
   const senateBills = bills.filter((b: any) => b.body === 'S' || b.body === 'Senate').length
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--cream)' }}>
       <Header />
 
       <main className="flex-1 py-12">
-        <div className="container mx-auto px-4 max-w-7xl">
+        <div className="container mx-auto px-4" style={{ maxWidth: 'var(--width-wide)' }}>
           <Link
             href="/legislators"
-            className="inline-flex items-center gap-2 text-[#C4922A] hover:underline mb-6 font-medium text-sm uppercase tracking-wider"
+            className="inline-flex items-center gap-2 hover:underline mb-6 font-medium text-sm uppercase tracking-wider" style={{ color: 'var(--gold)' }}
           >
             ← All Legislators
           </Link>
@@ -68,14 +68,14 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
 
           {/* Legislative Focus — only shown once bills exist */}
           {topics.length > 0 && (
-            <div className="mt-10 bg-white rounded-2xl border border-slate-200 p-8">
-              <h2 className="text-xl font-bold text-[#0C2340] mb-6">Legislative Focus — 2026 Session</h2>
+            <div className="mt-10 bg-white rounded-2xl border border-[var(--border)] p-8">
+              <h2 className="text-xl font-bold mb-6" style={{ color: 'var(--navy)' }}>Legislative Focus — 2026 Session</h2>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Policy Areas</h3>
                   <div className="flex flex-wrap gap-2">
                     {topics.map((t, i) => (
-                      <span key={i} className="px-3 py-1 bg-slate-100 text-[#0C2340] text-sm font-medium rounded-full">
+                      <span key={i} className="px-3 py-1 text-sm font-medium rounded-full" style={{ background: 'var(--cream)', color: 'var(--navy)' }}>
                         {t}
                       </span>
                     ))}
@@ -86,22 +86,22 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
                   <dl className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <dt className="text-slate-600">Bills filed</dt>
-                      <dd className="font-semibold text-[#0C2340]">{bills.length}</dd>
+                      <dd className="font-semibold" style={{ color: 'var(--navy)' }}>{bills.length}</dd>
                     </div>
                     <div className="flex justify-between">
                       <dt className="text-slate-600">Active bills</dt>
-                      <dd className="font-semibold text-[#0C2340]">{activeBills}</dd>
+                      <dd className="font-semibold" style={{ color: 'var(--navy)' }}>{activeBills}</dd>
                     </div>
                     {houseBills > 0 && (
                       <div className="flex justify-between">
                         <dt className="text-slate-600">House bills</dt>
-                        <dd className="font-semibold text-[#0C2340]">{houseBills}</dd>
+                        <dd className="font-semibold" style={{ color: 'var(--navy)' }}>{houseBills}</dd>
                       </div>
                     )}
                     {senateBills > 0 && (
                       <div className="flex justify-between">
                         <dt className="text-slate-600">Senate bills</dt>
-                        <dd className="font-semibold text-[#0C2340]">{senateBills}</dd>
+                        <dd className="font-semibold" style={{ color: 'var(--navy)' }}>{senateBills}</dd>
                       </div>
                     )}
                   </dl>
@@ -113,7 +113,7 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
           {/* Bills list — shown only when bills exist */}
           {bills.length > 0 && (
             <div className="mt-10">
-              <h2 className="text-xl font-bold text-[#0C2340] mb-6">
+              <h2 className="text-xl font-bold mb-6" style={{ color: 'var(--navy)' }}>
                 Bills Filed — 2026 Regular Session ({bills.length})
               </h2>
               <LegislatorBills bills={bills} />

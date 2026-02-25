@@ -1,13 +1,61 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 export default function DisclaimerModal() {
   const [isOpen, setIsOpen] = useState(false)
+  const modalRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const hasAccepted = localStorage.getItem('disclaimer_accepted')
     if (!hasAccepted) setIsOpen(true)
   }, [])
+
+  // Focus trap + Escape to close
+  useEffect(() => {
+    if (!isOpen) return
+
+    const modal = modalRef.current
+    if (!modal) return
+
+    const focusableSelectors = [
+      'a[href]', 'button:not([disabled])', 'input:not([disabled])',
+      'select:not([disabled])', 'textarea:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(', ')
+
+    // Focus the first focusable element on open
+    const firstFocusable = modal.querySelector<HTMLElement>(focusableSelectors)
+    firstFocusable?.focus()
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        // Escape does not dismiss — user must actively accept the disclaimer
+        return
+      }
+      if (e.key !== 'Tab') return
+
+      const focusable = Array.from(modal.querySelectorAll<HTMLElement>(focusableSelectors))
+      if (focusable.length === 0) return
+
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen])
 
   const handleAccept = () => {
     const acceptanceLog = {
@@ -25,7 +73,7 @@ export default function DisclaimerModal() {
     fontFamily: 'var(--font-serif)',
     fontSize: '20px',
     fontWeight: 700,
-    color: '#0C2340',
+    color: 'var(--navy)',
     marginTop: '28px',
     marginBottom: '10px',
   }
@@ -34,7 +82,7 @@ export default function DisclaimerModal() {
     fontFamily: 'var(--font-sans)',
     fontSize: '13px',
     lineHeight: 1.8,
-    color: '#5a5248',
+    color: 'var(--text-secondary)',
     fontWeight: 300,
     margin: 0,
   }
@@ -51,40 +99,46 @@ export default function DisclaimerModal() {
       padding: '24px',
       backdropFilter: 'blur(4px)',
     }}>
-      <div style={{
-        background: '#F7F4EF',
-        border: '1px solid #DDD8CE',
-        maxWidth: '680px',
-        width: '100%',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+        style={{
+          background: 'var(--cream)',
+          border: '1px solid var(--border)',
+          maxWidth: '680px',
+          width: '100%',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
 
         {/* Header */}
         <div style={{
-          background: '#0C2340',
-          borderBottom: '3px solid #C4922A',
+          background: 'var(--navy)',
+          borderBottom: '3px solid var(--gold)',
           padding: '28px 36px',
           flexShrink: 0,
         }}>
           <div style={{
             fontFamily: 'var(--font-sans)',
-            fontSize: '10px',
+            fontSize: 'var(--text-xs)',
             fontWeight: 600,
-            color: '#C4922A',
+            color: 'var(--gold)',
             letterSpacing: '0.2em',
             textTransform: 'uppercase',
             marginBottom: '8px',
           }}>
             Important Notice
           </div>
-          <h2 style={{
+          <h2 id="modal-title" style={{
             fontFamily: 'var(--font-serif)',
             fontSize: '30px',
             fontWeight: 700,
-            color: '#fff',
+            color: 'var(--white)',
             margin: 0,
             lineHeight: 1.1,
           }}>
@@ -97,8 +151,8 @@ export default function DisclaimerModal() {
 
           {/* AI notice callout */}
           <div style={{
-            background: '#fff',
-            borderLeft: '4px solid #C4922A',
+            background: 'var(--white)',
+            borderLeft: '4px solid var(--gold)',
             padding: '14px 18px',
             marginBottom: '4px',
           }}>
@@ -106,7 +160,7 @@ export default function DisclaimerModal() {
               fontFamily: 'var(--font-sans)',
               fontSize: '12px',
               fontWeight: 600,
-              color: '#0C2340',
+              color: 'var(--navy)',
               margin: 0,
               letterSpacing: '0.02em',
             }}>
@@ -116,7 +170,7 @@ export default function DisclaimerModal() {
 
           <div style={{ marginTop: '20px' }}>
             <p style={body}>
-              <strong style={{ fontWeight: 600, color: '#0C2340' }}>PLEASE READ CAREFULLY:</strong> This website provides information about Louisiana legislation using artificial intelligence and automated processes. By using this website, you acknowledge and agree to the following:
+              <strong style={{ fontWeight: 600, color: 'var(--navy)' }}>PLEASE READ CAREFULLY:</strong> This website provides information about Louisiana legislation using artificial intelligence and automated processes. By using this website, you acknowledge and agree to the following:
             </p>
 
             <h3 style={sectionHead}>AI-Generated Content</h3>
@@ -136,7 +190,7 @@ export default function DisclaimerModal() {
 
             <h3 style={sectionHead}>User Responsibility to Verify</h3>
             <p style={{ ...body, marginBottom: '10px' }}>
-              <strong style={{ fontWeight: 600, color: '#0C2340' }}>YOU ARE SOLELY RESPONSIBLE</strong> for verifying any information obtained from this website before taking any action based on that information. For official, authoritative information about Louisiana legislation, please consult:
+              <strong style={{ fontWeight: 600, color: 'var(--navy)' }}>YOU ARE SOLELY RESPONSIBLE</strong> for verifying any information obtained from this website before taking any action based on that information. For official, authoritative information about Louisiana legislation, please consult:
             </p>
             <ul style={{ paddingLeft: '20px', margin: '0 0 0 0' }}>
               {[
@@ -161,9 +215,9 @@ export default function DisclaimerModal() {
 
             {/* Acceptance checklist */}
             <div style={{
-              background: '#fff',
-              border: '1px solid #DDD8CE',
-              borderLeft: '4px solid #0C2340',
+              background: 'var(--white)',
+              border: '1px solid var(--border)',
+              borderLeft: '4px solid var(--navy)',
               padding: '20px 24px',
               marginTop: '28px',
             }}>
@@ -171,7 +225,7 @@ export default function DisclaimerModal() {
                 fontFamily: 'var(--font-sans)',
                 fontSize: '12px',
                 fontWeight: 600,
-                color: '#0C2340',
+                color: 'var(--navy)',
                 marginBottom: '12px',
               }}>
                 By clicking I Accept below, you acknowledge that:
@@ -189,8 +243,8 @@ export default function DisclaimerModal() {
                   gap: '8px',
                   marginBottom: i < 4 ? '8px' : 0,
                 }}>
-                  <span style={{ color: '#C4922A', fontWeight: 700, flexShrink: 0, marginTop: '1px' }}>✓</span>
-                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: '#5a5248', fontWeight: 300, lineHeight: 1.6 }}>{item}</span>
+                  <span style={{ color: 'var(--gold)', fontWeight: 700, flexShrink: 0, marginTop: '1px' }}>✓</span>
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 300, lineHeight: 1.6 }}>{item}</span>
                 </div>
               ))}
             </div>
@@ -199,17 +253,17 @@ export default function DisclaimerModal() {
 
         {/* Footer / Accept button */}
         <div style={{
-          borderTop: '1px solid #DDD8CE',
+          borderTop: '1px solid var(--border)',
           padding: '24px 36px',
-          background: '#fff',
+          background: 'var(--white)',
           flexShrink: 0,
         }}>
           <button
             onClick={handleAccept}
             style={{
               width: '100%',
-              background: '#0C2340',
-              color: '#fff',
+              background: 'var(--navy)',
+              color: 'var(--white)',
               padding: '16px',
               fontFamily: 'var(--font-sans)',
               fontSize: '13px',
@@ -224,8 +278,8 @@ export default function DisclaimerModal() {
           </button>
           <p style={{
             fontFamily: 'var(--font-sans)',
-            fontSize: '11px',
-            color: '#aaa',
+            fontSize: 'var(--text-xs)',
+            color: 'var(--text-muted)',
             textAlign: 'center',
             marginTop: '12px',
             marginBottom: 0,

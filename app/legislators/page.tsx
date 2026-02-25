@@ -15,11 +15,11 @@ function Monogram({ name, size = 44 }: { name: string; size?: number }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%',
-      background: '#0C2340',
+      background: 'var(--navy)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0,
     }}>
-      <span style={{ color: '#fff', fontWeight: 700, fontSize: size * 0.36, lineHeight: 1 }}>{mono}</span>
+      <span style={{ color: 'var(--white)', fontWeight: 700, fontSize: size * 0.36, lineHeight: 1 }}>{mono}</span>
     </div>
   )
 }
@@ -65,9 +65,9 @@ export default async function LegislatorsPage({
     borderRadius: 8,
     fontSize: 14,
     fontWeight: 600,
-    background: active ? '#0C2340' : 'transparent',
-    color: active ? '#fff' : '#0C2340',
-    border: `2px solid ${active ? '#0C2340' : '#e2e8f0'}`,
+    background: active ? 'var(--navy)' : 'transparent',
+    color: active ? 'var(--white)' : 'var(--navy)',
+    border: `2px solid ${active ? 'var(--navy)' : 'var(--border)'}`,
     textDecoration: 'none',
     transition: 'all 0.15s',
   } as React.CSSProperties)
@@ -77,33 +77,33 @@ export default async function LegislatorsPage({
       <Header />
 
       <main className="flex-1 py-10">
-        <div className="container mx-auto px-4 max-w-7xl">
+        <div className="container mx-auto px-4" style={{ maxWidth: 'var(--width-wide)' }}>
 
           {/* Page header */}
           <div className="mb-8">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-[#C4922A] hover:underline mb-4 font-medium text-sm uppercase tracking-wider"
+              className="inline-flex items-center gap-2 hover:underline mb-4 font-medium text-sm uppercase tracking-wider" style={{ color: 'var(--gold)' }}
             >
               ← All Bills
             </Link>
 
-            <div className="bg-[#0C2340] rounded-2xl p-8 text-white mb-6">
-              <h1 className="text-4xl font-bold mb-2" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif' }}>
+            <div className="rounded-2xl p-8 mb-6" style={{ backgroundColor: 'var(--navy)', color: 'var(--white)' }}>
+              <h1 className="text-4xl font-bold mb-2" style={{ fontFamily: 'var(--font-serif)' }}>
                 Louisiana Legislators
               </h1>
               <p className="text-blue-200 text-base mb-6">2026 Regular Session</p>
               <div className="flex flex-wrap gap-8 text-sm">
                 <div>
-                  <span className="text-[#C4922A] font-bold text-2xl">{houseCount}</span>
+                  <span className="font-bold text-2xl" style={{ color: 'var(--gold)' }}>{houseCount}</span>
                   <span className="text-blue-200 ml-2">House members</span>
                 </div>
                 <div>
-                  <span className="text-[#C4922A] font-bold text-2xl">{senateCount}</span>
+                  <span className="font-bold text-2xl" style={{ color: 'var(--gold)' }}>{senateCount}</span>
                   <span className="text-blue-200 ml-2">Senators</span>
                 </div>
                 <div>
-                  <span className="text-[#C4922A] font-bold text-2xl">{totalBills}</span>
+                  <span className="font-bold text-2xl" style={{ color: 'var(--gold)' }}>{totalBills}</span>
                   <span className="text-blue-200 ml-2">bills filed</span>
                 </div>
               </div>
@@ -140,7 +140,7 @@ export default async function LegislatorsPage({
                   <Link
                     key={`${leg.chamber}-${leg.district_number}`}
                     href={`/legislator/${encodeURIComponent(leg.name)}`}
-                    className="group block bg-white rounded-xl border border-slate-200 hover:border-[#0C2340] hover:shadow-md transition-all p-4"
+                    className="group block bg-white rounded-xl border border-[var(--border)] hover:border-[var(--navy)] hover:shadow-md transition-all p-4"
                   >
                     <div className="flex items-center gap-3">
                       {/* Photo or monogram */}
@@ -154,7 +154,7 @@ export default async function LegislatorsPage({
                               width: 48, height: 48,
                               borderRadius: '50%',
                               objectFit: 'cover',
-                              border: '2px solid #e2e8f0',
+                              border: '2px solid var(--border)',
                             }}
                           />
                         ) : (
@@ -167,14 +167,14 @@ export default async function LegislatorsPage({
                             width: 12, height: 12,
                             borderRadius: '50%',
                             background: partyColor,
-                            border: '2px solid #fff',
+                            border: '2px solid var(--white)',
                           }} />
                         )}
                       </div>
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2 flex-wrap">
-                          <span className="font-semibold text-slate-900 group-hover:text-[#0C2340] transition-colors text-sm leading-snug">
+                          <span className="font-semibold transition-colors text-sm leading-snug" style={{ color: 'var(--text-primary)' }}>
                             {leg.name}
                           </span>
                         </div>
@@ -197,7 +197,7 @@ export default async function LegislatorsPage({
                         </div>
                       </div>
 
-                      <svg className="w-4 h-4 text-slate-300 group-hover:text-[#C4922A] flex-shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-4 h-4 flex-shrink-0 transition-colors" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>

@@ -29,12 +29,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F4EF' }}>
-      <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md border border-[#DDD8CE]">
-        <h1 className="text-3xl font-bold mb-2 text-center" style={{ color: '#0C2340', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--cream)' }}>
+      <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md border border-[var(--border)]">
+        <h1 className="text-3xl font-bold mb-2 text-center" style={{ color: 'var(--navy)', fontFamily: 'var(--font-serif)' }}>
           Sign In
         </h1>
-        <p className="text-center text-sm mb-8" style={{ color: '#6B7280' }}>
+        <p className="text-center text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
           Access your SessionSource watchlist
         </p>
         {error && (
@@ -44,37 +44,36 @@ export default function LoginPage() {
         )}
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: '#0C2340' }}>Email</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>Email</label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              className="w-full border border-[#DDD8CE] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4922A]"
+              className="w-full border border-[var(--border)] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--gold)]"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: '#0C2340' }}>Password</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>Password</label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
-              className="w-full border border-[#DDD8CE] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4922A]"
+              className="w-full border border-[var(--border)] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--gold)]"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-lg font-semibold text-white transition-opacity"
-            style={{ backgroundColor: '#0C2340' }}
+            className="btn btn-primary w-full"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-        <p className="text-center text-sm mt-6" style={{ color: '#6B7280' }}>
+        <p className="text-center text-sm mt-6" style={{ color: 'var(--text-secondary)' }}>
           No account?{' '}
-          <Link href="/auth/signup" className="font-medium" style={{ color: '#C4922A' }}>
+          <Link href="/auth/signup" className="font-medium" style={{ color: 'var(--gold)' }}>
             Create one free
           </Link>
         </p>
