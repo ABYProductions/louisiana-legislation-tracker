@@ -70,7 +70,7 @@ function SkeletonRow() {
   )
 }
 
-export default function NewsWidget() {
+export default function NewsWidget({ embedded = false }: { embedded?: boolean }) {
   const [articles, setArticles] = useState<NewsArticle[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -109,13 +109,13 @@ export default function NewsWidget() {
     return () => clearInterval(interval)
   }, [fetchedAt])
 
-  const breaking = articles.find(a => a.is_breaking)
-  const displayArticles = articles.filter(a => !a.is_breaking).slice(0, 5)
+  const breaking = embedded ? null : articles.find(a => a.is_breaking)
+  const displayArticles = articles.filter(a => !a.is_breaking).slice(0, embedded ? 4 : 5)
 
   return (
     <div style={{ width: '100%' }}>
-      {/* ── Widget header ── */}
-      <div style={{
+      {/* ── Widget header (hidden in embedded mode) ── */}
+      {!embedded && <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -162,7 +162,7 @@ export default function NewsWidget() {
         >
           View all news →
         </Link>
-      </div>
+      </div>}
 
       {/* ── Breaking news banner ── */}
       {breaking && (
@@ -346,8 +346,8 @@ export default function NewsWidget() {
         </div>
       )}
 
-      {/* ── Widget footer ── */}
-      {!loading && !error && (
+      {/* ── Widget footer (hidden in embedded mode) ── */}
+      {!embedded && !loading && !error && (
         <div style={{
           paddingTop: 'var(--space-3)',
           borderTop: '1px solid var(--border)',

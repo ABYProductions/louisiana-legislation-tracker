@@ -89,8 +89,13 @@ function SkeletonCard() {
   )
 }
 
-export default function SubjectHeatmap() {
+export default function SubjectHeatmap({ compact = false }: { compact?: boolean }) {
   const router = useRouter()
+  const columns = compact ? 3 : 6
+  const rows = compact ? 4 : 3
+  const tileHeight = compact ? 52 : 56
+  const maxTiles = compact ? 12 : 18
+  const maxBills = compact ? 6 : 24
   const [subjects, setSubjects] = useState<SubjectItem[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null)
@@ -181,19 +186,19 @@ export default function SubjectHeatmap() {
         aria-label="Legislative subject areas"
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(6, 1fr)',
-          gridTemplateRows: 'repeat(3, 56px)',
+          gridTemplateColumns: `repeat(${columns}, 1fr)`,
+          gridTemplateRows: `repeat(${rows}, ${tileHeight}px)`,
           gap: '8px',
           overflow: 'hidden',
-          height: `${3 * 56 + 2 * 8}px`,
+          height: `${rows * tileHeight + (rows - 1) * 8}px`,
         }}
-        className="subject-heatmap-grid"
+        className={compact ? undefined : 'subject-heatmap-grid'}
       >
         {loading
-          ? Array.from({ length: 18 }).map((_, i) => (
+          ? Array.from({ length: maxTiles }).map((_, i) => (
               <div key={i} role="listitem"><SkeletonTile /></div>
             ))
-          : subjects.slice(0, 18).map((s, i) => {
+          : subjects.slice(0, maxTiles).map((s, i) => {
               const selected = s.name === selectedSubject
               const tileStyle = getTileStyle(i, selected)
               return (
@@ -210,7 +215,7 @@ export default function SubjectHeatmap() {
                     }}
                     style={{
                       width: '100%',
-                      height: '56px',
+                      height: `${tileHeight}px`,
                       padding: 'var(--space-2) var(--space-3)',
                       display: 'flex',
                       flexDirection: 'column',
@@ -340,10 +345,10 @@ export default function SubjectHeatmap() {
               {billsLoading ? (
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                  gridTemplateColumns: compact ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))',
                   gap: 'var(--space-3)',
                 }}>
-                  {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+                  {Array.from({ length: compact ? 3 : 6 }).map((_, i) => <SkeletonCard key={i} />)}
                 </div>
               ) : selectedBills.length === 0 ? (
                 <div style={{
@@ -359,10 +364,10 @@ export default function SubjectHeatmap() {
                 <>
                   <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                    gridTemplateColumns: compact ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))',
                     gap: 'var(--space-3)',
                   }}>
-                    {selectedBills.map(bill => (
+                    {selectedBills.slice(0, maxBills).map(bill => (
                       <article
                         key={bill.id}
                         role="article"
@@ -454,7 +459,7 @@ export default function SubjectHeatmap() {
                     ))}
                   </div>
 
-                  {billsTotal > 24 && (
+                  {billsTotal > maxBills && (
                     <div style={{
                       textAlign: 'center',
                       marginTop: 'var(--space-4)',
@@ -463,7 +468,7 @@ export default function SubjectHeatmap() {
                       gap: 'var(--space-2)',
                     }}>
                       <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-                        Showing 24 of {billsTotal} bills
+                        Showing {maxBills} of {billsTotal} bills
                       </span>
                       <a
                         href={`/?subject=${encodeURIComponent(selectedSubject)}#bills`}

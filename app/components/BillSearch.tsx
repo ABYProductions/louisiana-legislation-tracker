@@ -10,6 +10,7 @@ import type { SearchResponse } from '@/app/api/search/route'
 interface BillSearchProps {
   initialQuery: string
   initialFilters: SearchFilterState
+  hideSearchBar?: boolean
 }
 
 function filtersAreEmpty(f: SearchFilterState): boolean {
@@ -82,7 +83,7 @@ function buildRouterParams(
   return params.toString()
 }
 
-export default function BillSearch({ initialQuery, initialFilters }: BillSearchProps) {
+export default function BillSearch({ initialQuery, initialFilters, hideSearchBar = false }: BillSearchProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -168,7 +169,7 @@ export default function BillSearch({ initialQuery, initialFilters }: BillSearchP
     [postAnalytics]
   )
 
-  // Sync URL → state when searchParams change externally (browser back/forward)
+  // Sync URL → state and re-search whenever URL params change (includes external updates from CommandHeader)
   useEffect(() => {
     const urlQuery = searchParams.get('q') || ''
     const urlPage = parseInt(searchParams.get('page') || '1', 10) || 1
@@ -189,13 +190,9 @@ export default function BillSearch({ initialQuery, initialFilters }: BillSearchP
     setFilters(urlFilters)
     setPage(urlPage)
     setPageSize(urlLimit)
+    performSearch(urlQuery, urlFilters, urlPage, urlLimit)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
-
-  // Initial search on mount
-  useEffect(() => {
-    performSearch(query, filters, page, pageSize)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const handleQueryChange = useCallback(
     (q: string) => {
@@ -279,12 +276,14 @@ export default function BillSearch({ initialQuery, initialFilters }: BillSearchP
 
   return (
     <div>
-      <SearchBar
-        initialQuery={query}
-        totalResults={total}
-        activeFilters={activeFilterRecord}
-        onSearch={handleQueryChange}
-      />
+      {!hideSearchBar && (
+        <SearchBar
+          initialQuery={query}
+          totalResults={total}
+          activeFilters={activeFilterRecord}
+          onSearch={handleQueryChange}
+        />
+      )}
 
       <SearchFilters
         filters={filters}
