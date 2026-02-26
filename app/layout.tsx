@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import BetaBanner from "./components/BetaBanner";
 import DisclaimerModal from "./components/DisclaimerModal";
 import AuthProvider from "@/app/components/AuthProvider";
 import WatchlistProvider from "@/app/components/WatchlistProvider";
@@ -19,6 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <BetaBanner />
         <a href="#main-content" className="skip-to-content">
           Skip to main content
         </a>
