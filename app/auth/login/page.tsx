@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getSupabaseBrowser } from '@/lib/supabase'
+import Logo from '@/app/components/Logo'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -30,7 +31,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--cream)' }}>
-      <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md border border-[var(--border)]">
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', width: '100%', maxWidth: '448px', padding: '0 24px' }}>
+        <Logo variant="stacked" size="lg" theme="dark" />
+      <div className="bg-white rounded-2xl shadow-lg p-10 w-full border border-[var(--border)]">
         <h1 className="text-3xl font-bold mb-2 text-center" style={{ color: 'var(--navy)', fontFamily: 'var(--font-serif)' }}>
           Sign In
         </h1>
@@ -77,6 +80,7 @@ export default function LoginPage() {
             Create one free
           </Link>
         </p>
+      </div>
       </div>
     </div>
   )

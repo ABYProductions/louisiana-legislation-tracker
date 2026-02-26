@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useAuth } from './AuthProvider'
+import Logo from './Logo'
 
 export default function Header() {
   const pathname = usePathname()
@@ -77,7 +78,7 @@ export default function Header() {
             display: 'inline-block',
             animation: 'pulse 2s infinite',
           }} />
-          Session opens March 10, 2026
+          Session opens March 9, 2026
         </span>
       </div>
 
@@ -95,12 +96,7 @@ export default function Header() {
         zIndex: 50,
       }}>
         <Link href="/" style={{ textDecoration: 'none' }}>
-          <div style={{ fontFamily: 'var(--font-serif)', fontSize: '27px', fontWeight: 700, color: 'var(--navy)', letterSpacing: '0.02em', lineHeight: 1 }}>
-            SessionSource
-          </div>
-          <div style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-xs)', color: 'var(--gold)', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 500, marginTop: '2px' }}>
-            Louisiana Legislature
-          </div>
+          <Logo variant="full" size="sm" theme="light" />
         </Link>
 
         {/* Desktop nav */}
@@ -214,12 +210,7 @@ export default function Header() {
         >
           <div className="mobile-nav-overlay-header">
             <Link href="/" style={{ textDecoration: 'none' }} onClick={() => setMobileOpen(false)}>
-              <div style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', fontWeight: 700, color: 'var(--white)', lineHeight: 1 }}>
-                SessionSource
-              </div>
-              <div style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-xs)', color: 'var(--gold)', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 500, marginTop: '2px' }}>
-                Louisiana Legislature
-              </div>
+              <Logo variant="full" size="sm" theme="dark" />
             </Link>
             <button
               aria-label="Close navigation menu"

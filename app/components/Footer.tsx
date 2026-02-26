@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getSupabaseServer } from '@/lib/supabase'
+import Logo from './Logo'
 
 async function getLastSyncTime(): Promise<string | null> {
   try {
@@ -41,11 +42,8 @@ export default async function Footer() {
       }}>
         {/* Brand */}
         <div>
-          <div style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', fontWeight: 700, color: 'var(--white)', marginBottom: '6px' }}>
-            SessionSource
-          </div>
-          <div style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-xs)', color: 'var(--gold)', letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 500, marginBottom: '16px' }}>
-            Louisiana Legislature
+          <div style={{ marginBottom: '16px' }}>
+            <Logo variant="full" size="sm" theme="dark" />
           </div>
           <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-sm)', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, fontWeight: 300 }}>
             Tracking legislation in the Louisiana State Legislature. AI-powered summaries for every citizen of the Pelican State.
@@ -90,7 +88,7 @@ export default async function Footer() {
           </div>
           <div style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-sm)', color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, fontWeight: 300 }}>
             <div>2026 Regular Session</div>
-            <div>Opens: March 10, 2026</div>
+            <div>Opens: March 9, 2026</div>
             <div style={{ marginTop: '12px' }}>
               <a
                 href="https://legis.la.gov"

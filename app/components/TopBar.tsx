@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useAuth } from './AuthProvider'
 import { useWatchlist } from './WatchlistProvider'
+import Logo from './Logo'
 
 const SESSION_START = new Date('2026-03-09T00:00:00')
 const SESSION_END = new Date('2026-06-01T18:00:00') // Sine die no later than 6pm June 1
@@ -71,47 +72,8 @@ export default function TopBar() {
         }}>
 
           {/* ── Left: Branding ── */}
-          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              background: 'var(--gold)',
-              borderRadius: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}>
-              <span style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 'var(--text-sm)',
-                fontWeight: 'var(--weight-bold)',
-                color: 'var(--navy)',
-                lineHeight: 1,
-              }}>SS</span>
-            </div>
-            <div>
-              <div style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 'var(--text-lg)',
-                fontWeight: 'var(--weight-semibold)',
-                color: 'white',
-                letterSpacing: '-0.02em',
-                lineHeight: 1.1,
-              }}>
-                SessionSource
-              </div>
-              <div style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: 'var(--text-xs)',
-                color: 'var(--gold)',
-                textTransform: 'uppercase',
-                letterSpacing: 'var(--tracking-wide)',
-                fontWeight: 'var(--weight-medium)',
-              }}>
-                Louisiana Legislature
-              </div>
-            </div>
+          <Link href="/" style={{ textDecoration: 'none' }}>
+            <Logo variant="full" size="sm" theme="dark" />
           </Link>
 
           {/* ── Center: Nav links (desktop) ── */}

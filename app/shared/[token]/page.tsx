@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Logo from '@/app/components/Logo'
 
 export const dynamic = 'force-dynamic'
 
@@ -145,11 +146,8 @@ export default async function SharedWatchlistPage({
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <div style={{ width: '28px', height: '28px', background: 'var(--gold)', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontFamily: 'var(--font-serif)', fontSize: '12px', fontWeight: 700, color: 'var(--navy)' }}>SS</span>
-            </div>
-            <span style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--text-base)', fontWeight: 600, color: 'white' }}>SessionSource</span>
+          <Link href="/" style={{ textDecoration: 'none' }}>
+            <Logo variant="full" size="sm" theme="dark" />
           </Link>
           <div style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-sm)', color: 'rgba(255,255,255,0.5)' }}>
             Shared Watchlist
