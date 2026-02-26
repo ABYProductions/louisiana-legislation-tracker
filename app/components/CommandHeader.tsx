@@ -228,7 +228,6 @@ function CommandHeaderContent({ totalCount, summaryCount, legislatorCount, initi
         >
           {[
             { number: totalCount.toLocaleString(), label: 'Bills Tracked' },
-            { number: summaryCount.toLocaleString(), label: 'With AI Summaries' },
             { number: legislatorCount.toLocaleString(), label: 'Legislators' },
             { number: daysLabel, label: daysSubLabel },
           ].map((stat, i, arr) => (
@@ -312,7 +311,6 @@ function CommandHeaderFallback({ totalCount, summaryCount, legislatorCount }: Om
         <div style={{ paddingTop: 'var(--space-5)', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex' }}>
           {[
             { number: totalCount.toLocaleString(), label: 'Bills Tracked' },
-            { number: summaryCount.toLocaleString(), label: 'With AI Summaries' },
             { number: legislatorCount.toLocaleString(), label: 'Legislators' },
             { number: getDaysLabel(), label: getDaysSubLabel() },
           ].map((stat, i, arr) => (
