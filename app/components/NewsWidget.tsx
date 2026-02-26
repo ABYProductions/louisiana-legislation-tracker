@@ -112,57 +112,100 @@ export default function NewsWidget({ embedded = false }: { embedded?: boolean })
   const breaking = embedded ? null : articles.find(a => a.is_breaking)
   const displayArticles = articles.filter(a => !a.is_breaking).slice(0, embedded ? 4 : 5)
 
-  return (
-    <div style={{ width: '100%' }}>
-      {/* ── Widget header (hidden in embedded mode) ── */}
-      {!embedded && <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        height: '40px',
-        marginBottom: breaking ? 'var(--space-3)' : 'var(--space-2)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-          <span style={{
-            width: 8, height: 8,
-            borderRadius: '50%',
-            background: '#22C55E',
-            display: 'inline-block',
-            flexShrink: 0,
-            animation: 'news-pulse 2s ease-in-out infinite',
-          }} />
-          <span style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: 'var(--text-sm)',
-            fontWeight: 'var(--weight-semibold)',
-            color: 'var(--text-secondary)',
-            textTransform: 'uppercase',
-            letterSpacing: 'var(--tracking-wide)',
-          }}>
-            Session News
-          </span>
-          {lastUpdatedStr && (
+  const content = (
+    <>
+      {/* ── Widget header ── */}
+      {embedded ? (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 'var(--space-4) var(--space-5)',
+          borderBottom: '1px solid var(--border)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <span style={{
+              width: 7, height: 7,
+              borderRadius: '50%',
+              background: '#22C55E',
+              display: 'inline-block',
+              flexShrink: 0,
+              animation: 'news-pulse 2s ease-in-out infinite',
+            }} />
             <span style={{
               fontFamily: 'var(--font-sans)',
               fontSize: 'var(--text-xs)',
-              color: 'var(--text-muted)',
+              fontWeight: 700,
+              color: 'var(--navy)',
+              textTransform: 'uppercase',
+              letterSpacing: 'var(--tracking-wide)',
             }}>
-              {lastUpdatedStr}
+              Session News
             </span>
-          )}
+          </div>
+          <Link href="/news" style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: 'var(--text-xs)',
+            color: 'var(--gold)',
+            textDecoration: 'none',
+            fontWeight: 600,
+          }}>
+            All News →
+          </Link>
         </div>
-        <Link href="/news" style={{
-          fontFamily: 'var(--font-sans)',
-          fontSize: 'var(--text-xs)',
-          color: 'var(--navy)',
-          fontWeight: 'var(--weight-medium)',
-          textDecoration: 'none',
-        }}
-          className="news-view-all-link"
-        >
-          View all news →
-        </Link>
-      </div>}
+      ) : (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          height: '40px',
+          marginBottom: breaking ? 'var(--space-3)' : 'var(--space-2)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <span style={{
+              width: 8, height: 8,
+              borderRadius: '50%',
+              background: '#22C55E',
+              display: 'inline-block',
+              flexShrink: 0,
+              animation: 'news-pulse 2s ease-in-out infinite',
+            }} />
+            <span style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: 'var(--text-sm)',
+              fontWeight: 'var(--weight-semibold)',
+              color: 'var(--text-secondary)',
+              textTransform: 'uppercase',
+              letterSpacing: 'var(--tracking-wide)',
+            }}>
+              Session News
+            </span>
+            {lastUpdatedStr && (
+              <span style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-muted)',
+              }}>
+                {lastUpdatedStr}
+              </span>
+            )}
+          </div>
+          <Link href="/news" style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: 'var(--text-xs)',
+            color: 'var(--navy)',
+            fontWeight: 'var(--weight-medium)',
+            textDecoration: 'none',
+          }}
+            className="news-view-all-link"
+          >
+            View all news →
+          </Link>
+        </div>
+      )}
+
+      {/* ── Article content (padded when embedded) ── */}
+      <div style={embedded ? { padding: 'var(--space-3) var(--space-5)' } : {}}>
 
       {/* ── Breaking news banner ── */}
       {breaking && (
@@ -346,6 +389,8 @@ export default function NewsWidget({ embedded = false }: { embedded?: boolean })
         </div>
       )}
 
+      </div>{/* end article content wrapper */}
+
       {/* ── Widget footer (hidden in embedded mode) ── */}
       {!embedded && !loading && !error && (
         <div style={{
@@ -398,6 +443,26 @@ export default function NewsWidget({ embedded = false }: { embedded?: boolean })
           background: var(--cream) !important;
         }
       `}</style>
+    </>
+  )
+
+  if (embedded) {
+    return (
+      <div style={{
+        background: 'var(--white)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        overflow: 'hidden',
+        marginBottom: 'var(--space-4)',
+      }}>
+        {content}
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ width: '100%' }}>
+      {content}
     </div>
   )
 }

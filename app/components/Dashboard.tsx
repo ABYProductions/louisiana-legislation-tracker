@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import BillSearch from './BillSearch'
+import CollapsibleBillSearch from './CollapsibleBillSearch'
 import WatchlistSidebarPanel from './WatchlistSidebarPanel'
 import NewsWidget from './NewsWidget'
 import SubjectHeatmap from './SubjectHeatmap'
@@ -35,10 +35,9 @@ export default function Dashboard({ initialQuery, initialFilters }: DashboardPro
             Loading bills...
           </div>
         }>
-          <BillSearch
+          <CollapsibleBillSearch
             initialQuery={initialQuery}
             initialFilters={initialFilters}
-            hideSearchBar
           />
         </Suspense>
       </div>

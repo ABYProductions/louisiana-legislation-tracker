@@ -150,37 +150,65 @@ export default function SubjectHeatmap({ compact = false }: { compact?: boolean 
   }, [selectedSubject])
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={compact ? {
+      background: 'var(--white)',
+      border: '1px solid var(--border)',
+      borderRadius: 'var(--radius-lg)',
+      overflow: 'hidden',
+      marginBottom: 'var(--space-4)',
+    } : { width: '100%' }}>
       {/* ── Component header ── */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        height: '32px',
-        marginBottom: 'var(--space-3)',
-      }}>
-        <span style={{
-          fontFamily: 'var(--font-sans)',
-          fontSize: 'var(--text-sm)',
-          fontWeight: 'var(--weight-semibold)',
-          color: 'var(--text-secondary)',
-          textTransform: 'uppercase',
-          letterSpacing: 'var(--tracking-wide)',
+      {compact ? (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 'var(--space-4) var(--space-5)',
+          borderBottom: '1px solid var(--border)',
         }}>
-          Browse by Subject
-        </span>
-        {!loading && (
           <span style={{
             fontFamily: 'var(--font-sans)',
             fontSize: 'var(--text-xs)',
-            color: 'var(--text-muted)',
+            fontWeight: 700,
+            color: 'var(--navy)',
+            textTransform: 'uppercase',
+            letterSpacing: 'var(--tracking-wide)',
           }}>
-            {subjects.length} subject areas
+            Browse by Subject
           </span>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          height: '32px',
+          marginBottom: 'var(--space-3)',
+        }}>
+          <span style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 'var(--weight-semibold)',
+            color: 'var(--text-secondary)',
+            textTransform: 'uppercase',
+            letterSpacing: 'var(--tracking-wide)',
+          }}>
+            Browse by Subject
+          </span>
+          {!loading && (
+            <span style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-muted)',
+            }}>
+              {subjects.length} subject areas
+            </span>
+          )}
+        </div>
+      )}
 
       {/* ── Tile grid ── */}
+      <div style={compact ? { padding: 'var(--space-4) var(--space-5)' } : {}}>
       <div
         role="list"
         aria-label="Legislative subject areas"
@@ -252,6 +280,7 @@ export default function SubjectHeatmap({ compact = false }: { compact?: boolean 
             })
         }
       </div>
+      </div>{/* end tile grid wrapper */}
 
       {/* ── Expansion panel ── */}
       <div

@@ -123,19 +123,6 @@ function ResultCard({ result }: { result: SearchResult }) {
               {result.bill_number}
             </span>
             <ChamberBadge billNumber={result.bill_number} />
-            {result.bill_type && result.bill_type !== result.bill_number && (
-              <span style={{
-                display: 'inline-block',
-                padding: '1px 6px',
-                fontSize: '11px',
-                fontFamily: 'var(--font-sans)',
-                color: 'var(--text-muted)',
-                border: '1px solid var(--border)',
-                marginLeft: '4px',
-              }}>
-                {result.bill_type}
-              </span>
-            )}
           </div>
           {result.status && (
             <span style={{
