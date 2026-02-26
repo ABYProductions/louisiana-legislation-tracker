@@ -76,7 +76,7 @@ function formatLong(d: string | null) {
 
 async function getSharedData(token: string) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://sessionsource.net')
   try {
     const res = await fetch(`${baseUrl}/api/shared/${token}`, { cache: 'no-store' })
     if (!res.ok) return null

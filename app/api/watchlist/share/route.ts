@@ -13,7 +13,8 @@ async function getAuthClient() {
 }
 
 function getBaseUrl(req: NextRequest): string {
-  const host = req.headers.get('host') || 'localhost:3000'
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL
+  const host = req.headers.get('host') || 'sessionsource.net'
   const protocol = host.includes('localhost') ? 'http' : 'https'
   return `${protocol}://${host}`
 }

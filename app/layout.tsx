@@ -6,6 +6,7 @@ import WatchlistProvider from "@/app/components/WatchlistProvider";
 import ErrorBoundary from "@/app/components/ErrorBoundary";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://sessionsource.net'),
   title: "SessionSource - Louisiana",
   description: "Track Louisiana state legislation with AI-powered summaries",
 };
