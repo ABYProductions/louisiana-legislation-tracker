@@ -90,49 +90,62 @@ export default function Logo({
           justifyContent: 'center',
         }}
       >
-        {/* S · S */}
+        {/* SS shadow + main + underline */}
         <div
           style={{
+            position: 'relative',
             display: 'flex',
             alignItems: 'center',
-            gap: s.dotGap,
-            position: 'relative',
-            top: 1,
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%',
           }}
         >
+          {/* Shadow layer — gold SS offset down-right */}
           <span
             style={{
+              position: 'absolute',
               fontFamily: "var(--font-serif, 'Cormorant Garamond', Georgia, serif)",
               fontSize: s.fontSize,
               fontWeight: 700,
               color: '#C4922A',
+              opacity: 0.28,
+              letterSpacing: '0.08em',
               lineHeight: 1,
+              userSelect: 'none',
+              transform: 'translate(2px, 2px)',
             }}
           >
-            S
+            SS
           </span>
+          {/* Main SS — white, sits above shadow */}
           <span
             style={{
-              width: s.dotSize,
-              height: s.dotSize,
-              borderRadius: '50%',
-              background: '#C4922A',
-              flexShrink: 0,
               position: 'relative',
-              top: -2,
+              fontFamily: "var(--font-serif, 'Cormorant Garamond', Georgia, serif)",
+              fontSize: s.fontSize,
+              fontWeight: 700,
+              color: 'white',
+              letterSpacing: '0.08em',
+              lineHeight: 1,
+              userSelect: 'none',
+            }}
+          >
+            SS
+          </span>
+          {/* Gold underline bar */}
+          <span
+            style={{
+              position: 'absolute',
+              bottom: '18%',
+              left: '18%',
+              right: '18%',
+              height: 2,
+              borderRadius: 1,
+              background: 'linear-gradient(90deg, #d4a843, #C4922A)',
+              opacity: 0.7,
             }}
           />
-          <span
-            style={{
-              fontFamily: "var(--font-serif, 'Cormorant Garamond', Georgia, serif)",
-              fontSize: s.fontSize,
-              fontWeight: 700,
-              color: '#C4922A',
-              lineHeight: 1,
-            }}
-          >
-            S
-          </span>
         </div>
       </div>
     </div>
