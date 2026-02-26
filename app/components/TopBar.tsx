@@ -80,7 +80,9 @@ export default function TopBar() {
           {/* ── Center: Nav links (desktop) ── */}
           <nav className="topbar-desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)' }}>
             {NAV_LINKS.map(({ href, label }) => {
-              const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href)
+              const isActive = href === '/'
+              ? pathname === '/' || pathname === '/subjects'
+              : pathname.startsWith(href)
               return (
                 <Link
                   key={href}

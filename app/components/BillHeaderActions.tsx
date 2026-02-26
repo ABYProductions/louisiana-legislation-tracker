@@ -142,8 +142,8 @@ export default function BillHeaderActions({ billId, billNumber, pdfUrl, stateLin
         style={{
           ...base,
           background: 'transparent',
-          color: copied ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.4)',
-          border: 'none',
+          color: copied ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.65)',
+          border: copied ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(255,255,255,0.2)',
           fontSize: '11px',
           padding: '6px 14px',
         }}

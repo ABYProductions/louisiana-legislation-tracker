@@ -29,6 +29,14 @@ interface BillCardProps {
   }
 }
 
+function getStatusColor(status: string): string {
+  const s = status?.toLowerCase() || ''
+  if (s.includes('sign') || s.includes('enact') || s.includes('act no')) return '#22C55E'
+  if (s.includes('fail') || s.includes('veto') || s.includes('defeat') || s.includes('lost')) return '#EF4444'
+  if (s.includes('pass') || s.includes('adopt') || s.includes('concur') || s.includes('enroll')) return '#3B82F6'
+  return '#C4922A' // committee / introduced / pre-filed — gold
+}
+
 function PDFPill({ url, billNumber }: { url: string; billNumber: string }) {
   return (
     <a
@@ -96,21 +104,19 @@ export default function BillCard({ bill }: BillCardProps) {
     setActionLoading(false)
   }
 
+  const statusColor = getStatusColor(bill.status)
+
   return (
     <div style={{
       background: 'var(--white)',
       border: '1px solid var(--border)',
-      padding: '22px',
+      borderLeft: `4px solid ${statusColor}`,
+      padding: '22px 22px 22px 20px',
       position: 'relative',
       transition: 'border-color 0.15s, box-shadow 0.15s',
     }}
       className="bill-card-hover"
     >
-      {/* Gold top accent bar */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0,
-        height: '2px', background: 'var(--gold)',
-      }} />
 
       <Link href={`/bill/${bill.id}`} style={{ textDecoration: 'none', display: 'block' }}>
 
@@ -236,8 +242,7 @@ export default function BillCard({ bill }: BillCardProps) {
 
       <style>{`
         .bill-card-hover:hover {
-          border-color: #C4922A;
-          box-shadow: 0 4px 16px rgba(12,35,64,0.08);
+          box-shadow: 0 4px 16px rgba(12,35,64,0.12);
         }
         .watch-btn-watching:hover {
           background: #FEE2E2 !important;

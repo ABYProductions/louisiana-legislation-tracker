@@ -48,6 +48,25 @@ function laLegisUrl(billNumber: string, sessionYear?: number): string {
   return `https://legis.la.gov/legis/BillInfo.aspx?s=${code}&b=${billNumber.replace(/\s+/g, '')}&sbi=y`
 }
 
+const STATUS_STAGES = [
+  { key: 'prefiled', label: 'Pre-filed' },
+  { key: 'introduced', label: 'Introduced' },
+  { key: 'committee', label: 'Committee' },
+  { key: 'floor', label: 'Floor' },
+  { key: 'passed', label: 'Passed' },
+  { key: 'signed', label: 'Signed' },
+]
+
+function getStatusStage(status: string): number {
+  const s = status?.toLowerCase() || ''
+  if (s.includes('sign') || s.includes('enact') || s.includes('act no')) return 5
+  if (s.includes('pass') || s.includes('adopt') || s.includes('concur') || s.includes('enroll')) return 4
+  if (s.includes('floor') || s.includes('third reading') || s.includes('second reading') || s.includes('order') || s.includes('debate')) return 3
+  if (s.includes('committee') || s.includes('refer') || s.includes('hearing') || s.includes('report')) return 2
+  if (s.includes('introduc') || (s.includes('filed') && !s.includes('pre-fil') && !s.includes('prefil'))) return 1
+  return 0
+}
+
 function parseBillType(billNumber: string): string {
   const match = billNumber?.match(/^([A-Z]+)\d/)
   const prefix = match?.[1] || ''
@@ -187,7 +206,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
             style={{
               fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 600,
               letterSpacing: '0.15em', textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.45)', textDecoration: 'none',
+              color: 'rgba(255,255,255,0.75)', textDecoration: 'none',
               display: 'inline-block', marginBottom: '16px',
             }}
             className="bill-breadcrumb"
@@ -217,7 +236,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
               </h1>
 
               {typedBill.description && (
-                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: '16px', fontWeight: 300 }}>
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'rgba(255,255,255,0.80)', lineHeight: 1.5, marginBottom: '16px', fontWeight: 300 }}>
                   {typedBill.description}
                 </p>
               )}
@@ -225,19 +244,19 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
               <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
                 {typedBill.author && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>Sponsor</span>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.65)', fontWeight: 600 }}>Sponsor</span>
                     <Link href={`/legislator/${encodeURIComponent(typedBill.author)}`} style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 600, color: 'white', textDecoration: 'none' }}>
                       {typedBill.author}
                     </Link>
                   </div>
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>Status</span>
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.65)', fontWeight: 600 }}>Status</span>
                   <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 600, color: 'white' }}>{typedBill.status || 'Pre-filed'}</span>
                 </div>
                 {typedBill.last_action_date && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>Last Action</span>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.65)', fontWeight: 600 }}>Last Action</span>
                     <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 600, color: 'white' }}>
                       {new Date(typedBill.last_action_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
@@ -245,7 +264,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
                 )}
                 {typedBill.committee && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>Committee</span>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.65)', fontWeight: 600 }}>Committee</span>
                     <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 600, color: 'white' }}>{typedBill.committee}</span>
                   </div>
                 )}
@@ -262,19 +281,63 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
           </div>
         </div>
 
+        {/* Bill status pipeline */}
+        {(() => {
+          const stage = getStatusStage(typedBill.status || '')
+          return (
+            <div style={{ padding: '14px 32px 4px', maxWidth: '1280px', margin: '0 auto' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                {STATUS_STAGES.map((s, i) => {
+                  const isCurrentStage = i === stage
+                  const isPast = i < stage
+                  return (
+                    <div key={s.key} style={{ display: 'flex', alignItems: 'flex-start', flex: 1 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
+                        <div style={{
+                          width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0,
+                          background: isCurrentStage ? '#C4922A' : isPast ? 'rgba(196,146,42,0.45)' : 'rgba(255,255,255,0.15)',
+                          outline: isCurrentStage ? '2px solid rgba(196,146,42,0.35)' : 'none',
+                          outlineOffset: '2px',
+                        }} />
+                        <span style={{
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '9px',
+                          color: isCurrentStage ? '#C4922A' : isPast ? 'rgba(196,146,42,0.6)' : 'rgba(255,255,255,0.28)',
+                          fontWeight: isCurrentStage ? 700 : 400,
+                          marginTop: '5px',
+                          whiteSpace: 'nowrap',
+                          textAlign: 'center',
+                        }}>
+                          {s.label}
+                        </span>
+                      </div>
+                      {i < STATUS_STAGES.length - 1 && (
+                        <div style={{
+                          height: '1px', flex: 1, marginTop: '4px',
+                          background: isPast ? 'rgba(196,146,42,0.35)' : 'rgba(255,255,255,0.1)',
+                        }} />
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()}
+
         {/* Status bar */}
         <div style={{ background: 'rgba(0,0,0,0.2)', padding: '8px 32px' }}>
           <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>
+            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: 'rgba(255,255,255,0.60)' }}>
               {typedBill.session_year || 2026} Regular Session
             </span>
             {typedBill.bill_id && (
-              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>
+              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: 'rgba(255,255,255,0.60)' }}>
                 Bill ID: {typedBill.bill_id}
               </span>
             )}
             {nextEventDate && (
-              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>
+              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: 'rgba(255,255,255,0.60)' }}>
                 Next hearing: {nextEventDate}
               </span>
             )}
@@ -309,7 +372,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
 
                 {showDigestCard && (
                   <div style={{ background: 'var(--cream)', border: '1px solid var(--border)', borderLeft: '3px solid var(--navy)', padding: '14px', marginBottom: '20px' }}>
-                    <div style={{ fontFamily: 'var(--font-sans)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--navy)', marginBottom: '8px' }}>
+                    <div style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--navy)', marginBottom: '8px' }}>
                       Louisiana Legislative Bureau Summary
                     </div>
                     {digestParagraphs.map((para, i) => (
@@ -320,12 +383,17 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
                   </div>
                 )}
 
-                {summaryDate && (
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: '12px' }}>
-                    {isProvisional
-                      ? 'Preliminary analysis — full review in progress as PDF text becomes available.'
-                      : `Analysis as of ${summaryDate} · AI-generated — not legal advice.`}
-                  </p>
+                {summaryComplete && (
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', background: 'rgba(196,146,42,0.08)', border: '1px solid rgba(196,146,42,0.25)', borderRadius: '6px', padding: '8px 12px', marginBottom: '16px' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C4922A" strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}>
+                      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                      {isProvisional
+                        ? 'Preliminary analysis — full text review pending as the final bill PDF becomes available.'
+                        : `AI-generated summary${summaryDate ? ` · Updated ${summaryDate}` : ''} · Not legal advice`}
+                    </span>
+                  </div>
                 )}
 
                 {summaryComplete ? (
@@ -422,7 +490,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
                       {sponsorInitial}
                     </div>
                     <div>
-                      <div style={{ fontFamily: 'var(--font-sans)', fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-muted)', marginBottom: '2px' }}>Primary Sponsor</div>
+                      <div style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--text-muted)', marginBottom: '2px' }}>Primary Sponsor</div>
                       <div style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 600, color: 'var(--navy)', marginBottom: '2px' }}>{typedBill.author}</div>
                       <Link href={`/legislator/${encodeURIComponent(typedBill.author)}`} style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: '#C4922A', textDecoration: 'none' }}>
                         View profile →
@@ -443,9 +511,18 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
               </div>
             </div>
 
-            {/* PANEL 4 — SESSION CONTEXT */}
-            <div style={panelStyle}>
-              <PanelHeader title="Session Context" />
+            {/* PANEL 4 — SESSION CONTEXT (collapsed by default) */}
+            <details className="bill-accordion-panel" style={{ ...panelStyle, overflow: 'visible' }}>
+              <summary style={{
+                background: 'var(--navy)', padding: '10px 18px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                cursor: 'pointer', borderRadius: '7px 7px 0 0', listStyle: 'none',
+              } as React.CSSProperties}>
+                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'white' }}>
+                  Session Context
+                </span>
+                <span className="bill-accordion-chevron" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '12px', display: 'inline-block', lineHeight: 1 }}>▾</span>
+              </summary>
               <div style={{ padding: '14px 18px' }}>
                 <div style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', marginBottom: '12px' }}>
                   {[
@@ -486,7 +563,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
                   </div>
                 )}
               </div>
-            </div>
+            </details>
 
           </div>
         </div>
@@ -501,6 +578,12 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
         .bill-summary-content p { margin-bottom: 12px; }
         .bill-summary-content ul, .bill-summary-content ol { padding-left: 20px; margin-bottom: 12px; }
         .bill-summary-content li { margin-bottom: 4px; }
+        .bill-accordion-panel > summary { list-style: none; }
+        .bill-accordion-panel > summary::-webkit-details-marker { display: none; }
+        .bill-accordion-panel > summary::marker { display: none; }
+        details.bill-accordion-panel:not([open]) > summary { border-radius: 7px; }
+        details.bill-accordion-panel[open] .bill-accordion-chevron { transform: rotate(180deg); }
+        .bill-accordion-chevron { transition: transform 150ms ease; }
         @media (max-width: 900px) {
           .bill-cmd-grid { grid-template-columns: 1fr !important; }
           .bill-header-grid { grid-template-columns: 1fr !important; }
