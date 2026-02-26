@@ -36,6 +36,7 @@ export default function Header() {
 
   const links = [
     { href: '/#bills', label: 'All Bills' },
+    { href: '/news', label: 'News' },
     { href: '/legislators', label: 'Legislators' },
     { href: '/calendar', label: 'Calendar' },
     { href: '/about', label: 'About' },

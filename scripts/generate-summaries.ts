@@ -23,8 +23,6 @@ const supabase = createClient(
 )
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
-const LEGISCAN_API_KEY = process.env.LEGISCAN_API_KEY!
-
 // ─── Quality gate ─────────────────────────────────────────────────────────────
 
 const BANNED_PHRASES = [
@@ -54,9 +52,12 @@ const BANNED_PHRASES = [
   'appears to be',
   'seems to be',
   'without the full',
+  'without the',
   'bill text',
   'improperly formatted',
   'cannot be determined',
+  'it is unclear',
+  'it is not clear',
 ]
 
 export function isGoodSummary(text: string | null): boolean {
@@ -81,63 +82,27 @@ function sanitize(text: string): string {
 
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)) }
 
-// ─── LegiScan text (last-resort fallback only) ────────────────────────────────
-// Only called when PDF extraction has not produced usable text.
-// Text fetched here is NEVER stored as primary source and is flagged as provisional.
-
-async function fetchLegiScanTextFallback(
-  bill: any
-): Promise<{ text: string | null; source: 'legiscan_fallback' | 'none' }> {
-  const texts = bill.texts as any[] | null
-  if (!texts || texts.length === 0) return { text: null, source: 'none' }
-
-  const sorted = [...texts].reverse()   // newest first
-  for (const doc of sorted) {
-    if (!doc.doc_id) continue
-    try {
-      const url  = `https://api.legiscan.com/?key=${LEGISCAN_API_KEY}&op=getBillText&id=${doc.doc_id}`
-      const resp = await fetch(url)
-      const data = await resp.json()
-      if (data.status !== 'OK' || !data.text?.doc) continue
-      const decoded = Buffer.from(data.text.doc, 'base64').toString('utf-8')
-      const cleaned = sanitize(decoded)
-      if (cleaned.length >= 200) return { text: cleaned, source: 'legiscan_fallback' }
-    } catch (_) {}
-    await sleep(400)
-  }
-  return { text: null, source: 'none' }
-}
-
 // ─── System prompt ────────────────────────────────────────────────────────────
 // Instructs the AI on Louisiana-specific legal context, amendment analysis,
 // and how to use the structured elements (abstract, digest, deleted/added text).
 
-const SYSTEM_PROMPT = `You are a senior legislative counsel and legal analyst for SessionSource, a Louisiana legislation tracking platform serving attorneys, policymakers, and informed citizens. Your task is to produce a rigorous, professional legal analysis of each Louisiana bill — the kind of analysis a seasoned Louisiana attorney would prepare for a client briefing.
+const SYSTEM_PROMPT = `You are a senior legislative analyst writing professional bill summaries for attorneys, lobbyists, and government officials in Louisiana.
 
-LOUISIANA LEGAL TRADITION: Louisiana follows the civil law tradition derived from the Napoleonic Code, not the common law tradition of other states. This fundamentally affects how statutes are interpreted — Louisiana courts interpret statutes primarily by their text and the legislature's manifest intent, not by common law precedent. When analyzing bills, note where Louisiana's civil law framework creates different implications than a common law analysis would suggest.
+Write three paragraphs in plain prose:
+Paragraph 1: What the bill does — the specific legal changes it makes, what statutes it amends or creates, and the core mechanism of the legislation.
+Paragraph 2: Who is affected and how — the practical impact on specific groups of people, agencies, businesses, or local governments.
+Paragraph 3: The statutory context — what existing law this interacts with, what legal framework it operates within, and any constitutional considerations if relevant.
 
-CITATION IDENTIFICATION: Explicitly identify every R.S. (Louisiana Revised Statutes), C.C. (Civil Code), C.C.P. (Code of Civil Procedure), C.Cr.P. (Code of Criminal Procedure), and Constitutional citation in the bill. For each cited statute, briefly describe what the current provision provides before explaining how the bill modifies it.
-
-AMENDMENT ANALYSIS: When the bill text includes [DELETED: ...] markers, analyze what the deleted language currently provides under Louisiana law and explain the legal significance of its removal. When it includes [ADDED: ...] markers, analyze the legal effect of the new language being inserted. The interplay between what is removed and what is added often reveals the core legislative intent.
-
-For each bill, your analysis must cover:
-
-STATUTORY CONTEXT: Identify every specific statute, code article, or constitutional provision being amended, enacted, or repealed. State the Title, Chapter, Part, and Section numbers explicitly. Describe what current law provides before this bill's changes.
-
-SCOPE AND NATURE OF THE CHANGE: Analyze the precise language changes being made. Distinguish between substantive changes to legal rights, duties, or remedies; procedural changes; definitional changes; and structural reorganizations. If [DELETED] and [ADDED] markers are present, analyze each explicitly.
-
-PURPOSE AND LEGISLATIVE INTENT: Based on the bill text and digest, identify the apparent legislative purpose. What problem or gap in existing law is this bill designed to address?
-
-PRACTICAL IMPACT AND AFFECTED PARTIES: Identify specifically who is affected: which individuals, professions, industries, government entities, or classes of persons will experience changed legal rights, obligations, or exposure. Note any potential constitutional implications or conflicts with federal law if apparent from the text.
-
-CURRENT STATUS: State the bill's current procedural posture based on available information.
-
-FORMATTING RULES — STRICTLY ENFORCED:
-Output plain prose paragraphs only. No markdown syntax of any kind. No asterisks, no bold, no headers using pound signs. No bullet points or numbered lists anywhere in the analysis. Use section labels as plain text followed by a colon, then continue in prose on the same or next line.
-Do not begin any sentence with the word I.
-Do not reference source material quality, format, or availability in any way.
-Do not use phrases containing: appears to, seems to, without the full, based on available, I must note, bill text, corrupted, improperly formatted, cannot be determined.
-If you cannot write at least three substantive paragraphs about what this bill does and its legal effect, return only the text: INSUFFICIENT_DATA`
+ABSOLUTE OUTPUT RULES — any violation causes automatic rejection:
+- Plain prose paragraphs only
+- Zero markdown syntax
+- Zero asterisks or bold
+- Zero headers
+- Zero bullet points or numbered lists
+- Never begin any sentence with the word I
+- Never mention the quality, format, availability, or completeness of source material
+- Never use these phrases: appears to, seems to, without the full, without the, based on available, I must note, full text, bill text, corrupted, improperly formatted, PDF, cannot be determined, it is unclear, it is not clear
+- If you cannot write three substantive paragraphs from the provided source material, return exactly and only: INSUFFICIENT_DATA`
 
 // ─── Summary generation ───────────────────────────────────────────────────────
 
@@ -187,7 +152,7 @@ export async function generateSummary(bill: any, context: {
   }
 
   const message = await anthropic.messages.create({
-    model:      'claude-sonnet-4-6',
+    model:      'claude-haiku-4-5-20251001',
     max_tokens: 2000,
     system:     SYSTEM_PROMPT,
     messages:   [{ role: 'user', content: userMessage }],
@@ -209,8 +174,9 @@ export async function processPendingBills(verbose = true): Promise<{
   const { data: bills, error } = await supabase
     .from('Bills')
     .select('*')
+    .in('extraction_quality', ['full', 'partial'])
     .neq('summary_status', 'complete')
-    .order('sync_priority', { ascending: true })   // 'high' first
+    .order('extraction_quality', { ascending: true })   // 'full' before 'partial'
     .limit(2000)
 
   if (error) {
@@ -235,9 +201,9 @@ export async function processPendingBills(verbose = true): Promise<{
     const quality: string | null = bill.extraction_quality
     log(`  Extraction quality: ${quality ?? 'none'}`)
 
-    // ── Tier 1-2: Full or partial PDF extraction ──────────────────────────────
+    // ── Tier 1-2: Full or partial PDF extraction with full text ──────────────
     if ((quality === 'full' || quality === 'partial') && bill.full_text) {
-      log(`  Source: PDF text (${quality}) — generating full AI analysis`)
+      log(`  Source: PDF text (${quality}) — generating AI analysis`)
       bySource['pdf_' + quality] = (bySource['pdf_' + quality] ?? 0) + 1
 
       let summary: string
@@ -251,25 +217,24 @@ export async function processPendingBills(verbose = true): Promise<{
           source:      quality,
         })
       } catch (err: any) {
-        log(`  Anthropic error: ${err.message}`)
+        log(`  ${bill.bill_number} ERROR: ${err.message}`)
         stillPending++
         await sleep(2000)
         continue
       }
 
       if (!isGoodSummary(summary)) {
-        log(`  Quality gate failed — discarding`)
-        await supabase.from('Bills').update({ summary: PENDING_PLACEHOLDER, summary_status: 'pending' }).eq('id', bill.id)
+        log(`  ${bill.bill_number} REJECTED (quality gate)`)
         stillPending++
         await sleep(2000)
         continue
       }
 
       await supabase.from('Bills').update({
-        summary:          summary,
-        summary_status:   'complete',
+        summary,
+        summary_status:     'complete',
         summary_updated_at: new Date().toISOString(),
-        updated_at:       new Date().toISOString(),
+        updated_at:         new Date().toISOString(),
       }).eq('id', bill.id)
       log(`  ✓ ${bill.bill_number} — AI analysis complete`)
       upgraded++
@@ -277,109 +242,49 @@ export async function processPendingBills(verbose = true): Promise<{
       continue
     }
 
-    // ── Tier 3: Digest-only or abstract-only ─────────────────────────────────
-    if ((quality === 'digest_only' || quality === 'abstract_only') &&
-        (bill.digest || bill.abstract)) {
-      log(`  Source: ${quality} — AI analysis from digest/abstract`)
-      bySource[quality] = (bySource[quality] ?? 0) + 1
+    // ── Tier 3: Partial extraction with no full text — use digest/abstract ────
+    if (quality === 'partial' && !bill.full_text && (bill.digest || bill.abstract)) {
+      log(`  Source: partial (no full text) — using digest/abstract`)
+      bySource['partial_digest'] = (bySource['partial_digest'] ?? 0) + 1
 
       let summary: string
       try {
         summary = await generateSummary(bill, {
           abstract:    bill.abstract,
           digest:      bill.digest,
-          bodyText:    null,      // no body text available
-          deletedText: null,
-          addedText:   null,
-          source:      quality,
+          bodyText:    null,
+          deletedText: bill.deleted_text,
+          addedText:   bill.added_text,
+          source:      'partial_digest',
         })
       } catch (err: any) {
-        log(`  Anthropic error: ${err.message}`)
+        log(`  ${bill.bill_number} ERROR: ${err.message}`)
         stillPending++
         await sleep(2000)
         continue
       }
 
       if (!isGoodSummary(summary)) {
-        log(`  Quality gate failed`)
+        log(`  ${bill.bill_number} REJECTED (quality gate)`)
         stillPending++
         await sleep(2000)
         continue
       }
 
       await supabase.from('Bills').update({
-        summary:          summary,
-        summary_status:   'complete',
+        summary,
+        summary_status:     'complete',
         summary_updated_at: new Date().toISOString(),
-        updated_at:       new Date().toISOString(),
+        updated_at:         new Date().toISOString(),
       }).eq('id', bill.id)
-      log(`  ✓ ${bill.bill_number} — digest/abstract analysis complete`)
+      log(`  ✓ ${bill.bill_number} — partial digest analysis complete`)
       upgraded++
       await sleep(2000)
       continue
     }
 
-    // ── Tier 4: LegiScan text (last resort — PDF extraction not yet available) ─
-    // Only used when PDF extraction has not been attempted or consistently fails.
-    // Summaries from this source are provisional and will be superseded when PDF
-    // extraction succeeds.
-    if (!quality || quality === 'failed') {
-      log(`  PDF extraction ${quality === 'failed' ? 'failed' : 'not yet run'} — trying LegiScan as last resort`)
-      const { text: lsText, source: lsSource } = await fetchLegiScanTextFallback(bill)
-
-      if (!lsText || lsText.length < 200) {
-        log(`  No text available from any source — setting pending`)
-        await supabase.from('Bills').update({ summary: PENDING_PLACEHOLDER, summary_status: 'pending' }).eq('id', bill.id)
-        stillPending++
-        continue
-      }
-
-      log(`  Using LegiScan text (${lsText.length} chars) — provisional summary`)
-      bySource['legiscan_fallback'] = (bySource['legiscan_fallback'] ?? 0) + 1
-
-      let summary: string
-      try {
-        summary = await generateSummary(bill, {
-          abstract:    null,
-          digest:      null,
-          bodyText:    lsText,
-          deletedText: null,
-          addedText:   null,
-          source:      lsSource,
-        })
-      } catch (err: any) {
-        log(`  Anthropic error: ${err.message}`)
-        stillPending++
-        await sleep(2000)
-        continue
-      }
-
-      if (!isGoodSummary(summary)) {
-        log(`  Quality gate failed — setting pending`)
-        await supabase.from('Bills').update({ summary: PENDING_PLACEHOLDER, summary_status: 'pending' }).eq('id', bill.id)
-        stillPending++
-        await sleep(2000)
-        continue
-      }
-
-      // Mark as 'provisional' — will be regenerated once PDF extraction succeeds
-      await supabase.from('Bills').update({
-        summary:          summary,
-        summary_status:   'complete',
-        summary_updated_at: new Date().toISOString(),
-        // Store LegiScan text temporarily (will be overwritten by PDF text)
-        full_text:        lsText.substring(0, 50000),
-        updated_at:       new Date().toISOString(),
-      }).eq('id', bill.id)
-      log(`  ✓ ${bill.bill_number} — provisional summary (LegiScan fallback)`)
-      upgraded++
-      await sleep(2000)
-      continue
-    }
-
-    // ── No usable source available ────────────────────────────────────────────
-    log(`  No usable text source — remaining pending`)
-    await supabase.from('Bills').update({ summary: PENDING_PLACEHOLDER, summary_status: 'pending' }).eq('id', bill.id)
+    // ── No usable source for this bill ────────────────────────────────────────
+    log(`  ${bill.bill_number} SKIPPED — no usable text source (${quality ?? 'null'})`)
     stillPending++
   }
 

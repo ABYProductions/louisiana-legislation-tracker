@@ -26,10 +26,12 @@
     "pdf-parse": "^2.4.5",
     "pdf2json": "^4.0.2",
     "pdfjs-dist": "^5.4.624",
+    "pg": "^8.19.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-markdown": "^10.1.0",
     "resend": "^6.9.2",
+    "rss-parser": "^3.13.0",
     "tsx": "^4.21.0"
   },
   "devDependencies": {

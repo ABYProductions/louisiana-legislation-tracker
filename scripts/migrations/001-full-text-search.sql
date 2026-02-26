@@ -78,7 +78,7 @@ CREATE OR REPLACE FUNCTION search_bills(
   page_size         INTEGER DEFAULT 25
 )
 RETURNS TABLE (
-  id                INTEGER,
+  id                BIGINT,
   bill_number       TEXT,
   title             TEXT,
   status            TEXT,

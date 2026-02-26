@@ -5,6 +5,7 @@ import Footer from '@/app/components/Footer'
 import BillSearch from '@/app/components/BillSearch'
 import UpcomingEventsWidget from '@/app/components/UpcomingEventsWidget'
 import SubjectHeatmap from '@/app/components/SubjectHeatmap'
+import NewsWidget from '@/app/components/NewsWidget'
 import type { SearchFilterState } from '@/app/components/SearchFilters'
 
 // Always fetch fresh data — bill status changes every few hours during session
@@ -203,6 +204,22 @@ export default async function Home({
             padding: '0 var(--space-12)',
           }}>
             <SubjectHeatmap />
+          </div>
+        </section>
+
+        {/* NEWS WIDGET */}
+        <section style={{
+          padding: 'var(--space-6) 0',
+          background: 'var(--cream)',
+          borderTop: '1px solid var(--border)',
+          borderBottom: '1px solid var(--border)',
+        }}>
+          <div style={{
+            maxWidth: 'var(--width-content)',
+            margin: '0 auto',
+            padding: '0 var(--space-12)',
+          }}>
+            <NewsWidget />
           </div>
         </section>
 
