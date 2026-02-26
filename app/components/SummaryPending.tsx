@@ -10,7 +10,7 @@ export default function SummaryPending() {
         <div>
           <h3 className="font-bold mb-1" style={{ color: 'var(--navy)' }}>Summary Pending</h3>
           <p className="text-sm text-slate-600 leading-relaxed">
-            An AI-generated plain-English summary will appear here as soon as the bill text is publicly available through the Louisiana Legislature. If this bill was recently introduced, its full text may not yet be in the official legislative record. Please check back within 24 hours.
+            An AI-generated summary for this bill is not yet available. In the meantime, you can review the official bill text using the PDF link above.
           </p>
         </div>
       </div>
