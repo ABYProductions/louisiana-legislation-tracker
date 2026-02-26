@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useAuth } from './AuthProvider'
+import { useWatchlist } from './WatchlistProvider'
 
 const SESSION_START = new Date('2026-03-10T00:00:00')
 const SESSION_END = new Date('2026-06-09T23:59:59')
@@ -32,6 +33,7 @@ export default function TopBar() {
   const pathname = usePathname()
   const router = useRouter()
   const { user, loading, signOut } = useAuth()
+  const { watchedIds } = useWatchlist()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const sessionStatus = getSessionStatus()
@@ -218,6 +220,7 @@ export default function TopBar() {
                       alignItems: 'center',
                       gap: 'var(--space-1)',
                       transition: 'color 150ms ease',
+                      position: 'relative',
                     }}
                       className="topbar-watchlist-link topbar-desktop-nav"
                     >
@@ -225,6 +228,26 @@ export default function TopBar() {
                         <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                       </svg>
                       My Watchlist
+                      {watchedIds.size > 0 && (
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minWidth: '18px',
+                          height: '18px',
+                          borderRadius: '9px',
+                          background: 'var(--navy)',
+                          border: '1.5px solid var(--gold)',
+                          color: 'white',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          padding: '0 4px',
+                          lineHeight: 1,
+                        }}>
+                          {watchedIds.size}
+                        </span>
+                      )}
                     </Link>
                     <div style={{ position: 'relative' }}>
                       <button

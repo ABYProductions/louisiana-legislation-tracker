@@ -8,9 +8,9 @@ export default function SummaryPending() {
           </svg>
         </div>
         <div>
-          <h3 className="font-bold mb-1" style={{ color: 'var(--navy)' }}>Analysis Pending</h3>
+          <h3 className="font-bold mb-1" style={{ color: 'var(--navy)' }}>Summary Pending</h3>
           <p className="text-sm text-slate-600 leading-relaxed">
-            SessionSource is preparing a comprehensive legal analysis for this bill. Our AI legislative counsel generates professional summaries as soon as bill text becomes publicly available through the Louisiana Legislature. If this bill was recently introduced, its full text may not yet be available in the official legislative record. Please check back within 24 hours for a complete analysis.
+            An AI-generated plain-English summary will appear here as soon as the bill text is publicly available through the Louisiana Legislature. If this bill was recently introduced, its full text may not yet be in the official legislative record. Please check back within 24 hours.
           </p>
         </div>
       </div>
