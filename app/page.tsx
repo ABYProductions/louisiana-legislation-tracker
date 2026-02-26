@@ -49,10 +49,11 @@ export default async function Home({
     { count: summaryCount },
     { data: authorData },
   ] = await Promise.all([
-    supabase.from('Bills').select('*', { count: 'exact', head: true }),
+    supabase.from('Bills').select('*', { count: 'exact', head: true }).eq('session_year', 2026),
     supabase
       .from('Bills')
       .select('*', { count: 'exact', head: true })
+      .eq('session_year', 2026)
       .not('summary', 'is', null)
       .eq('summary_status', 'complete'),
     supabase

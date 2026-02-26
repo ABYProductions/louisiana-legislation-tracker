@@ -11,6 +11,7 @@ interface BillSearchProps {
   initialQuery: string
   initialFilters: SearchFilterState
   hideSearchBar?: boolean
+  hideFilters?: boolean
 }
 
 function filtersAreEmpty(f: SearchFilterState): boolean {
@@ -83,7 +84,7 @@ function buildRouterParams(
   return params.toString()
 }
 
-export default function BillSearch({ initialQuery, initialFilters, hideSearchBar = false }: BillSearchProps) {
+export default function BillSearch({ initialQuery, initialFilters, hideSearchBar = false, hideFilters = false }: BillSearchProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -285,12 +286,14 @@ export default function BillSearch({ initialQuery, initialFilters, hideSearchBar
         />
       )}
 
-      <SearchFilters
-        filters={filters}
-        onChange={handleFiltersChange}
-        hasQuery={!!query}
-        totalResults={total}
-      />
+      {!hideFilters && (
+        <SearchFilters
+          filters={filters}
+          onChange={handleFiltersChange}
+          hasQuery={!!query}
+          totalResults={total}
+        />
+      )}
 
       <div style={{
         marginTop: '16px',

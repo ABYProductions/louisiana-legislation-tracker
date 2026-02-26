@@ -51,13 +51,12 @@ export default function CollapsibleBillSearch({ initialQuery, initialFilters }: 
         </button>
       </div>
 
-      {!collapsed && (
-        <BillSearch
-          initialQuery={initialQuery}
-          initialFilters={initialFilters}
-          hideSearchBar
-        />
-      )}
+      <BillSearch
+        initialQuery={initialQuery}
+        initialFilters={initialFilters}
+        hideSearchBar
+        hideFilters={collapsed}
+      />
     </>
   )
 }
