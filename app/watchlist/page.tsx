@@ -41,6 +41,43 @@ function isNextWeek(dateStr: string | null) {
   return diff >= 0 && diff < 7 * 24 * 60 * 60 * 1000
 }
 
+function PDFPill({ url, billNumber }: { url: string; billNumber: string }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`View official bill text PDF for ${billNumber} (opens Louisiana Legislature website)`}
+      onClick={(e) => e.stopPropagation()}
+      className="pdf-pill"
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: '5px',
+        padding: '3px 10px',
+        background: 'transparent',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-full)',
+        textDecoration: 'none',
+        cursor: 'pointer',
+        transition: 'all 140ms ease',
+        fontFamily: 'var(--font-sans)',
+        fontSize: 'var(--text-xs)',
+        fontWeight: 500,
+        color: 'var(--text-secondary)',
+        flexShrink: 0,
+      }}
+    >
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14,2 14,8 20,8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+        <polyline points="10,9 9,9 8,9"/>
+      </svg>
+      Bill Text
+    </a>
+  )
+}
+
 // ── Priority selector component ───────────────────────────────────────────────
 
 function PrioritySelector({ billId, current, onUpdate }: {
@@ -281,17 +318,25 @@ function BillCard({
           {bill.title || 'Untitled Bill'}
         </Link>
 
-        {/* Row 3: sponsor + committee */}
-        {(bill.author || bill.committee) && (
+        {/* Row 3: sponsor + committee + PDF */}
+        {(bill.author || bill.committee || bill.pdf_url) && (
           <div style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: 'var(--text-sm)',
-            color: 'var(--text-muted)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 'var(--space-2)',
             marginBottom: 'var(--space-2)',
           }}>
-            {bill.author && <span>{bill.author}</span>}
-            {bill.author && bill.committee && <span style={{ margin: '0 6px' }}>·</span>}
-            {bill.committee && <span>{bill.committee}</span>}
+            <div style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: 'var(--text-sm)',
+              color: 'var(--text-muted)',
+            }}>
+              {bill.author && <span>{bill.author}</span>}
+              {bill.author && bill.committee && <span style={{ margin: '0 6px' }}>·</span>}
+              {bill.committee && <span>{bill.committee}</span>}
+            </div>
+            {bill.pdf_url && <PDFPill url={bill.pdf_url} billNumber={bill.bill_number} />}
           </div>
         )}
 
@@ -1201,6 +1246,7 @@ export default function WatchlistPage() {
       )}
 
       <style>{`
+        .pdf-pill:hover { background: var(--cream) !important; border-color: var(--navy) !important; color: var(--navy) !important; }
         .portfolio-chip:hover { opacity: 0.85; border-color: currentColor !important; }
         .folder-item-inactive:hover { background: var(--cream) !important; }
         .new-portfolio-btn:hover { background: var(--cream) !important; color: var(--navy) !important; }

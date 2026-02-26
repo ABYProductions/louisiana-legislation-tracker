@@ -17,6 +17,7 @@ interface Bill {
   last_action_date: string
   last_action: string | null
   created_at: string
+  pdf_url?: string | null
 }
 
 interface BillListClientProps {

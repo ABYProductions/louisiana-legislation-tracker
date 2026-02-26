@@ -48,6 +48,7 @@ export interface WatchedBillRecord {
   subjects: { subject_name: string }[] | null
   next_event: unknown | null
   history: { date: string; action: string }[] | null
+  pdf_url: string | null
 }
 
 export async function GET(req: NextRequest) {
@@ -88,7 +89,7 @@ export async function GET(req: NextRequest) {
   const billIds = bills.map(b => b.bill_id)
   const { data: billData, error: bErr } = await supabase
     .from('Bills')
-    .select('id, bill_number, title, description, status, author, body, current_body, committee, last_action, last_action_date, summary, summary_status, subjects, next_event, history')
+    .select('id, bill_number, title, description, status, author, body, current_body, committee, last_action, last_action_date, summary, summary_status, subjects, next_event, history, pdf_url')
     .in('id', billIds)
 
   if (bErr) return NextResponse.json({ error: bErr.message }, { status: 500 })

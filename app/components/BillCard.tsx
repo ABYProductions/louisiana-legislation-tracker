@@ -25,7 +25,44 @@ interface BillCardProps {
       description: string
       location: string | null
     } | null
+    pdf_url?: string | null
   }
+}
+
+function PDFPill({ url, billNumber }: { url: string; billNumber: string }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`View official bill text PDF for ${billNumber} (opens Louisiana Legislature website)`}
+      onClick={(e) => e.stopPropagation()}
+      className="pdf-pill"
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: '5px',
+        padding: '3px 10px',
+        background: 'transparent',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-full)',
+        textDecoration: 'none',
+        cursor: 'pointer',
+        transition: 'all 140ms ease',
+        fontFamily: 'var(--font-sans)',
+        fontSize: 'var(--text-xs)',
+        fontWeight: 500,
+        color: 'var(--text-secondary)',
+      }}
+    >
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14,2 14,8 20,8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+        <polyline points="10,9 9,9 8,9"/>
+      </svg>
+      Bill Text
+    </a>
+  )
 }
 
 export default function BillCard({ bill }: BillCardProps) {
@@ -171,6 +208,7 @@ export default function BillCard({ bill }: BillCardProps) {
       }}>
         <Link
           href={`/legislator/${encodeURIComponent(bill.author)}`}
+          onClick={(e) => e.stopPropagation()}
           style={{
             fontFamily: 'var(--font-sans)',
             fontSize: 'var(--text-xs)',
@@ -181,16 +219,19 @@ export default function BillCard({ bill }: BillCardProps) {
         >
           {bill.author}
         </Link>
-        <span style={{
-          fontFamily: 'var(--font-sans)',
-          fontSize: 'var(--text-xs)',
-          fontWeight: 600,
-          color: 'var(--gold)',
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-        }}>
-          {bill.status || 'Pre-filed'}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {bill.pdf_url && <PDFPill url={bill.pdf_url} billNumber={bill.bill_number} />}
+          <span style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: 'var(--text-xs)',
+            fontWeight: 600,
+            color: 'var(--gold)',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+          }}>
+            {bill.status || 'Pre-filed'}
+          </span>
+        </div>
       </div>
 
       <style>{`
@@ -201,6 +242,11 @@ export default function BillCard({ bill }: BillCardProps) {
         .watch-btn-watching:hover {
           background: #FEE2E2 !important;
           border-color: #F87171 !important;
+        }
+        .pdf-pill:hover {
+          background: var(--cream) !important;
+          border-color: var(--navy) !important;
+          color: var(--navy) !important;
         }
       `}</style>
     </div>

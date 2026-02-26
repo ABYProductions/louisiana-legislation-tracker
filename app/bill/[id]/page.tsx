@@ -36,6 +36,7 @@ interface Bill {
   state_link: string
   session_year?: number
   subjects?: any[]
+  pdf_url?: string | null
 }
 
 function laLegisUrl(billNumber: string, sessionYear?: number): string {
@@ -207,6 +208,62 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
 
               {/* Action buttons */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '180px' }}>
+                {/* PDF button */}
+                {typedBill.pdf_url ? (
+                  <div>
+                    <a
+                      href={typedBill.pdf_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`View official bill text for ${typedBill.bill_number} as PDF on the Louisiana Legislature website (opens new tab)`}
+                      className="pdf-detail-btn"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        padding: '10px 16px',
+                        background: 'var(--white)',
+                        border: '1.5px solid var(--navy)',
+                        textDecoration: 'none',
+                        transition: 'all 140ms ease',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--navy)', flexShrink: 0 }}>
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10,9 9,9 8,9"/>
+                      </svg>
+                      <div style={{ textAlign: 'left' }}>
+                        <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--navy)', display: 'block' }}>
+                          Official Bill Text (PDF)
+                        </span>
+                        <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', display: 'block', marginTop: '1px' }}>
+                          Opens Louisiana Legislature website
+                        </span>
+                      </div>
+                    </a>
+                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: 'var(--space-2)', lineHeight: 1.5 }}>
+                      PDF is updated automatically when the bill is re-engrossed or amended.
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    gap: '8px', padding: '10px 16px',
+                    background: 'var(--white)', border: '1.5px solid var(--navy)',
+                    opacity: 0.4, cursor: 'not-allowed', pointerEvents: 'none',
+                  }}>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-sm)', color: 'var(--navy)' }}>
+                      Bill Text Unavailable
+                    </span>
+                  </div>
+                )}
+
                 <a
                   href={typedBill.state_link || laLegisUrl(typedBill.bill_number || '', typedBill.session_year)}
                   target="_blank"
@@ -255,6 +312,19 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
               </div>
             </div>
           </div>
+
+          <style>{`
+            .pdf-detail-btn:hover {
+              background: var(--navy) !important;
+              color: white !important;
+            }
+            .pdf-detail-btn:hover span {
+              color: white !important;
+            }
+            .pdf-detail-btn:hover svg {
+              color: white !important;
+            }
+          `}</style>
 
           {/* Amendment notice */}
           {isAmended && (
