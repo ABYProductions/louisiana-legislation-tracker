@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 interface SubjectItem {
   name: string
@@ -176,6 +177,18 @@ export default function SubjectHeatmap({ compact = false }: { compact?: boolean 
           }}>
             Browse by Subject
           </span>
+          <Link
+            href="/subjects"
+            style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: 'var(--text-xs)',
+              fontWeight: 600,
+              color: 'var(--gold)',
+              textDecoration: 'none',
+            }}
+          >
+            View all →
+          </Link>
         </div>
       ) : (
         <div style={{

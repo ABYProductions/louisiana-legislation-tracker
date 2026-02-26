@@ -28,6 +28,7 @@ const NAV_LINKS = [
   { href: '/news', label: 'News' },
   { href: '/legislators', label: 'Legislators' },
   { href: '/calendar', label: 'Calendar' },
+  { href: '/about', label: 'About' },
 ]
 
 export default function TopBar() {

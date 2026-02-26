@@ -1,13 +1,14 @@
 import { getSupabaseServer } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import Header from '@/app/components/Header'
+import TopBar from '@/app/components/TopBar'
 import Footer from '@/app/components/Footer'
 import BillTimeline from '@/app/components/BillTimeline'
 import BillScheduleTimeline from '@/app/components/BillScheduleTimeline'
 import UpcomingEventsPanel from '@/app/components/UpcomingEventsPanel'
 import WatchBillButton from '@/app/components/WatchBillButton'
 import SummaryPending from '@/app/components/SummaryPending'
+import ShareBillButton from '@/app/components/ShareBillButton'
 import ReactMarkdown from 'react-markdown'
 
 // Always fetch fresh data — bill details change throughout session
@@ -85,7 +86,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--cream)' }}>
-      <Header />
+      <TopBar />
 
       <main style={{ flex: 1, padding: '40px 0 60px' }}>
         <div style={{ maxWidth: 'var(--width-narrow)', margin: '0 auto', padding: '0 24px' }}>
@@ -208,6 +209,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
 
               {/* Action buttons */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '180px' }}>
+                <ShareBillButton billNumber={typedBill.bill_number} />
                 {/* PDF button */}
                 {typedBill.pdf_url ? (
                   <div>
@@ -428,6 +430,35 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
               {summaryComplete ? (
                 <div className="bill-summary-content">
                   <ReactMarkdown>{typedBill.summary}</ReactMarkdown>
+                </div>
+              ) : !summaryComplete && typedBill.digest && typedBill.digest.trim().length > 100 && typedBill.extraction_quality !== 'digest_only' ? (
+                <div>
+                  <div style={{
+                    background: 'var(--warning-bg)',
+                    border: '1px solid var(--gold)',
+                    borderLeft: '4px solid var(--gold)',
+                    padding: '12px 16px',
+                    marginBottom: '20px',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '13px',
+                    color: 'var(--text-secondary)',
+                    lineHeight: 1.5,
+                  }}>
+                    <strong style={{ color: 'var(--navy)' }}>Official Louisiana Legislative Bureau Digest</strong>
+                    {' '}— AI analysis is being generated. The official digest is shown below in the meantime.
+                  </div>
+                  {typedBill.digest.split(/\n\n+/).filter(Boolean).map((para, i) => (
+                    <p key={i} style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '14px',
+                      color: 'var(--text-primary)',
+                      lineHeight: 1.8,
+                      fontWeight: 300,
+                      marginBottom: '16px',
+                    }}>
+                      {para.trim()}
+                    </p>
+                  ))}
                 </div>
               ) : (
                 <SummaryPending />

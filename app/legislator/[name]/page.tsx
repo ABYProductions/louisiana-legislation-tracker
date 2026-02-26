@@ -1,7 +1,7 @@
 import { getSupabaseServer } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import Header from '../../components/Header'
+import TopBar from '../../components/TopBar'
 import Footer from '../../components/Footer'
 import LegislatorProfile from '../../components/LegislatorProfile'
 import LegislatorBills from '../../components/LegislatorBills'
@@ -49,7 +49,7 @@ export default async function LegislatorPage({ params }: { params: Promise<{ nam
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--cream)' }}>
-      <Header />
+      <TopBar />
 
       <main className="flex-1 py-12">
         <div className="container mx-auto px-4" style={{ maxWidth: 'var(--width-wide)' }}>

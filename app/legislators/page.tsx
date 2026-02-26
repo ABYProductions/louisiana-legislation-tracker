@@ -1,6 +1,6 @@
 import { getSupabaseServer } from '@/lib/supabase'
 import Link from 'next/link'
-import Header from '../components/Header'
+import TopBar from '../components/TopBar'
 import Footer from '../components/Footer'
 
 export const revalidate = 3600  // refresh hourly
@@ -74,7 +74,7 @@ export default async function LegislatorsPage({
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
-      <Header />
+      <TopBar />
 
       <main className="flex-1 py-10">
         <div className="container mx-auto px-4" style={{ maxWidth: 'var(--width-wide)' }}>

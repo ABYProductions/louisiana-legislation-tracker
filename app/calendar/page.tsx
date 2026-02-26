@@ -1,6 +1,6 @@
 import { getSupabaseServer } from '@/lib/supabase'
 import Link from 'next/link'
-import Header from '@/app/components/Header'
+import TopBar from '@/app/components/TopBar'
 import Footer from '@/app/components/Footer'
 
 // Always fetch fresh — calendar changes throughout session
@@ -58,6 +58,7 @@ export default async function CalendarPage() {
 
   const events = calendarEvents || []
   const billsScheduled = billsWithEvents || []
+  const hasTodayEvents = events.some((e: any) => e.event_date === today)
 
   // Group calendar events by date
   const eventsByDate = new Map<string, typeof events>()
@@ -74,7 +75,7 @@ export default async function CalendarPage() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--cream)' }}>
-      <Header />
+      <TopBar />
       <main className="flex-1 py-10">
         <div className="container mx-auto px-4" style={{ maxWidth: 'var(--width-wide)' }}>
 
@@ -88,7 +89,7 @@ export default async function CalendarPage() {
                 Legislative Calendar
               </h1>
               <p className="text-blue-200 text-base mb-4">2026 Regular Session — Next 30 Days</p>
-              <div className="flex flex-wrap gap-6 text-sm">
+              <div className="flex flex-wrap gap-6 text-sm mb-6">
                 <div>
                   <span className="font-bold text-2xl" style={{ color: 'var(--gold)' }}>{events.length}</span>
                   <span className="text-blue-200 ml-2">scheduled events</span>
@@ -101,6 +102,48 @@ export default async function CalendarPage() {
                   <span className="font-bold text-2xl" style={{ color: 'var(--gold)' }}>{dateGroups.length}</span>
                   <span className="text-blue-200 ml-2">active days</span>
                 </div>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {hasTodayEvents && (
+                  <a
+                    href="#today"
+                    style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: 'var(--navy)',
+                      background: 'var(--gold)',
+                      padding: '8px 16px',
+                      textDecoration: 'none',
+                      borderRadius: '6px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    ↓ Jump to Today
+                  </a>
+                )}
+                <a
+                  href="/api/calendar/export"
+                  download="louisiana-legislature-2026.ics"
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: 'var(--gold)',
+                    background: 'transparent',
+                    border: '1.5px solid var(--gold)',
+                    padding: '8px 16px',
+                    textDecoration: 'none',
+                    borderRadius: '6px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  ↓ Export to iCal
+                </a>
               </div>
             </div>
           </div>
@@ -145,7 +188,7 @@ export default async function CalendarPage() {
                     const isTomorrow = date === new Date(Date.now() + 86400000).toISOString().split('T')[0]
 
                     return (
-                      <div key={date} className="bg-white rounded-xl border border-[var(--border)] overflow-hidden">
+                      <div key={date} id={isToday ? 'today' : undefined} className="bg-white rounded-xl border border-[var(--border)] overflow-hidden">
                         {/* Date header */}
                         <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: isToday ? 'var(--gold)' : 'var(--navy)' }}>
                           <div className="flex items-center gap-3">

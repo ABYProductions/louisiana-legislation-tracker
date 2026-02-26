@@ -1,10 +1,10 @@
-import Header from '@/app/components/Header'
+import TopBar from '@/app/components/TopBar'
 import Footer from '@/app/components/Footer'
 
 export default function AboutPage() {
   return (
     <>
-      <Header />
+      <TopBar />
       <main style={{ background: '#F7F4EF', minHeight: '100vh' }}>
 
         {/* Page header */}
