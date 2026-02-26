@@ -328,6 +328,69 @@ function BillCard({
             }}>{nextEvent.description}</span>
           </div>
         )}
+
+        {/* Row 5: portfolio assignment — always visible when folders exist */}
+        {folders.length > 0 && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)',
+            flexWrap: 'wrap',
+            marginTop: nextEvent?.date ? 'var(--space-3)' : 'var(--space-2)',
+            paddingTop: nextEvent?.date ? 'var(--space-3)' : 0,
+            borderTop: nextEvent?.date ? '1px solid var(--border)' : 'none',
+          }}>
+            <span style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '10px',
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              fontWeight: 600,
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
+            }}>
+              Portfolio:
+            </span>
+            {folders.map(f => {
+              const isSelected = (bill.folder_ids || []).includes(f.id)
+              return (
+                <button
+                  key={f.id}
+                  onClick={() => toggleFolder(f.id)}
+                  title={isSelected ? `Remove from ${f.name}` : `Add to ${f.name}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '3px 10px',
+                    borderRadius: 'var(--radius-full)',
+                    border: `1px solid ${isSelected ? f.color : 'var(--border)'}`,
+                    background: isSelected ? f.color : 'transparent',
+                    color: isSelected ? 'white' : 'var(--text-muted)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '11px',
+                    fontWeight: isSelected ? 600 : 400,
+                    cursor: 'pointer',
+                    transition: 'all 120ms ease',
+                    whiteSpace: 'nowrap',
+                  }}
+                  className="portfolio-chip"
+                >
+                  <span style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: isSelected ? 'rgba(255,255,255,0.7)' : f.color,
+                    flexShrink: 0,
+                    display: 'inline-block',
+                  }} />
+                  {f.name}
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Section A: Notes */}
@@ -399,40 +462,6 @@ function BillCard({
               )}
             </div>
             <span id={`notes-hint-${bill.bill_id}`} style={{ display: 'none' }}>Only you can see these notes</span>
-
-            {/* Portfolio assignment */}
-            {folders.length > 0 && (
-              <div style={{ marginTop: 'var(--space-3)' }}>
-                <div style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 'var(--tracking-wide)', marginBottom: 'var(--space-2)' }}>
-                  Portfolios:
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
-                  {folders.map(f => {
-                    const isSelected = (bill.folder_ids || []).includes(f.id)
-                    return (
-                      <button
-                        key={f.id}
-                        onClick={() => toggleFolder(f.id)}
-                        style={{
-                          padding: '2px 10px',
-                          borderRadius: 'var(--radius-full)',
-                          border: `1px solid ${isSelected ? f.color : 'var(--border)'}`,
-                          background: isSelected ? f.color : 'var(--cream)',
-                          color: isSelected ? 'white' : 'var(--text-secondary)',
-                          fontFamily: 'var(--font-sans)',
-                          fontSize: 'var(--text-xs)',
-                          cursor: 'pointer',
-                          transition: 'all 120ms ease',
-                          fontWeight: isSelected ? 'var(--weight-semibold)' : 'var(--weight-regular)',
-                        }}
-                      >
-                        {f.name}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -1172,6 +1201,7 @@ export default function WatchlistPage() {
       )}
 
       <style>{`
+        .portfolio-chip:hover { opacity: 0.85; border-color: currentColor !important; }
         .folder-item-inactive:hover { background: var(--cream) !important; }
         .new-portfolio-btn:hover { background: var(--cream) !important; color: var(--navy) !important; }
         .folder-menu-option:hover { background: var(--cream) !important; }
