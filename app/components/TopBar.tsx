@@ -74,7 +74,7 @@ export default function TopBar() {
 
           {/* ── Left: Branding ── */}
           <Link href="/" style={{ textDecoration: 'none' }}>
-            <Logo variant="full" size="sm" theme="dark" />
+            <Logo variant="full" size="sm" theme="dark" hideIcon={true} />
           </Link>
 
           {/* ── Center: Nav links (desktop) ── */}

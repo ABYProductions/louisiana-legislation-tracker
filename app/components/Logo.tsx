@@ -6,6 +6,7 @@ interface LogoProps {
   variant?: 'full' | 'icon' | 'stacked'
   size?: 'sm' | 'md' | 'lg'
   theme?: 'dark' | 'light'
+  hideIcon?: boolean
   className?: string
 }
 
@@ -52,6 +53,7 @@ export default function Logo({
   variant = 'full',
   size = 'md',
   theme = 'dark',
+  hideIcon = false,
   className = '',
 }: LogoProps) {
   const s = sizes[size]
@@ -220,6 +222,14 @@ export default function Logo({
   }
 
   // variant='full' (default) — icon left, wordmark right
+  if (hideIcon) {
+    return (
+      <div className={className}>
+        <Wordmark />
+      </div>
+    )
+  }
+
   return (
     <div
       className={className}
