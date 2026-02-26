@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import NEWS_SOURCES from '@/lib/news-sources'
 
-export const revalidate = 1800
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const supabase = createClient(
