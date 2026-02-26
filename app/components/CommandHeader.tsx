@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-const SESSION_START = new Date('2026-03-10T00:00:00')
-const SESSION_END = new Date('2026-06-09T23:59:59')
+const SESSION_START = new Date('2026-03-09T00:00:00')
+const SESSION_END = new Date('2026-06-01T18:00:00') // Sine die no later than 6pm June 1
 
 function getDaysLabel(): string {
   const now = new Date()
@@ -13,16 +13,15 @@ function getDaysLabel(): string {
     return String(days)
   }
   if (now <= SESSION_END) {
-    const day = Math.ceil((now.getTime() - SESSION_START.getTime()) / (1000 * 60 * 60 * 24))
-    return String(day)
+    return 'June 1'
   }
   return '—'
 }
 
 function getDaysSubLabel(): string {
   const now = new Date()
-  if (now < SESSION_START) return 'Until Session Opens'
-  if (now <= SESSION_END) return 'Session Day'
+  if (now < SESSION_START) return 'Days Until Session'
+  if (now <= SESSION_END) return 'Sine Die Deadline'
   return 'Session Ended'
 }
 

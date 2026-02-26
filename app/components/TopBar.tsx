@@ -6,8 +6,8 @@ import { useState } from 'react'
 import { useAuth } from './AuthProvider'
 import { useWatchlist } from './WatchlistProvider'
 
-const SESSION_START = new Date('2026-03-10T00:00:00')
-const SESSION_END = new Date('2026-06-09T23:59:59')
+const SESSION_START = new Date('2026-03-09T00:00:00')
+const SESSION_END = new Date('2026-06-01T18:00:00') // Sine die no later than 6pm June 1
 
 function getSessionStatus() {
   const now = new Date()
@@ -198,7 +198,7 @@ export default function TopBar() {
                   fontWeight: 'var(--weight-medium)',
                   whiteSpace: 'nowrap',
                 }}>
-                  2026 Regular Session · Day {sessionStatus.dayN} of 85
+                  2026 Regular Session · Sine Die: June 1
                 </span>
               </div>
             )}

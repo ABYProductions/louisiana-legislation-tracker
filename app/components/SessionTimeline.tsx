@@ -1,13 +1,12 @@
 'use client'
 
 const MILESTONES = [
-  { label: 'Session Opens', date: '2026-03-10' },
+  { label: 'Session Opens', date: '2026-03-09' },
   { label: 'Bill Filing Deadline', date: '2026-03-20' },
   { label: 'Committee Deadline — Senate', date: '2026-04-10' },
   { label: 'Committee Deadline — House', date: '2026-04-19' },
   { label: 'Crossover Deadline', date: '2026-05-21' },
-  { label: 'Sine Die Approach', date: '2026-06-01' },
-  { label: 'Session Ends', date: '2026-06-09' },
+  { label: 'Sine Die Deadline', date: '2026-06-01' },
 ]
 
 function formatMilestoneDate(dateStr: string): string {

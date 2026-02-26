@@ -6,8 +6,8 @@ import TopBar from '@/app/components/TopBar'
 import NEWS_SOURCES, { INDUSTRY_KEYWORDS } from '@/lib/news-sources'
 
 const INDUSTRIES = Object.keys(INDUSTRY_KEYWORDS)
-const SESSION_START = new Date('2026-03-10T00:00:00')
-const SESSION_END = new Date('2026-06-09T23:59:59')
+const SESSION_START = new Date('2026-03-09T00:00:00')
+const SESSION_END = new Date('2026-06-01T18:00:00') // Sine die no later than 6pm June 1
 
 function getSessionInfo() {
   const now = new Date()
