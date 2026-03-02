@@ -29,12 +29,24 @@ interface BillCardProps {
   }
 }
 
+// LegiScan stores numeric status codes (1 = Introduced, 8 = Signed, etc.)
+// Map them to readable labels for display.
+const LEGISCAN_STATUS: Record<string, string> = {
+  '0': 'Pre-filed', '1': 'Introduced', '2': 'Engrossed', '3': 'Enrolled',
+  '4': 'Passed', '5': 'Vetoed', '6': 'Failed', '7': 'Override',
+  '8': 'Signed', '9': 'Referred', '10': 'Adopted',
+}
+function legiStatusText(status: string | null | undefined): string {
+  if (!status) return 'Pre-filed'
+  return LEGISCAN_STATUS[status] ?? status
+}
+
 function getStatusColor(status: string): string {
-  const s = status?.toLowerCase() || ''
-  if (s.includes('sign') || s.includes('enact') || s.includes('act no')) return '#22C55E'
+  const s = legiStatusText(status).toLowerCase()
+  if (s.includes('sign') || s.includes('enact') || s.includes('act no') || s.includes('chapter')) return '#22C55E'
   if (s.includes('fail') || s.includes('veto') || s.includes('defeat') || s.includes('lost')) return '#EF4444'
   if (s.includes('pass') || s.includes('adopt') || s.includes('concur') || s.includes('enroll')) return '#3B82F6'
-  return '#C4922A' // committee / introduced / pre-filed — gold
+  return '#C4922A' // introduced / pre-filed / committee — gold
 }
 
 function PDFPill({ url, billNumber }: { url: string; billNumber: string }) {
@@ -235,7 +247,7 @@ export default function BillCard({ bill }: BillCardProps) {
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
           }}>
-            {bill.status || 'Pre-filed'}
+            {legiStatusText(bill.status)}
           </span>
         </div>
       </div>

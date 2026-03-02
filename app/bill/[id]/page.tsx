@@ -57,13 +57,31 @@ const STATUS_STAGES = [
   { key: 'signed', label: 'Signed' },
 ]
 
-function getStatusStage(status: string): number {
-  const s = status?.toLowerCase() || ''
-  if (s.includes('sign') || s.includes('enact') || s.includes('act no')) return 5
+// LegiScan numeric status → readable label
+const LEGISCAN_STATUS: Record<string, string> = {
+  '0': 'Pre-filed', '1': 'Introduced', '2': 'Engrossed', '3': 'Enrolled',
+  '4': 'Passed', '5': 'Vetoed', '6': 'Failed', '7': 'Override',
+  '8': 'Signed', '9': 'Referred', '10': 'Adopted',
+}
+function legiStatusText(status: string | null | undefined): string {
+  if (!status) return 'Pre-filed'
+  return LEGISCAN_STATUS[status] ?? status
+}
+
+// Stage detection uses last_action (rich text) for granularity; numeric status as fallback.
+function getStatusStage(lastAction: string, numericStatus?: string): number {
+  const s = lastAction?.toLowerCase() || ''
+  if (s.includes('sign') || s.includes('enact') || s.includes('act no') || s.includes('chapter')) return 5
   if (s.includes('pass') || s.includes('adopt') || s.includes('concur') || s.includes('enroll')) return 4
   if (s.includes('floor') || s.includes('third reading') || s.includes('second reading') || s.includes('order') || s.includes('debate')) return 3
   if (s.includes('committee') || s.includes('refer') || s.includes('hearing') || s.includes('report')) return 2
   if (s.includes('introduc') || (s.includes('filed') && !s.includes('pre-fil') && !s.includes('prefil'))) return 1
+  // Fall back to numeric status code
+  const code = numericStatus?.trim()
+  if (code === '8') return 5
+  if (code === '4' || code === '3') return 4
+  if (code === '2') return 3
+  if (code === '1') return 1
   return 0
 }
 
@@ -186,7 +204,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
     { label: 'Session', value: `${typedBill.session_year || 2026} Regular Session` },
     { label: 'Chamber', value: typedBill.body === 'H' ? 'House' : typedBill.body === 'S' ? 'Senate' : typedBill.body },
     { label: 'Type', value: billType },
-    { label: 'Status', value: typedBill.status || 'Pre-filed' },
+    { label: 'Status', value: legiStatusText(typedBill.status) },
     { label: 'Committee', value: typedBill.committee || null },
     { label: 'Introduced', value: typedBill.created_at ? new Date(typedBill.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : null },
     { label: 'Last Action Date', value: typedBill.last_action_date ? new Date(typedBill.last_action_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : null },
@@ -252,7 +270,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   <span style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(255,255,255,0.65)', fontWeight: 600 }}>Status</span>
-                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 600, color: 'white' }}>{typedBill.status || 'Pre-filed'}</span>
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 600, color: 'white' }}>{legiStatusText(typedBill.status)}</span>
                 </div>
                 {typedBill.last_action_date && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -283,7 +301,7 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
 
         {/* Bill status pipeline */}
         {(() => {
-          const stage = getStatusStage(typedBill.status || '')
+          const stage = getStatusStage(typedBill.last_action || '', typedBill.status)
           return (
             <div style={{ padding: '14px 32px 4px', maxWidth: '1280px', margin: '0 auto' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start' }}>

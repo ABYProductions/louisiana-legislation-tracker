@@ -85,6 +85,21 @@ async function enhancedSync() {
   )
   console.log(`LegiScan: ${masterList.length} bills in session`)
 
+  // 2b. Self-heal: ensure all bills in this session_id have the correct session_year.
+  // Bills synced by the original sync-legiscan.ts script before Jan 1 of the session year
+  // may have stored session_year = (previous year) due to Date.getFullYear() at sync time.
+  // This update is idempotent — a no-op after the first run.
+  const { error: fixErr } = await supabase
+    .from('Bills')
+    .update({ session_year: session.year_start })
+    .eq('session_id', session.session_id)
+    .neq('session_year', session.year_start)
+  if (fixErr) {
+    console.warn(`  session_year fix warning: ${fixErr.message}`)
+  } else {
+    console.log(`  session_year self-heal complete (${session.year_start})`)
+  }
+
   // 3. Load existing DB records (legiscan_bill_id → {change_hash, last_action_date})
   // limit(2000) guards against Supabase's default 1000-row cap as bill count grows
   const { data: existing, error: dbErr } = await supabase
