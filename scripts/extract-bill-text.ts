@@ -30,8 +30,8 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const UA              = 'SessionSource-Louisiana/1.0 (public legislative transparency project; non-commercial; contact via legis.la.gov)'
-const FETCH_DELAY_MS  = 1500
-const MAX_PER_HOUR    = 40
+let FETCH_DELAY_MS  = 1500
+let MAX_PER_HOUR    = 40
 const MAX_RETRIES     = 3
 const RETRY_DELAYS_MS = [5_000, 15_000, 45_000]
 
@@ -458,19 +458,23 @@ async function runTestMode() {
 
 // ── Production mode ───────────────────────────────────────────────────────────
 
-async function runProductionMode(limit: number, priorityOnly: boolean) {
-  console.log(`\nProduction mode — limit=${limit}, priority=${priorityOnly ? 'high only' : 'high+normal'}\n`)
+async function runProductionMode(limit: number, priorityOnly: boolean, retryFailed: boolean) {
+  const modeLabel = retryFailed ? 'retry-failed (all priorities)'
+    : priorityOnly ? 'high only' : 'high+normal'
+  console.log(`\nProduction mode — limit=${limit}, mode=${modeLabel}\n`)
 
   let query = supabase
     .from('Bills')
     .select('id, bill_number, state_link, pdf_url, pdf_text_hash, extraction_quality, summary, summary_status')
-    .order('sync_priority', { ascending: true })
     .limit(limit)
 
-  if (priorityOnly) {
-    query = query.eq('sync_priority', 'high')
+  if (retryFailed) {
+    // Re-attempt all bills that previously failed extraction, regardless of priority
+    query = query.eq('extraction_quality', 'failed').order('id', { ascending: true })
+  } else if (priorityOnly) {
+    query = query.eq('sync_priority', 'high').order('sync_priority', { ascending: true })
   } else {
-    query = query.neq('sync_priority', 'low')
+    query = query.neq('sync_priority', 'low').order('sync_priority', { ascending: true })
   }
 
   const { data: bills, error } = await query
@@ -529,14 +533,24 @@ async function runProductionMode(limit: number, priorityOnly: boolean) {
 
 const isTest         = process.argv.includes('--test')
 const isPriorityOnly = process.argv.includes('--high-priority')
+const isRetryFailed  = process.argv.includes('--retry-failed')
+const isBulk         = process.argv.includes('--bulk')
 const limitArg       = process.argv.find(a => a.startsWith('--limit='))
 const limit          = limitArg ? parseInt(limitArg.split('=')[1]) : 500
 
+// Bulk mode: faster delays for one-time backfill runs
+if (isBulk) {
+  FETCH_DELAY_MS = 500
+  MAX_PER_HOUR   = 999  // effectively unlimited — respect legis.la.gov via delay only
+}
+
 console.log('=== SessionSource — PDF Extraction Pipeline ===')
 console.log(`Timestamp: ${new Date().toISOString()}`)
+if (isBulk) console.log('Mode: BULK (500ms delay, no hourly cap)')
+if (isRetryFailed) console.log('Mode: RETRY-FAILED (all priorities, extraction_quality=failed only)')
 
 if (isTest) {
   runTestMode().catch(e => { console.error('Fatal:', e); process.exit(1) })
 } else {
-  runProductionMode(limit, isPriorityOnly).catch(e => { console.error('Fatal:', e); process.exit(1) })
+  runProductionMode(limit, isPriorityOnly, isRetryFailed).catch(e => { console.error('Fatal:', e); process.exit(1) })
 }
