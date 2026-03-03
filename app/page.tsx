@@ -40,6 +40,7 @@ export default async function Home({
     date_from: (params.date_from as string) || '',
     date_to: (params.date_to as string) || '',
     sort: (params.sort as string) || 'date_desc',
+    bill_number: (params.bill_number as string) || '',
   }
 
   const supabase = getSupabaseServer()

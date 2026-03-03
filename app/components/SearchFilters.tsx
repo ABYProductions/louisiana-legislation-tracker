@@ -14,6 +14,7 @@ export interface SearchFilterState {
   date_from: string
   date_to: string
   sort: string
+  bill_number: string
 }
 
 export const EMPTY_FILTERS: SearchFilterState = {
@@ -27,6 +28,7 @@ export const EMPTY_FILTERS: SearchFilterState = {
   date_from: '',
   date_to: '',
   sort: 'date_desc',
+  bill_number: '',
 }
 
 interface SearchFiltersProps {
@@ -46,7 +48,8 @@ function hasActiveFilters(f: SearchFilterState): boolean {
     f.bill_type.length > 0 ||
     f.has_event ||
     f.date_from ||
-    f.date_to
+    f.date_to ||
+    f.bill_number
   )
 }
 
@@ -60,6 +63,7 @@ function countActiveFilters(f: SearchFilterState): number {
   n += f.bill_type.length
   if (f.has_event) n++
   if (f.date_from || f.date_to) n++
+  if (f.bill_number) n++
   return n
 }
 
@@ -237,6 +241,31 @@ export default function SearchFilters({
               {ch || 'All'}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Bill Number search */}
+      <div style={{ marginBottom: '20px' }}>
+        <label htmlFor="filter-bill-number" style={labelStyle}>Bill Number</label>
+        <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border)', background: 'var(--white)' }}>
+          <input
+            id="filter-bill-number"
+            type="text"
+            placeholder="e.g. HB 1, SB 45..."
+            value={filters.bill_number}
+            onChange={e => update({ bill_number: e.target.value.toUpperCase() })}
+            style={{ ...inputStyle, border: 'none', flex: 1 }}
+          />
+          {filters.bill_number && (
+            <button
+              type="button"
+              onClick={() => update({ bill_number: '' })}
+              aria-label="Clear bill number filter"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 8px', color: 'var(--text-muted)' }}
+            >
+              &times;
+            </button>
+          )}
         </div>
       </div>
 
@@ -594,7 +623,7 @@ export default function SearchFilters({
           {hasQuery && <option value="relevance">Most Relevant</option>}
           <option value="date_desc">Most Recent</option>
           <option value="date_asc">Oldest First</option>
-          <option value="bill_number">Bill Number A&rarr;Z</option>
+          <option value="bill_number">Bill Number Order</option>
         </select>
       </div>
 
@@ -631,6 +660,9 @@ export default function SearchFilters({
                 label={`Date: ${filters.date_from || '…'} – ${filters.date_to || '…'}`}
                 onRemove={() => update({ date_from: '', date_to: '' })}
               />
+            )}
+            {filters.bill_number && (
+              <FilterChip label={`Bill: ${filters.bill_number}`} onRemove={() => update({ bill_number: '' })} />
             )}
           </div>
           <button

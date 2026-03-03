@@ -54,6 +54,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<SearchResponse
   const hasEvent   = searchParams.get('has_event')
   const dateFrom   = searchParams.get('date_from') || null
   const dateTo     = searchParams.get('date_to') || null
+  const billNumber = searchParams.get('bill_number')?.trim().toUpperCase() || null
   const sort       = searchParams.get('sort') || (q ? 'relevance' : 'date_desc')
   const pageRaw    = parseInt(searchParams.get('page') || '1', 10)
   const limitRaw   = parseInt(searchParams.get('limit') || '25', 10)
@@ -74,6 +75,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<SearchResponse
   if (hasEventBool !== null) filtersApplied.has_event = hasEventBool
   if (dateFrom)    filtersApplied.date_from = dateFrom
   if (dateTo)      filtersApplied.date_to = dateTo
+  if (billNumber)  filtersApplied.bill_number = billNumber
 
   const supabase = getSupabaseServer()
 
@@ -95,6 +97,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<SearchResponse
     if (hasEventBool !== null) rpcParams.filter_has_upcoming_event = hasEventBool
     if (dateFrom)             rpcParams.filter_date_from = dateFrom
     if (dateTo)               rpcParams.filter_date_to = dateTo
+    if (billNumber)           rpcParams.filter_bill_number = billNumber
 
     const { data, error } = await supabase.rpc('search_bills', rpcParams)
 
@@ -163,8 +166,9 @@ export async function GET(req: NextRequest): Promise<NextResponse<SearchResponse
     if (committee)  query = query.ilike('committee', `%${committee}%`)
     if (sponsor)    query = query.ilike('author', `%${sponsor}%`)
     if (billType)   query = query.ilike('bill_type', billType)
-    if (dateFrom)   query = query.gte('last_action_date', dateFrom)
-    if (dateTo)     query = query.lte('last_action_date', dateTo)
+    if (dateFrom)      query = query.gte('last_action_date', dateFrom)
+    if (dateTo)        query = query.lte('last_action_date', dateTo)
+    if (billNumber)    query = query.ilike('bill_number', `${billNumber}%`)
 
     const sortMap: Record<string, { col: string; asc: boolean }> = {
       date_desc:   { col: 'last_action_date', asc: false },

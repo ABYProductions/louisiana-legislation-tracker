@@ -24,7 +24,8 @@ function filtersAreEmpty(f: SearchFilterState): boolean {
     f.bill_type.length === 0 &&
     !f.has_event &&
     !f.date_from &&
-    !f.date_to
+    !f.date_to &&
+    !f.bill_number
   )
 }
 
@@ -45,6 +46,7 @@ function buildSearchUrl(
   if (filters.has_event) params.set('has_event', filters.has_event)
   if (filters.date_from) params.set('date_from', filters.date_from)
   if (filters.date_to) params.set('date_to', filters.date_to)
+  if (filters.bill_number) params.set('bill_number', filters.bill_number)
   if (filters.sort && filters.sort !== 'date_desc') params.set('sort', filters.sort)
   if (page > 1) params.set('page', String(page))
   if (pageSize !== 25) params.set('limit', String(pageSize))
@@ -78,6 +80,7 @@ function buildRouterParams(
   if (filters.has_event) params.set('has_event', filters.has_event)
   if (filters.date_from) params.set('date_from', filters.date_from)
   if (filters.date_to) params.set('date_to', filters.date_to)
+  if (filters.bill_number) params.set('bill_number', filters.bill_number)
   if (filters.sort && filters.sort !== 'date_desc') params.set('sort', filters.sort)
   if (page > 1) params.set('page', String(page))
   if (pageSize !== 25) params.set('limit', String(pageSize))
@@ -186,6 +189,7 @@ export default function BillSearch({ initialQuery, initialFilters, hideSearchBar
       date_from: searchParams.get('date_from') || '',
       date_to: searchParams.get('date_to') || '',
       sort: searchParams.get('sort') || 'date_desc',
+      bill_number: searchParams.get('bill_number') || '',
     }
     setQuery(urlQuery)
     setFilters(urlFilters)

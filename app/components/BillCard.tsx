@@ -134,16 +134,30 @@ export default function BillCard({ bill }: BillCardProps) {
 
         {/* Bill number + chamber */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-          <span style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: 'var(--text-xs)',
-            fontWeight: 600,
-            color: 'var(--gold)',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-          }}>
-            {bill.bill_number}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: 'var(--text-xs)',
+              fontWeight: 600,
+              color: 'var(--gold)',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+            }}>
+              {bill.bill_number}
+            </span>
+            {bill.summary_status === 'complete' && (
+              <span style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: '10px',
+                color: '#16A34A',
+                background: '#F0FDF4',
+                border: '1px solid #86EFAC',
+                padding: '2px 8px',
+                borderRadius: '3px',
+                letterSpacing: '0.06em',
+              }}>AI Summary</span>
+            )}
+          </div>
           {chamber && (
             <span style={{
               fontFamily: 'var(--font-sans)',
