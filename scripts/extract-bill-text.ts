@@ -458,9 +458,11 @@ async function runTestMode() {
 
 // ── Production mode ───────────────────────────────────────────────────────────
 
-async function runProductionMode(limit: number, priorityOnly: boolean, retryFailed: boolean) {
-  const modeLabel = retryFailed ? 'retry-failed (all priorities)'
-    : priorityOnly ? 'high only' : 'high+normal'
+async function runProductionMode(limit: number, priorityOnly: boolean, retryFailed: boolean, includeNew: boolean) {
+  const modeLabel = retryFailed  ? 'retry-failed (all priorities)'
+    : includeNew   ? 'new-only (extraction_quality=null)'
+    : priorityOnly ? 'high+new'
+    : 'high+normal+new'
   console.log(`\nProduction mode — limit=${limit}, mode=${modeLabel}\n`)
 
   let query = supabase
@@ -471,10 +473,15 @@ async function runProductionMode(limit: number, priorityOnly: boolean, retryFail
   if (retryFailed) {
     // Re-attempt all bills that previously failed extraction, regardless of priority
     query = query.eq('extraction_quality', 'failed').order('id', { ascending: true })
+  } else if (includeNew) {
+    // One-time cleanup: only bills never extracted yet
+    query = query.is('extraction_quality', null).order('id', { ascending: true })
   } else if (priorityOnly) {
-    query = query.eq('sync_priority', 'high').order('sync_priority', { ascending: true })
+    // High-priority mode: recently active bills + any bill never extracted (new this session)
+    query = query.or('sync_priority.eq.high,extraction_quality.is.null').order('id', { ascending: true })
   } else {
-    query = query.neq('sync_priority', 'low').order('sync_priority', { ascending: true })
+    // Default: non-low priority + any bill never extracted (catches all new pre-filed bills)
+    query = query.or('sync_priority.neq.low,extraction_quality.is.null').order('id', { ascending: true })
   }
 
   const { data: bills, error } = await query
@@ -534,6 +541,7 @@ async function runProductionMode(limit: number, priorityOnly: boolean, retryFail
 const isTest         = process.argv.includes('--test')
 const isPriorityOnly = process.argv.includes('--high-priority')
 const isRetryFailed  = process.argv.includes('--retry-failed')
+const isIncludeNew   = process.argv.includes('--include-new')
 const isBulk         = process.argv.includes('--bulk')
 const limitArg       = process.argv.find(a => a.startsWith('--limit='))
 const limit          = limitArg ? parseInt(limitArg.split('=')[1]) : 500
@@ -546,11 +554,12 @@ if (isBulk) {
 
 console.log('=== SessionSource — PDF Extraction Pipeline ===')
 console.log(`Timestamp: ${new Date().toISOString()}`)
-if (isBulk) console.log('Mode: BULK (500ms delay, no hourly cap)')
+if (isBulk)        console.log('Mode: BULK (500ms delay, no hourly cap)')
 if (isRetryFailed) console.log('Mode: RETRY-FAILED (all priorities, extraction_quality=failed only)')
+if (isIncludeNew)  console.log('Mode: INCLUDE-NEW (extraction_quality=null only)')
 
 if (isTest) {
   runTestMode().catch(e => { console.error('Fatal:', e); process.exit(1) })
 } else {
-  runProductionMode(limit, isPriorityOnly, isRetryFailed).catch(e => { console.error('Fatal:', e); process.exit(1) })
+  runProductionMode(limit, isPriorityOnly, isRetryFailed, isIncludeNew).catch(e => { console.error('Fatal:', e); process.exit(1) })
 }
