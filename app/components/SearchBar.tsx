@@ -190,6 +190,11 @@ export default function SearchBar({
     }
   }, [totalResults, initialQuery])
 
+  const BILL_NUMBER_PATTERN = /^(HB|SB|HR|SR|HCR|SCR)\s*\d*/i
+  const searchTypePill = value.length >= 2
+    ? (BILL_NUMBER_PATTERN.test(value.trim()) ? 'Bill #' : 'Keyword')
+    : null
+
   const hasActiveFilters = Object.keys(activeFilters).length > 0
   const filterSummary = Object.entries(activeFilters)
     .filter(([k]) => k !== 'q')
@@ -255,7 +260,7 @@ export default function SearchBar({
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
-          placeholder="Search bill text, titles, authors, subjects..."
+          placeholder="Search by bill number, keyword, sponsor, or committee..."
           aria-label="Search bills"
           aria-autocomplete="list"
           aria-expanded={dropdownOpen}
@@ -266,7 +271,7 @@ export default function SearchBar({
           style={{
             width: '100%',
             height: '52px',
-            padding: '0 52px 0 48px',
+            padding: `0 ${searchTypePill ? (value ? '118px' : '86px') : '52px'} 0 48px`,
             border: '2px solid var(--border)',
             background: 'var(--white)',
             fontFamily: 'var(--font-sans)',
@@ -278,6 +283,29 @@ export default function SearchBar({
           }}
           className="search-input"
         />
+
+        {/* Search type pill */}
+        {searchTypePill && (
+          <span style={{
+            position: 'absolute',
+            right: value ? '46px' : '14px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            pointerEvents: 'none',
+            background: searchTypePill === 'Bill #' ? 'rgba(196,146,42,0.12)' : 'rgba(13,42,74,0.07)',
+            color: searchTypePill === 'Bill #' ? '#C4922A' : 'var(--navy)',
+            fontFamily: 'var(--font-sans)',
+            fontSize: '9px',
+            fontWeight: 700,
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            padding: '2px 6px',
+            borderRadius: '3px',
+            whiteSpace: 'nowrap',
+          }}>
+            {searchTypePill}
+          </span>
+        )}
 
         {/* Clear button */}
         {value && (
