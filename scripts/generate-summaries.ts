@@ -113,7 +113,7 @@ export async function generateSummary(bill: any, context: {
   deletedText: string | null
   addedText:   string | null
   source:      string
-}): Promise<string> {
+}, systemPrompt = SYSTEM_PROMPT): Promise<string> {
   const { abstract, digest, bodyText, deletedText, addedText } = context
 
   const subjects = Array.isArray(bill.subjects)
@@ -154,12 +154,53 @@ export async function generateSummary(bill: any, context: {
   const message = await anthropic.messages.create({
     model:      'claude-haiku-4-5-20251001',
     max_tokens: 2000,
-    system:     SYSTEM_PROMPT,
+    system:     systemPrompt,
     messages:   [{ role: 'user', content: userMessage }],
   })
 
   const content = message.content[0]
   return content.type === 'text' ? sanitize(content.text) : ''
+}
+
+// ─── Amendment-aware system prompt ────────────────────────────────────────────
+
+const AMENDMENT_SYSTEM_PROMPT = `${SYSTEM_PROMPT}
+
+When analyzing an amended bill, your summary must:
+- Lead with a clear statement that this bill has been amended
+- Identify the specific changes made by the amendment compared to the prior version
+- Explain the practical effect of those changes`
+
+// ─── Notify watchers of a bill update ─────────────────────────────────────────
+
+async function notifyWatchers(
+  billId: number,
+  billNumber: string,
+  notifType: string,
+  title: string,
+  body: string
+): Promise<void> {
+  try {
+    const { data: watchers } = await supabase
+      .from('user_bills')
+      .select('user_id')
+      .eq('bill_id', billId)
+
+    if (!watchers || watchers.length === 0) return
+
+    const rows = watchers.map(w => ({
+      user_id: w.user_id,
+      bill_id: billId,
+      type:    notifType,
+      title,
+      body,
+      is_read: false,
+    }))
+
+    await supabase.from('notifications').insert(rows)
+  } catch {
+    // notifications table may not exist yet — silently skip
+  }
 }
 
 // ─── Process all pending bills ────────────────────────────────────────────────
@@ -286,6 +327,98 @@ export async function processPendingBills(verbose = true): Promise<{
     // ── No usable source for this bill ────────────────────────────────────────
     log(`  ${bill.bill_number} SKIPPED — no usable text source (${quality ?? 'null'})`)
     stillPending++
+  }
+
+  // ── Amendment summaries: process pending bill_summaries (version > 1) ────────
+  try {
+    const { data: pendingSummaries } = await supabase
+      .from('bill_summaries')
+      .select('id, bill_id, version_id, version_number, change_type_label')
+      .eq('summary_status', 'pending')
+      .gt('version_number', 1)
+      .limit(50)
+
+    if (pendingSummaries && pendingSummaries.length > 0) {
+      log(`\nProcessing ${pendingSummaries.length} pending amendment summaries...`)
+
+      for (const summaryRow of pendingSummaries) {
+        const { data: bill } = await supabase
+          .from('Bills')
+          .select('*')
+          .eq('id', summaryRow.bill_id)
+          .single()
+        if (!bill) continue
+
+        const { data: version } = await supabase
+          .from('bill_versions')
+          .select('full_text, summary')
+          .eq('id', summaryRow.version_id)
+          .maybeSingle()
+
+        log(`\n  Amendment: ${bill.bill_number} (v${summaryRow.version_number})`)
+
+        let summary: string
+        try {
+          summary = await generateSummary(
+            bill,
+            {
+              abstract:    bill.abstract,
+              digest:      bill.digest,
+              bodyText:    version?.full_text ?? bill.full_text,
+              deletedText: bill.deleted_text,
+              addedText:   bill.added_text,
+              source:      'amendment',
+            },
+            AMENDMENT_SYSTEM_PROMPT
+          )
+        } catch (err: any) {
+          log(`  ${bill.bill_number} amendment ERROR: ${err.message}`)
+          await sleep(2000)
+          continue
+        }
+
+        if (!isGoodSummary(summary)) {
+          log(`  ${bill.bill_number} amendment REJECTED (quality gate)`)
+          await supabase.from('bill_summaries')
+            .update({ summary_status: 'failed' })
+            .eq('id', summaryRow.id)
+          await sleep(2000)
+          continue
+        }
+
+        // Save to bill_summaries
+        await supabase.from('bill_summaries').update({
+          summary,
+          summary_status: 'complete',
+          generated_at:   new Date().toISOString(),
+        }).eq('id', summaryRow.id)
+
+        // Update Bills for backward compatibility
+        await supabase.from('Bills').update({
+          summary,
+          summary_status:     'complete',
+          summary_updated_at: new Date().toISOString(),
+          updated_at:         new Date().toISOString(),
+        }).eq('id', summaryRow.bill_id)
+
+        // Notify watchers
+        await notifyWatchers(
+          summaryRow.bill_id,
+          bill.bill_number,
+          'summary_updated',
+          `${bill.bill_number} has been amended`,
+          `A new amendment analysis (v${summaryRow.version_number}) is now available for ${bill.bill_number}.`
+        )
+
+        log(`  ✓ ${bill.bill_number} — amendment summary complete`)
+        upgraded++
+        bySource['amendment'] = (bySource['amendment'] ?? 0) + 1
+        await sleep(2000)
+      }
+    }
+  } catch {
+    // bill_summaries table not yet created — skip gracefully
+    log('\n  (Amendment summary processing skipped — migration not yet applied)')
   }
 
   return { upgraded, stillPending, bySource }

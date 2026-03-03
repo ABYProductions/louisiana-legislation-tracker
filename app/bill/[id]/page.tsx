@@ -8,6 +8,7 @@ import ReactMarkdown from 'react-markdown'
 import BillHeaderActions from '@/app/components/BillHeaderActions'
 import BillWatchlistPanel from '@/app/components/BillWatchlistPanel'
 import BillNewsPanel from '@/app/components/BillNewsPanel'
+import BillSummaryPanel from '@/app/components/BillSummaryPanel'
 
 // Always fetch fresh data — bill details change throughout session
 export const revalidate = 0
@@ -157,6 +158,18 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
   }
 
   const typedBill = bill as Bill
+
+  // Fetch amendment history (gracefully skips if migration not applied)
+  let summaryHistory: any[] = []
+  try {
+    const { data: summaryData } = await supabase
+      .from('bill_summaries')
+      .select('id, version_number, change_type_label, is_current, summary, generated_at, created_at')
+      .eq('bill_id', typedBill.id)
+      .order('version_number', { ascending: false })
+      .limit(10)
+    summaryHistory = summaryData ?? []
+  } catch { /* table not yet created */ }
 
   const BAD_PHRASES = ['I apologize', 'I cannot provide', 'corrupted', 'I must note', 'SessionSource is preparing', 'full legislative text']
   const summaryIsClean = (s: string | null | undefined) =>
@@ -440,6 +453,8 @@ export default async function BillDetailPage({ params }: { params: Promise<{ id:
                 ) : (
                   <SummaryPending />
                 )}
+
+                <BillSummaryPanel summaryHistory={summaryHistory} />
               </div>
             </div>
 

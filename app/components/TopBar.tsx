@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { useAuth } from './AuthProvider'
 import { useWatchlist } from './WatchlistProvider'
 import Logo from './Logo'
+import NotificationBell from './NotificationBell'
 
 const SESSION_START = new Date('2026-03-09T00:00:00')
 const SESSION_END = new Date('2026-06-01T18:00:00') // Sine die no later than 6pm June 1
@@ -175,6 +176,7 @@ export default function TopBar() {
               <>
                 {user ? (
                   <>
+                    <NotificationBell />
                     <Link href="/watchlist" style={{
                       fontFamily: 'var(--font-sans)',
                       fontSize: 'var(--text-sm)',

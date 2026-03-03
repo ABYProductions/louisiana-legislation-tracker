@@ -316,6 +316,65 @@ async function processBill(bill: any): Promise<{
     console.log(`    Amendment detected — archiving previous summary`)
   }
 
+  // ── Step 7b: Version capture (bill_versions + bill_summaries) ────────────────
+  if (isAmendment) {
+    try {
+      // Find the current max version number for this bill
+      const { data: latestVer } = await supabase
+        .from('bill_versions')
+        .select('version_number')
+        .eq('bill_id', bill.id)
+        .order('version_number', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      const nextVersionNumber = (latestVer?.version_number ?? 1) + 1
+      const versionDate = new Date().toISOString().split('T')[0]
+
+      // Insert new bill_versions row
+      const { data: newVersion, error: vErr } = await supabase
+        .from('bill_versions')
+        .insert({
+          bill_id:        bill.id,
+          version_name:   `Amendment — ${versionDate}`,
+          version_type:   'amendment',
+          version_date:   versionDate,
+          version_number: nextVersionNumber,
+          full_text:      fullText.substring(0, 100_000),
+          pdf_hash:       pdfHash,
+          summary:        null,
+        } as any)
+        .select('id')
+        .single()
+
+      if (!vErr && newVersion) {
+        // Mark prior bill_summaries rows for this bill as not current
+        await supabase
+          .from('bill_summaries')
+          .update({ is_current: false })
+          .eq('bill_id', bill.id)
+          .eq('is_current', true)
+
+        // Create a pending bill_summaries entry for the new version
+        await supabase
+          .from('bill_summaries')
+          .insert({
+            bill_id:          bill.id,
+            version_id:       (newVersion as any).id,
+            version_number:   nextVersionNumber,
+            is_current:       true,
+            summary_status:   'pending',
+            change_type_label: 'Amendment',
+          })
+
+        console.log(`    ✓ Version ${nextVersionNumber} recorded in bill_versions`)
+      }
+    } catch (versionErr: any) {
+      // Tables may not exist yet — graceful degradation
+      console.warn(`    Version capture skipped (migration not applied): ${versionErr.message?.substring(0, 100)}`)
+    }
+  }
+
   // ── Step 8: Database update ────────────────────────────────────────────────
   const updateData: Record<string, any> = {
     pdf_url:               pdfUrl,
