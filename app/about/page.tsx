@@ -1,5 +1,6 @@
 import TopBar from '@/app/components/TopBar'
 import Footer from '@/app/components/Footer'
+import DisclaimerText from '@/app/components/DisclaimerText'
 
 export default function AboutPage() {
   return (
@@ -175,7 +176,7 @@ export default function AboutPage() {
               color: '#5a5248',
               fontWeight: 300,
             }}>
-              SessionSource — Louisiana provides information about Louisiana legislation using artificial intelligence and automated processes. By using this website, you acknowledge and agree to the terms of this disclaimer. This website is for informational and educational purposes only. All generated content may contain errors, omissions, or factual inaccuracies. SessionSource does not warrant, guarantee, or represent that any information provided on this website is accurate, complete, or reliable. This site does not provide legal, political, professional, official, government communication, or other professional advice.
+              <DisclaimerText form="long" />
             </p>
           </div>
 

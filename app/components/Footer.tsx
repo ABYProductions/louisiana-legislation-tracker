@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getSupabaseServer } from '@/lib/supabase'
 import Logo from './Logo'
+import DisclaimerText from './DisclaimerText'
 
 async function getLastSyncTime(): Promise<string | null> {
   try {
@@ -115,8 +116,8 @@ export default async function Footer() {
         flexWrap: 'wrap',
         gap: '8px',
       }}>
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-xs)', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
-          SessionSource is an independent, non-partisan tracking tool. Not affiliated with the Louisiana Legislature.
+        <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-xs)', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em', lineHeight: 1.7 }}>
+          <DisclaimerText form="short" linkColor="#AABBD0" />
         </p>
         <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-xs)', color: 'rgba(255,255,255,0.3)' }}>
           2026 SessionSource

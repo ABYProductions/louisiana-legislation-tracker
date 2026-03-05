@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Logo from '@/app/components/Logo'
 import AdoptWatchlistBanner from '@/app/components/AdoptWatchlistBanner'
+import DisclaimerText from '@/app/components/DisclaimerText'
 
 export const dynamic = 'force-dynamic'
 
@@ -190,11 +191,8 @@ export default async function SharedWatchlistPage({
             color: 'var(--text-secondary)',
             lineHeight: 1.6,
           }}>
-            <strong style={{ color: '#C4922A', fontWeight: 600 }}>Beta tool — always verify information.</strong>{' '}
-            This is a read-only view shared by a SessionSource user. SessionSource is in beta testing. Please verify all bill information directly at the{' '}
-            <a href="https://legis.la.gov" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--navy)', fontWeight: 600, textDecoration: 'underline' }}>
-              Louisiana Legislature website (legis.la.gov)
-            </a>.
+            This is a read-only view shared by a SessionSource user.{' '}
+            <DisclaimerText form="short" />
           </div>
 
           {/* Adopt CTA */}
@@ -204,8 +202,27 @@ export default async function SharedWatchlistPage({
         </div>
       </div>
 
+      {/* Block A: discrete disclaimer bar above bill list */}
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 var(--space-6)', marginBottom: '20px', marginTop: 'var(--space-6)' }}>
+        <div style={{
+          background: '#FDF8EE',
+          border: '1px solid #DDD8CE',
+          borderRadius: '6px',
+          padding: '11px 18px',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '10px',
+        }}>
+          <span style={{ fontSize: '13px', color: '#AAA', paddingTop: '1px', flexShrink: 0 }}>⚖️</span>
+          <DisclaimerText
+            form="short"
+            style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: '#777', lineHeight: 1.65 }}
+          />
+        </div>
+      </div>
+
       {/* Bill list */}
-      <div style={{ maxWidth: 'var(--width-content)', margin: '0 auto', padding: 'var(--space-6) var(--space-6) var(--space-12)' }}>
+      <div style={{ maxWidth: 'var(--width-content)', margin: '0 auto', padding: '0 var(--space-6) var(--space-12)' }}>
         {bills.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 'var(--space-12) 0', fontFamily: 'var(--font-sans)', fontSize: 'var(--text-base)', color: 'var(--text-muted)' }}>
             No bills in this shared watchlist.
@@ -385,6 +402,35 @@ export default async function SharedWatchlistPage({
             )
           })
         )}
+      </div>
+
+      {/* Block B: page footer disclaimer */}
+      <div style={{ width: '100%', background: '#F7F4EF', borderTop: '1px solid #DDD8CE' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '28px 32px' }}>
+          <div style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: '10px',
+            color: '#AAA',
+            fontWeight: 700,
+            letterSpacing: '1.5px',
+            textTransform: 'uppercase',
+            marginBottom: '10px',
+          }}>
+            About This Data
+          </div>
+          <DisclaimerText
+            form="long"
+            style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: '#999', lineHeight: 1.85 }}
+          />
+          <div style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: '10px',
+            color: '#BBB',
+            marginTop: '10px',
+          }}>
+            Data sourced via LegiScan · Updated daily · Not affiliated with the Louisiana Legislature
+          </div>
+        </div>
       </div>
 
       {/* Footer CTA */}

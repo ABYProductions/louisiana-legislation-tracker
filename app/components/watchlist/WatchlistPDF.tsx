@@ -1,6 +1,7 @@
 'use client'
 
-import { Document, Page, Text, View, StyleSheet, Link } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { DISCLAIMER_SHORT, DISCLAIMER_LONG, DISCLAIMER_PDF_FOOTER, DISCLAIMER_PDF_LEGAL_NOTICE_SUFFIX } from '@/lib/disclaimer'
 
 const styles = StyleSheet.create({
   page: {
@@ -127,14 +128,59 @@ const styles = StyleSheet.create({
     bottom: 32,
     left: 48,
     right: 48,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
     borderTop: '1px solid #e2ddd4',
     paddingTop: 8,
+  },
+  footerRow1: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
   },
   footerText: {
     fontSize: 8,
     color: '#9a9490',
+  },
+  footerDisclaimer: {
+    fontSize: 7,
+    color: '#BBB',
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
+  disclaimerBox: {
+    backgroundColor: '#F7F4EF',
+    border: '0.5pt solid #DDD8CE',
+    padding: '8 12',
+    marginTop: 8,
+  },
+  disclaimerBoxText: {
+    fontSize: 8,
+    color: '#888',
+    lineHeight: 1.5,
+  },
+  legalNoticeRule: {
+    borderTop: '1pt solid #e2ddd4',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  legalNoticeHeading: {
+    fontSize: 8,
+    color: '#AAA',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    marginBottom: 6,
+  },
+  legalNoticeText: {
+    fontSize: 7.5,
+    color: '#888',
+    lineHeight: 1.65,
+  },
+  legalNoticeSuffix: {
+    fontSize: 7.5,
+    color: '#AAA',
+    marginTop: 6,
+    lineHeight: 1.5,
   },
 })
 
@@ -201,6 +247,13 @@ export default function WatchlistPDF({ bills, title }: Props) {
               </View>
             </View>
 
+            {/* Location A: first-page disclaimer box */}
+            {idx === 0 && (
+              <View style={styles.disclaimerBox}>
+                <Text style={styles.disclaimerBoxText}>{DISCLAIMER_SHORT}</Text>
+              </View>
+            )}
+
             {/* Bill number + priority */}
             <View style={styles.badgeRow}>
               <Text style={styles.billNum}>{bill.bill_number}</Text>
@@ -257,17 +310,26 @@ export default function WatchlistPDF({ bills, title }: Props) {
               </>
             )}
 
-            {/* Footer */}
-            <View style={styles.footer} fixed>
-              <View>
-                <Text style={styles.footerText}>
-                  Beta — verify all information at the Louisiana Legislature website.{' '}
+            {/* Location C: last-page legal notice */}
+            {idx === bills.length - 1 && (
+              <View style={styles.legalNoticeRule}>
+                <Text style={styles.legalNoticeHeading}>Legal Notice</Text>
+                <Text style={styles.legalNoticeText}>{DISCLAIMER_LONG}</Text>
+                <Text style={styles.legalNoticeSuffix}>
+                  {DISCLAIMER_PDF_LEGAL_NOTICE_SUFFIX} Generated {generatedDate}.
                 </Text>
-                <Link src="https://legis.la.gov" style={{ ...styles.footerText, color: '#C4922A', textDecoration: 'underline' }}>
-                  legis.la.gov
-                </Link>
               </View>
-              <Text style={styles.footerText}>{bill.bill_number} · {idx + 1} of {total}</Text>
+            )}
+
+            {/* Location B: footer (every page) */}
+            <View style={styles.footer} fixed>
+              <View style={styles.footerRow1}>
+                <Text style={styles.footerText}>SessionSource · Louisiana Legislature</Text>
+                <Text style={styles.footerText}>{bill.bill_number} · {idx + 1} of {total}</Text>
+              </View>
+              <Text style={styles.footerDisclaimer}>
+                {DISCLAIMER_PDF_FOOTER} legis.la.gov (https://legis.la.gov)
+              </Text>
             </View>
           </Page>
         )

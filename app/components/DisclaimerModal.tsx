@@ -199,7 +199,15 @@ export default function DisclaimerModal() {
                 'A licensed attorney admitted to practice in Louisiana',
                 'Appropriate government agencies and officials',
               ].map((item, i) => (
-                <li key={i} style={{ ...body, marginBottom: '6px' }}>{item}</li>
+                <li key={i} style={{ ...body, marginBottom: '6px' }}>
+                  {item.includes('legis.la.gov') ? (
+                    <>
+                      {item.split('legis.la.gov')[0]}
+                      <a href="https://legis.la.gov" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gold)', textDecoration: 'underline', textUnderlineOffset: '2px' }}>legis.la.gov</a>
+                      {item.split('legis.la.gov')[1]}
+                    </>
+                  ) : item}
+                </li>
               ))}
             </ul>
 

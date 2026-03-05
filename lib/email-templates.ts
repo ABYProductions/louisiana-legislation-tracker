@@ -1,7 +1,15 @@
 // lib/email-templates.ts
 // All five email template builders for SessionSource Louisiana.
 
+import { DISCLAIMER_SHORT, LEGIS_URL } from '@/lib/disclaimer'
+
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://sessionsource.net'
+
+function disclaimerHtml(text: string, linkColor = '#C4922A'): string {
+  const parts = text.split('legis.la.gov')
+  if (parts.length === 1) return text
+  return parts.join(`<a href="${LEGIS_URL}" style="color:${linkColor};text-decoration:none;">legis.la.gov</a>`)
+}
 
 // ── Shared wrapper ─────────────────────────────────────────────────────────────
 
@@ -28,8 +36,7 @@ function wrap(body: string, userId: string): string {
     <!-- Footer -->
     <div style="background:#F7F4EF;padding:24px;border-top:1px solid #DDD8CE;text-align:center;">
       <p style="font-family:Arial,sans-serif;font-size:12px;color:#999;margin:0 0 8px;">
-        Legislative data may reflect a 24–48 hour delay. Verify time-sensitive information at
-        <a href="https://legis.la.gov" style="color:#C4922A;">legis.la.gov</a>.
+        ${disclaimerHtml(DISCLAIMER_SHORT)}
       </p>
       <p style="font-family:Arial,sans-serif;font-size:12px;color:#999;margin:0 0 8px;">
         <a href="${SITE_URL}/account#notifications" style="color:#C4922A;text-decoration:none;">Manage Preferences</a>
