@@ -28,7 +28,7 @@ const TAB_LABELS: { id: Tab; label: string }[] = [
   { id: 'interests', label: 'Interests' },
   { id: 'activity', label: 'Activity Log' },
   { id: 'security', label: 'Security' },
-  { id: 'danger', label: 'Danger Zone' },
+  { id: 'danger', label: 'Delete Account' },
 ]
 
 export default function AccountPage() {
@@ -480,10 +480,10 @@ export default function AccountPage() {
           </div>
         )}
 
-        {/* ── DANGER ZONE TAB ── */}
+        {/* ── DELETE ACCOUNT TAB ── */}
         {activeTab === 'danger' && (
           <div style={{ maxWidth: '540px' }}>
-            <h2 style={{ ...sectionHeadStyle, color: '#dc2626' }}>Danger Zone</h2>
+            <h2 style={{ ...sectionHeadStyle, color: '#dc2626' }}>Delete Account</h2>
             <p style={sectionDescStyle}>
               Permanently delete your account and all associated data. This cannot be undone.
             </p>

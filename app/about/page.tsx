@@ -137,7 +137,7 @@ export default function AboutPage() {
               fontWeight: 300,
               marginBottom: '16px',
             }}>
-              Bill summaries on this site are generated using Claude, Anthropic's AI assistant. These summaries are intended to provide accessible plain-English overviews of complex legislation. They are not legal advice, legislative analysis, or official government communications.
+              Bill summaries on this site are generated using AI. These summaries are intended to provide accessible plain-English overviews of complex legislation. They are not legal advice, legislative analysis, or official government communications.
             </p>
             <p style={{
               fontFamily: 'var(--font-sans)',

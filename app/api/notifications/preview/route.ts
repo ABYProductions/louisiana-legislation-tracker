@@ -13,9 +13,25 @@ async function getAuthClient() {
   )
 }
 
-export async function GET(_req: NextRequest) {
-  const supabase = await getAuthClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export async function GET(req: NextRequest) {
+  let user: { id: string; email?: string } | null = null
+
+  // Try Bearer token first (from browser fetch with Authorization header)
+  const authHeader = req.headers.get('Authorization')
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.replace('Bearer ', '')
+    const serverSupabaseForAuth = getSupabaseServer()
+    const { data } = await serverSupabaseForAuth.auth.getUser(token)
+    user = data.user
+  }
+
+  // Fall back to cookie-based session
+  if (!user) {
+    const supabase = await getAuthClient()
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  }
+
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const serverSupabase = getSupabaseServer()

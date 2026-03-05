@@ -118,8 +118,17 @@ export default function NotificationPreferencesPanel({ showOptInBanner = true, o
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewHtml, setPreviewHtml] = useState('')
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [previewError, setPreviewError] = useState<string | null>(null)
   const [testSent, setTestSent] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (!previewOpen) return
+    const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') setPreviewOpen(false) }
+    document.addEventListener('keydown', onEsc)
+    return () => document.removeEventListener('keydown', onEsc)
+  }, [previewOpen])
 
   useEffect(() => {
     fetch('/api/notifications/preferences')
@@ -175,11 +184,27 @@ export default function NotificationPreferencesPanel({ showOptInBanner = true, o
   const saveLabel = saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? '✓ Saved' : saveState === 'error' ? 'Save failed' : ''
 
   async function handlePreview() {
-    const r = await fetch('/api/notifications/preview').catch(() => null)
-    if (r?.ok) {
-      const d = await r.json()
-      setPreviewHtml(d.html || '')
-      setPreviewOpen(true)
+    setPreviewLoading(true)
+    setPreviewError(null)
+    try {
+      const { getSupabaseBrowser } = await import('@/lib/supabase')
+      const supabase = getSupabaseBrowser()
+      const { data: { session } } = await supabase.auth.getSession()
+      const headers: Record<string, string> = {}
+      if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`
+
+      const r = await fetch('/api/notifications/preview', { headers })
+      if (r.ok) {
+        const html = await r.text()
+        setPreviewHtml(html)
+        setPreviewOpen(true)
+      } else {
+        setPreviewError('Could not load preview. Make sure you have bills on your watchlist and try again.')
+      }
+    } catch {
+      setPreviewError('Could not load preview. Make sure you have bills on your watchlist and try again.')
+    } finally {
+      setPreviewLoading(false)
     }
   }
 
@@ -347,16 +372,21 @@ export default function NotificationPreferencesPanel({ showOptInBanner = true, o
       {/* Section E — Preview & Test */}
       <div>
         <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', color: '#0C2340', fontWeight: 600, margin: '0 0 16px' }}>Preview & Test</h3>
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-start', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           <button
             onClick={handlePreview}
+            disabled={previewLoading}
             style={{
               fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 600,
-              color: '#0C2340', background: 'white', border: '2px solid #0C2340',
-              borderRadius: '6px', padding: '10px 20px', cursor: 'pointer',
+              color: previewLoading ? 'rgba(12,35,64,0.5)' : '#0C2340',
+              background: 'white', border: '2px solid #0C2340',
+              borderRadius: '6px', padding: '10px 20px',
+              cursor: previewLoading ? 'not-allowed' : 'pointer',
+              opacity: previewLoading ? 0.7 : 1,
             }}
           >
-            Preview Sunday Digest
+            {previewLoading ? 'Loading preview…' : 'Preview Sunday Digest'}
           </button>
           <button
             onClick={handleSendTest}
@@ -370,23 +400,27 @@ export default function NotificationPreferencesPanel({ showOptInBanner = true, o
           >
             {testSent === 'sending' ? 'Sending…' : testSent === 'sent' ? '✓ Sent!' : testSent === 'error' ? 'Failed' : 'Send Test Email'}
           </button>
+          </div>
+          {previewError && (
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: '#C0392B', margin: 0 }}>
+              {previewError}
+            </p>
+          )}
         </div>
       </div>
 
       {/* Preview modal */}
       {previewOpen && (
         <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
           onClick={e => { if (e.target === e.currentTarget) setPreviewOpen(false) }}
         >
-          <div style={{ background: 'white', borderRadius: '12px', width: '100%', maxWidth: '680px', maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: '16px 24px', borderBottom: '1px solid #DDD8CE', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 600, color: '#0C2340' }}>Email Preview</span>
-              <button onClick={() => setPreviewOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px', color: '#888' }}>×</button>
+          <div style={{ background: 'white', borderRadius: '12px', width: '100%', maxWidth: '660px', maxHeight: '85vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', padding: 0 }}>
+            <div style={{ background: '#0C2340', padding: '16px 24px', borderRadius: '12px 12px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+              <span style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', color: 'white' }}>Email Preview</span>
+              <button onClick={() => setPreviewOpen(false)} style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'white', cursor: 'pointer', background: 'transparent', border: 'none' }}>✕ Close</button>
             </div>
-            <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
-              <iframe srcDoc={previewHtml} style={{ width: '100%', height: '600px', border: 'none' }} title="Email Preview" />
-            </div>
+            <div dangerouslySetInnerHTML={{ __html: previewHtml }} style={{ padding: 0 }} />
           </div>
         </div>
       )}
