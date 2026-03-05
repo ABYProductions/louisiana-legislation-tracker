@@ -17,10 +17,14 @@ export default function SignupPage() {
     setLoading(true)
     setError('')
     const supabase = getSupabaseBrowser()
+    const adoptToken = new URLSearchParams(window.location.search).get('adopt')
+    const redirectTo = adoptToken
+      ? `${window.location.origin}/auth/callback?adopt=${adoptToken}`
+      : `${window.location.origin}/auth/callback`
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` }
+      options: { emailRedirectTo: redirectTo }
     })
     if (error) {
       setError(error.message)

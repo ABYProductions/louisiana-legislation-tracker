@@ -7,6 +7,7 @@ import { useAuth } from '../components/AuthProvider'
 import TopBar from '../components/TopBar'
 import CreateFolderModal from '../components/watchlist/CreateFolderModal'
 import ShareModal from '../components/watchlist/ShareModal'
+import AdoptWatchlistModal from '../components/AdoptWatchlistModal'
 import type { Folder } from '../api/watchlist/folders/route'
 import type { WatchedBillRecord, PriorityLevel } from '../api/watchlist/bills/route'
 import type { FolderFormData } from '../components/watchlist/CreateFolderModal'
@@ -614,12 +615,31 @@ export default function WatchlistPage() {
   const [showShare, setShowShare] = useState(false)
   const [pdfGenerating, setPdfGenerating] = useState(false)
   const [folderMenuOpen, setFolderMenuOpen] = useState<string | null>(null)
+  const [adoptToken, setAdoptToken] = useState<string | null>(null)
+  const [showAdoptModal, setShowAdoptModal] = useState(false)
+  const [adoptSuccessMsg, setAdoptSuccessMsg] = useState<string | null>(null)
 
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/auth/login?redirectTo=/watchlist')
     }
   }, [user, authLoading, router])
+
+  // Check for ?adopt= token in URL — open adoption modal
+  useEffect(() => {
+    if (user) {
+      const params = new URLSearchParams(window.location.search)
+      const token = params.get('adopt')
+      if (token) {
+        setAdoptToken(token)
+        setShowAdoptModal(true)
+        // Remove from URL without reload
+        const url = new URL(window.location.href)
+        url.searchParams.delete('adopt')
+        window.history.replaceState({}, '', url.toString())
+      }
+    }
+  }, [user])
 
   const loadFolders = useCallback(async () => {
     if (!user) return
@@ -1243,6 +1263,44 @@ export default function WatchlistPage() {
           folders={folders}
           onClose={() => setShowShare(false)}
         />
+      )}
+
+      {showAdoptModal && adoptToken && (
+        <AdoptWatchlistModal
+          token={adoptToken}
+          onClose={() => setShowAdoptModal(false)}
+          onSuccess={(added) => {
+            setShowAdoptModal(false)
+            setAdoptSuccessMsg(`${added} bill${added !== 1 ? 's' : ''} added to your watchlist`)
+            loadBills()
+            setTimeout(() => setAdoptSuccessMsg(null), 5000)
+          }}
+        />
+      )}
+
+      {adoptSuccessMsg && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          background: '#16A34A',
+          color: 'white',
+          padding: '12px 20px',
+          borderRadius: '8px',
+          fontFamily: 'var(--font-sans)',
+          fontSize: '14px',
+          fontWeight: 600,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+          zIndex: 300,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          {adoptSuccessMsg}
+        </div>
       )}
 
       <style>{`

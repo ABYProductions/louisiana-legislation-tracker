@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Logo from '@/app/components/Logo'
+import AdoptWatchlistBanner from '@/app/components/AdoptWatchlistBanner'
 
 export const dynamic = 'force-dynamic'
 
@@ -192,6 +193,11 @@ export default async function SharedWatchlistPage({
           }}>
             This is a read-only view shared by a SessionSource user. Private notes are not included. For the full SessionSource experience,{' '}
             <Link href="/auth/signup" style={{ color: 'var(--navy)', fontWeight: 600 }}>create a free account</Link>.
+          </div>
+
+          {/* Adopt CTA */}
+          <div style={{ marginTop: 'var(--space-5)' }}>
+            <AdoptWatchlistBanner token={token} />
           </div>
         </div>
       </div>
@@ -387,7 +393,7 @@ export default async function SharedWatchlistPage({
           <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-base)', color: 'rgba(255,255,255,0.65)', marginBottom: 'var(--space-6)', lineHeight: 1.6 }}>
             Free accounts include unlimited bill tracking, AI-powered summaries, and portfolio organization.
           </p>
-          <Link href="/auth/signup" style={{
+          <Link href={`/auth/signup?adopt=${token}`} style={{
             display: 'inline-block',
             padding: 'var(--space-3) var(--space-8)',
             background: 'var(--gold)',
@@ -398,7 +404,7 @@ export default async function SharedWatchlistPage({
             fontWeight: 'var(--weight-semibold)',
             textDecoration: 'none',
           }}>
-            Create Free Account
+            Create Free Account &amp; Adopt Watchlist
           </Link>
         </div>
       </div>
