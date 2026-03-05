@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import BetaBanner from "./components/BetaBanner";
 import DisclaimerModal from "./components/DisclaimerModal";
+import EmailOptInModal from "./components/EmailOptInModal";
 import AuthProvider from "@/app/components/AuthProvider";
 import WatchlistProvider from "@/app/components/WatchlistProvider";
 import ErrorBoundary from "@/app/components/ErrorBoundary";
@@ -33,6 +35,9 @@ export default function RootLayout({
           <WatchlistProvider>
             <ErrorBoundary>
               <DisclaimerModal />
+              <Suspense fallback={null}>
+                <EmailOptInModal />
+              </Suspense>
               <div id="main-content">
                 {children}
               </div>

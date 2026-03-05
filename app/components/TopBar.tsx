@@ -48,6 +48,7 @@ export default function TopBar() {
   }
 
   const userInitial = user?.email?.charAt(0).toUpperCase() || user?.user_metadata?.full_name?.charAt(0).toUpperCase() || '?'
+  const userEmail = user?.email || ''
 
   return (
     <>
@@ -239,44 +240,96 @@ export default function TopBar() {
                         {userInitial}
                       </button>
                       {userMenuOpen && (
-                        <div style={{
-                          position: 'absolute',
-                          top: '40px',
-                          right: 0,
-                          background: 'white',
-                          border: '1px solid var(--border)',
-                          borderRadius: 'var(--radius-md)',
-                          boxShadow: 'var(--shadow-lg)',
-                          minWidth: '160px',
-                          zIndex: 200,
-                          overflow: 'hidden',
-                        }}>
-                          <Link href="/watchlist" onClick={() => setUserMenuOpen(false)} style={{
-                            display: 'block',
-                            padding: 'var(--space-3) var(--space-4)',
-                            fontFamily: 'var(--font-sans)',
-                            fontSize: 'var(--text-sm)',
-                            color: 'var(--text-primary)',
-                            textDecoration: 'none',
-                          }} className="topbar-menu-item">
-                            My Watchlist
-                          </Link>
-                          <button onClick={handleSignOut} style={{
-                            display: 'block',
-                            width: '100%',
-                            textAlign: 'left',
-                            padding: 'var(--space-3) var(--space-4)',
-                            fontFamily: 'var(--font-sans)',
-                            fontSize: 'var(--text-sm)',
-                            color: 'var(--error)',
-                            background: 'none',
-                            border: 'none',
-                            borderTop: '1px solid var(--border)',
-                            cursor: 'pointer',
-                          }} className="topbar-menu-item">
-                            Sign Out
-                          </button>
-                        </div>
+                        <>
+                          {/* Click-outside overlay */}
+                          <div
+                            onClick={() => setUserMenuOpen(false)}
+                            style={{ position: 'fixed', inset: 0, zIndex: 199 }}
+                          />
+                          <div style={{
+                            position: 'absolute',
+                            top: '40px',
+                            right: 0,
+                            background: 'white',
+                            border: '1px solid var(--border)',
+                            borderRadius: 'var(--radius-md)',
+                            boxShadow: 'var(--shadow-lg)',
+                            minWidth: '200px',
+                            zIndex: 200,
+                            overflow: 'hidden',
+                          }}>
+                            {/* User info header */}
+                            <div style={{
+                              padding: 'var(--space-3) var(--space-4)',
+                              borderBottom: '1px solid var(--border)',
+                              background: 'var(--cream)',
+                            }}>
+                              <div style={{
+                                fontFamily: 'var(--font-sans)',
+                                fontSize: '13px',
+                                fontWeight: 600,
+                                color: 'var(--navy)',
+                              }}>
+                                {userEmail.split('@')[0]}
+                              </div>
+                              <div style={{
+                                fontFamily: 'var(--font-sans)',
+                                fontSize: '11px',
+                                color: 'var(--text-muted)',
+                                marginTop: '2px',
+                              }}>
+                                {userEmail}
+                              </div>
+                            </div>
+                            <Link href="/account" onClick={() => setUserMenuOpen(false)} style={{
+                              display: 'block',
+                              padding: 'var(--space-3) var(--space-4)',
+                              fontFamily: 'var(--font-sans)',
+                              fontSize: 'var(--text-sm)',
+                              color: 'var(--text-primary)',
+                              textDecoration: 'none',
+                            }} className="topbar-menu-item">
+                              My Account
+                            </Link>
+                            <Link href="/watchlist" onClick={() => setUserMenuOpen(false)} style={{
+                              display: 'block',
+                              padding: 'var(--space-3) var(--space-4)',
+                              fontFamily: 'var(--font-sans)',
+                              fontSize: 'var(--text-sm)',
+                              color: 'var(--text-primary)',
+                              textDecoration: 'none',
+                            }} className="topbar-menu-item">
+                              My Watchlist
+                            </Link>
+                            <Link href="/account#notifications" onClick={() => setUserMenuOpen(false)} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: 'var(--space-3) var(--space-4)',
+                              fontFamily: 'var(--font-sans)',
+                              fontSize: 'var(--text-sm)',
+                              color: 'var(--text-primary)',
+                              textDecoration: 'none',
+                            }} className="topbar-menu-item">
+                              Notification Settings
+                            </Link>
+                            <button onClick={handleSignOut} style={{
+                              display: 'block',
+                              width: '100%',
+                              textAlign: 'left',
+                              padding: 'var(--space-3) var(--space-4)',
+                              fontFamily: 'var(--font-sans)',
+                              fontSize: 'var(--text-sm)',
+                              color: 'var(--error)',
+                              background: 'none',
+                              border: 'none',
+                              borderTop: '1px solid var(--border)',
+                              cursor: 'pointer',
+                            }} className="topbar-menu-item">
+                              Sign Out
+                            </button>
+                          </div>
+                        </>
                       )}
                     </div>
                   </>
@@ -363,7 +416,7 @@ export default function TopBar() {
             </button>
           </div>
           <nav>
-            {[...NAV_LINKS, { href: '/watchlist', label: 'My Watchlist' }].map(({ href, label }) => (
+            {[...NAV_LINKS, { href: '/watchlist', label: 'My Watchlist' }, { href: '/account', label: 'My Account' }].map(({ href, label }) => (
               <Link key={href} href={href} onClick={() => setMobileOpen(false)} style={{
                 display: 'flex',
                 alignItems: 'center',

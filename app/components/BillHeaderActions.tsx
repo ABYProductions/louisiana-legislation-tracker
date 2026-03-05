@@ -29,8 +29,18 @@ export default function BillHeaderActions({ billId, billNumber, pdfUrl, stateLin
     setActionLoading(true)
     if (isWatching) {
       await removeWatch(billId)
+      fetch('/api/account/log-activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event_type: 'bill_unwatched', event_detail: `Removed ${billNumber} from watchlist`, bill_id: billId }),
+      }).catch(() => {})
     } else {
       await addWatch(billId)
+      fetch('/api/account/log-activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event_type: 'bill_watched', event_detail: `Added ${billNumber} to watchlist`, bill_id: billId }),
+      }).catch(() => {})
     }
     setActionLoading(false)
   }

@@ -3,6 +3,18 @@
     {
       "path": "/api/cron/sync-news",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/notifications/send-digest",
+      "schedule": "0 13 * * 0"
+    },
+    {
+      "path": "/api/notifications/send-digest",
+      "schedule": "0 13 * * 1-6"
+    },
+    {
+      "path": "/api/notifications/send-alert",
+      "schedule": "0 13 * * 3"
     }
   ]
 }
