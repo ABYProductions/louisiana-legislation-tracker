@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { computeBillIndicators, hasUrgentIndicator } from '@/lib/bill-indicators'
+import type { BillIndicator } from '@/lib/bill-indicators'
 
 async function getAuthClient() {
   const cookieStore = await cookies()
@@ -49,6 +51,18 @@ export interface WatchedBillRecord {
   next_event: unknown | null
   history: { date: string; action: string }[] | null
   pdf_url: string | null
+  amendments: unknown | null
+  calendar: unknown | null
+  votes: unknown | null
+  indicators: BillIndicator[]
+}
+
+export interface WatchlistSummary {
+  total: number
+  withUrgentIndicators: number
+  withAnyIndicators: number
+  recentActivityCount: number
+  lastComputedAt: string
 }
 
 export async function GET(req: NextRequest) {
@@ -59,7 +73,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const folderId = searchParams.get('folder_id')
   const priorityFilter = searchParams.get('priority')
-  const sort = searchParams.get('sort') || 'added_at'
+  const sort = searchParams.get('sort') || 'recent_activity'
 
   const { data: userBills, error: ubErr } = await supabase
     .from('user_bills')
@@ -84,21 +98,34 @@ export async function GET(req: NextRequest) {
     bills = bills.filter(b => b.priority === priorityFilter)
   }
 
-  if (bills.length === 0) return NextResponse.json({ bills: [] })
+  if (bills.length === 0) {
+    return NextResponse.json({
+      bills: [],
+      summary: {
+        total: 0,
+        withUrgentIndicators: 0,
+        withAnyIndicators: 0,
+        recentActivityCount: 0,
+        lastComputedAt: new Date().toISOString(),
+      } satisfies WatchlistSummary,
+    })
+  }
 
   const billIds = bills.map(b => b.bill_id)
   const { data: billData, error: bErr } = await supabase
     .from('Bills')
-    .select('id, bill_number, title, description, status, author, body, current_body, committee, last_action, last_action_date, summary, summary_status, subjects, next_event, history, pdf_url')
+    .select('id, bill_number, title, description, status, author, body, current_body, committee, last_action, last_action_date, summary, summary_status, subjects, next_event, history, pdf_url, amendments, calendar, votes')
     .in('id', billIds)
 
   if (bErr) return NextResponse.json({ error: bErr.message }, { status: 500 })
 
   const billMap = new Map((billData || []).map(b => [b.id, b]))
 
+  const recentThreshold = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+
   let merged: WatchedBillRecord[] = bills.map(ub => {
     const bill = billMap.get(ub.bill_id) || {}
-    return {
+    const base = {
       user_bill_id: ub.id,
       bill_id: ub.bill_id,
       added_at: ub.added_at,
@@ -107,7 +134,25 @@ export async function GET(req: NextRequest) {
       priority: ub.priority,
       folder_ids: ub.folder_ids,
       ...bill,
-    } as WatchedBillRecord
+    } as Omit<WatchedBillRecord, 'indicators'>
+
+    const indicators = computeBillIndicators(
+      {
+        status: base.status,
+        last_action: base.last_action,
+        last_action_date: base.last_action_date,
+        history: base.history,
+        amendments: base.amendments,
+        calendar: base.calendar,
+        votes: base.votes,
+      },
+      {
+        priority: base.priority,
+        added_at: base.added_at,
+      }
+    )
+
+    return { ...base, indicators } as WatchedBillRecord
   })
 
   // Sort
@@ -119,14 +164,32 @@ export async function GET(req: NextRequest) {
     if (sort === 'bill_number') {
       return (a.bill_number || '').localeCompare(b.bill_number || '')
     }
-    if (sort === 'last_action') {
+    if (sort === 'last_action' || sort === 'recent_activity') {
       return (b.last_action_date || '').localeCompare(a.last_action_date || '')
     }
-    // Default: added_at desc
-    return (b.added_at || '').localeCompare(a.added_at || '')
+    if (sort === 'added_at') {
+      return (b.added_at || '').localeCompare(a.added_at || '')
+    }
+    // Default: recent_activity
+    return (b.last_action_date || '').localeCompare(a.last_action_date || '')
   })
 
-  return NextResponse.json({ bills: merged })
+  // Compute summary
+  const summary: WatchlistSummary = {
+    total: merged.length,
+    withUrgentIndicators: merged.filter(b => hasUrgentIndicator(b.indicators)).length,
+    withAnyIndicators: merged.filter(b => b.indicators.length > 0).length,
+    recentActivityCount: merged.filter(b => {
+      if (!b.last_action_date) return false
+      try {
+        const d = new Date(b.last_action_date + 'T00:00:00')
+        return d >= recentThreshold
+      } catch { return false }
+    }).length,
+    lastComputedAt: new Date().toISOString(),
+  }
+
+  return NextResponse.json({ bills: merged, summary })
 }
 
 export async function PATCH(req: NextRequest) {

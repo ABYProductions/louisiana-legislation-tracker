@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../components/AuthProvider'
@@ -8,8 +8,11 @@ import TopBar from '../components/TopBar'
 import CreateFolderModal from '../components/watchlist/CreateFolderModal'
 import ShareModal from '../components/watchlist/ShareModal'
 import AdoptWatchlistModal from '../components/AdoptWatchlistModal'
+import BillIndicatorPills from '../components/BillIndicatorPills'
+import { hasUrgentIndicator } from '@/lib/bill-indicators'
+import { LEGIS_URL } from '@/lib/disclaimer'
 import type { Folder } from '../api/watchlist/folders/route'
-import type { WatchedBillRecord, PriorityLevel } from '../api/watchlist/bills/route'
+import type { WatchedBillRecord, PriorityLevel, WatchlistSummary } from '../api/watchlist/bills/route'
 import type { FolderFormData } from '../components/watchlist/CreateFolderModal'
 
 // ── Priority helpers ──────────────────────────────────────────────────────────
@@ -24,6 +27,16 @@ const PRIORITY_META: Record<PriorityLevel, { label: string; color: string; barCo
 function formatDate(d: string | null) {
   if (!d) return null
   return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function formatLastComputed(isoStr: string): string {
+  try {
+    const d = new Date(isoStr)
+    return d.toLocaleString('en-US', {
+      month: 'short', day: 'numeric',
+      hour: 'numeric', minute: '2-digit', hour12: true,
+    })
+  } catch { return '' }
 }
 
 function isThisWeek(dateStr: string | null) {
@@ -190,7 +203,14 @@ function BillCard({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const priority = bill.priority || 'normal'
-  const meta = PRIORITY_META[priority as PriorityLevel]
+  const indicators = bill.indicators || []
+
+  // Left accent bar color: urgent → red, attention → gold, else → priority color (Part 8)
+  const accentColor = hasUrgentIndicator(indicators)
+    ? '#C0392B'
+    : indicators.some(i => i.tier === 'attention')
+      ? '#C4922A'
+      : PRIORITY_META[priority as PriorityLevel]?.barColor || 'var(--border)'
 
   const handleNotesChange = (val: string) => {
     setLocalNotes(val)
@@ -237,14 +257,14 @@ function BillCard({
       overflow: 'hidden',
       position: 'relative',
     }}>
-      {/* Priority accent bar */}
+      {/* Left accent bar (Part 8) */}
       <div style={{
         position: 'absolute',
         left: 0,
         top: 0,
         bottom: 0,
         width: '4px',
-        background: meta.barColor,
+        background: accentColor,
       }} />
 
       {/* Top section */}
@@ -319,6 +339,14 @@ function BillCard({
           {bill.title || 'Untitled Bill'}
         </Link>
 
+        {/* Indicator pills — below title, above sponsor line (Part 4) */}
+        {indicators.length > 0 && (
+          <BillIndicatorPills
+            indicators={indicators}
+            billId={bill.bill_id}
+          />
+        )}
+
         {/* Row 3: sponsor + committee + PDF */}
         {(bill.author || bill.committee || bill.pdf_url) && (
           <div style={{
@@ -327,6 +355,7 @@ function BillCard({
             justifyContent: 'space-between',
             gap: 'var(--space-2)',
             marginBottom: 'var(--space-2)',
+            marginTop: indicators.length > 0 ? 'var(--space-2)' : 0,
           }}>
             <div style={{
               fontFamily: 'var(--font-sans)',
@@ -375,7 +404,7 @@ function BillCard({
           </div>
         )}
 
-        {/* Row 5: portfolio assignment — always visible when folders exist */}
+        {/* Row 5: portfolio assignment */}
         {folders.length > 0 && (
           <div style={{
             display: 'flex',
@@ -398,7 +427,7 @@ function BillCard({
             }}>
               Portfolio:
             </span>
-            {folders.map(f => {
+            {(folders || []).map(f => {
               const isSelected = (bill.folder_ids || []).includes(f.id)
               return (
                 <button
@@ -605,11 +634,13 @@ export default function WatchlistPage() {
 
   const [bills, setBills] = useState<WatchedBillRecord[]>([])
   const [folders, setFolders] = useState<Folder[]>([])
+  const [summary, setSummary] = useState<WatchlistSummary | null>(null)
   const [billsLoading, setBillsLoading] = useState(true)
   const [foldersLoading, setFoldersLoading] = useState(true)
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
   const [selectedPriority, setSelectedPriority] = useState<PriorityLevel | null>(null)
-  const [sortBy, setSortBy] = useState('added_at')
+  const [sortBy, setSortBy] = useState('recent_activity')
+  const [activityFilter, setActivityFilter] = useState<'all' | 'recent' | 'scheduled'>('all')
   const [showCreateFolder, setShowCreateFolder] = useState(false)
   const [editingFolder, setEditingFolder] = useState<FolderFormData | null>(null)
   const [showShare, setShowShare] = useState(false)
@@ -619,13 +650,26 @@ export default function WatchlistPage() {
   const [showAdoptModal, setShowAdoptModal] = useState(false)
   const [adoptSuccessMsg, setAdoptSuccessMsg] = useState<string | null>(null)
 
+  // Load sort preference from localStorage on mount (Part 6)
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('watchlist_sort_preference')
+      if (stored) setSortBy(stored)
+    } catch { /* ignore */ }
+  }, [])
+
+  const handleSortChange = (newSort: string) => {
+    setSortBy(newSort)
+    try { localStorage.setItem('watchlist_sort_preference', newSort) } catch { /* ignore */ }
+  }
+
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/auth/login?redirectTo=/watchlist')
     }
   }, [user, authLoading, router])
 
-  // Check for ?adopt= token in URL — open adoption modal
+  // Check for ?adopt= token in URL
   useEffect(() => {
     if (user) {
       const params = new URLSearchParams(window.location.search)
@@ -633,7 +677,6 @@ export default function WatchlistPage() {
       if (token) {
         setAdoptToken(token)
         setShowAdoptModal(true)
-        // Remove from URL without reload
         const url = new URL(window.location.href)
         url.searchParams.delete('adopt')
         window.history.replaceState({}, '', url.toString())
@@ -660,10 +703,18 @@ export default function WatchlistPage() {
       const params = new URLSearchParams()
       if (selectedFolder) params.set('folder_id', selectedFolder)
       if (selectedPriority) params.set('priority', selectedPriority)
-      if (sortBy !== 'added_at') params.set('sort', sortBy)
+      params.set('sort', sortBy)
       const res = await fetch(`/api/watchlist/bills?${params}`)
       const data = await res.json()
       setBills(data.bills || [])
+      setSummary(data.summary || null)
+
+      // Broadcast urgentCount to nav badge via localStorage + custom event (Part 7)
+      if (data.summary) {
+        const urgentCount = data.summary.withUrgentIndicators || 0
+        try { localStorage.setItem('watchlist_urgent_count', String(urgentCount)) } catch { /* ignore */ }
+        window.dispatchEvent(new CustomEvent('watchlist-updated', { detail: { urgentCount } }))
+      }
     } finally {
       setBillsLoading(false)
     }
@@ -671,6 +722,32 @@ export default function WatchlistPage() {
 
   useEffect(() => { loadFolders() }, [loadFolders])
   useEffect(() => { loadBills() }, [loadBills])
+
+  // Client-side activity filter (Part 6)
+  const recentThreshold = useMemo(
+    () => new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
+
+  const filteredBills = useMemo(() => {
+    if (activityFilter === 'all') return bills
+    if (activityFilter === 'recent') {
+      return (bills || []).filter(b => {
+        const hasUrgent = (b.indicators || []).some(i => i.tier === 'urgent')
+        const hasRecentDate = b.last_action_date
+          ? new Date(b.last_action_date + 'T00:00:00') >= recentThreshold
+          : false
+        return hasUrgent || hasRecentDate
+      })
+    }
+    if (activityFilter === 'scheduled') {
+      return (bills || []).filter(b =>
+        (b.indicators || []).some(i => i.id === 'hearing_scheduled' || i.id === 'floor_calendar')
+      )
+    }
+    return bills
+  }, [bills, activityFilter, recentThreshold])
 
   const handlePriorityUpdate = useCallback(async (billId: number, priority: PriorityLevel) => {
     setBills(prev => prev.map(b => b.bill_id === billId ? { ...b, priority } : b))
@@ -735,23 +812,22 @@ export default function WatchlistPage() {
 
   // Stats
   const totalBills = bills.length
-  const weekActivity = bills.filter(b => isThisWeek(b.last_action_date)).length
-  const upcomingHearings = bills.filter(b => {
+  const weekActivity = (bills || []).filter(b => isThisWeek(b.last_action_date)).length
+  const upcomingHearings = (bills || []).filter(b => {
     const evt = b.next_event as { date?: string } | null
     return evt?.date ? isNextWeek(evt.date) : false
   }).length
   const portfolioCount = folders.length
 
-  // Priority counts across all bills (unfiltered)
-  const priorityCounts = bills.reduce<Record<string, number>>((acc, b) => {
+  const priorityCounts = (bills || []).reduce<Record<string, number>>((acc, b) => {
     const p = b.priority || 'normal'
     acc[p] = (acc[p] || 0) + 1
     return acc
   }, {})
 
   const contextLabel = selectedFolder
-    ? `${folders.find(f => f.id === selectedFolder)?.name || 'Portfolio'} · ${bills.length} bill${bills.length !== 1 ? 's' : ''}`
-    : `All Bills · ${totalBills} watching`
+    ? `${folders.find(f => f.id === selectedFolder)?.name || 'Portfolio'} · ${filteredBills.length} bill${filteredBills.length !== 1 ? 's' : ''}`
+    : `All Bills · ${activityFilter !== 'all' ? filteredBills.length : totalBills} watching`
 
   if (authLoading) return null
   if (!user) return null
@@ -933,11 +1009,7 @@ export default function WatchlistPage() {
               Portfolios
             </div>
 
-            {/* All Bills */}
-            <div
-              role="list"
-              aria-label="Portfolio navigation"
-            >
+            <div role="list" aria-label="Portfolio navigation">
               <div
                 role="listitem"
                 aria-current={!selectedFolder}
@@ -972,14 +1044,13 @@ export default function WatchlistPage() {
                 }}>{foldersLoading ? '…' : totalBills}</span>
               </div>
 
-              {/* Folder items */}
               {!foldersLoading && folders.length === 0 && (
                 <div style={{ padding: 'var(--space-3) var(--space-4)', fontFamily: 'var(--font-sans)', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                   Create portfolios to organize bills by client or topic.
                 </div>
               )}
 
-              {folders.map((folder, idx) => {
+              {(folders || []).map((folder, idx) => {
                 const isActive = selectedFolder === folder.id
                 return (
                   <div
@@ -1024,7 +1095,6 @@ export default function WatchlistPage() {
                       flexShrink: 0,
                     }}>{folder.bill_count}</span>
 
-                    {/* 3-dot menu */}
                     <div style={{ position: 'relative' }}>
                       <button
                         onClick={e => { e.stopPropagation(); setFolderMenuOpen(folderMenuOpen === folder.id ? null : folder.id) }}
@@ -1072,7 +1142,6 @@ export default function WatchlistPage() {
               })}
             </div>
 
-            {/* New Portfolio button */}
             <button
               onClick={() => { setEditingFolder(null); setShowCreateFolder(true) }}
               style={{
@@ -1157,14 +1226,14 @@ export default function WatchlistPage() {
 
         {/* ── Right main ── */}
         <div>
-          {/* Column header */}
+          {/* Column header: context label + sort dropdown */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             paddingBottom: 'var(--space-3)',
             paddingTop: 'var(--space-4)',
-            marginBottom: 'var(--space-4)',
+            marginBottom: 'var(--space-3)',
             borderBottom: '1px solid var(--border)',
             position: 'sticky',
             top: 0,
@@ -1176,7 +1245,7 @@ export default function WatchlistPage() {
             </span>
             <select
               value={sortBy}
-              onChange={e => setSortBy(e.target.value)}
+              onChange={e => handleSortChange(e.target.value)}
               style={{
                 padding: 'var(--space-1) var(--space-3)',
                 border: '1px solid var(--border)',
@@ -1188,11 +1257,56 @@ export default function WatchlistPage() {
                 cursor: 'pointer',
               }}
             >
+              <option value="recent_activity">Most Recent Activity</option>
               <option value="added_at">Recently Added</option>
               <option value="priority">Priority</option>
               <option value="last_action">Last Action</option>
               <option value="bill_number">Bill Number</option>
             </select>
+          </div>
+
+          {/* Activity filter pills (Part 6) */}
+          <div style={{ marginBottom: 'var(--space-4)' }}>
+            <div style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '10px',
+              color: '#AAA',
+              fontWeight: 700,
+              letterSpacing: '1.5px',
+              textTransform: 'uppercase',
+              marginBottom: '8px',
+            }}>
+              Activity Filter
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {([
+                { value: 'all', label: 'All Bills' },
+                { value: 'recent', label: 'Has Recent Activity' },
+                { value: 'scheduled', label: 'Has Scheduled Events' },
+              ] as const).map(({ value, label }) => {
+                const isActive = activityFilter === value
+                return (
+                  <button
+                    key={value}
+                    onClick={() => setActivityFilter(value)}
+                    style={{
+                      padding: '5px 14px',
+                      borderRadius: '20px',
+                      border: `1px solid ${isActive ? '#0C2340' : 'var(--border)'}`,
+                      background: isActive ? '#0C2340' : 'white',
+                      color: isActive ? 'white' : 'var(--navy)',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '12px',
+                      fontWeight: isActive ? 600 : 400,
+                      cursor: 'pointer',
+                      transition: 'all 120ms ease',
+                    }}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           {/* Bill list */}
@@ -1201,7 +1315,7 @@ export default function WatchlistPage() {
               Loading bills…
             </div>
           ) : bills.length === 0 ? (
-            /* Empty state */
+            /* Main empty state */
             <div style={{
               background: 'var(--white)',
               border: '1px solid var(--border)',
@@ -1234,16 +1348,154 @@ export default function WatchlistPage() {
               </Link>
             </div>
           ) : (
-            bills.map(bill => (
-              <BillCard
-                key={bill.bill_id}
-                bill={bill}
-                folders={folders}
-                onPriorityUpdate={handlePriorityUpdate}
-                onNotesUpdate={handleNotesUpdate}
-                onFoldersUpdate={handleFoldersUpdate}
-              />
-            ))
+            <>
+              {/* Summary banner (Part 5) */}
+              {summary && summary.recentActivityCount > 0 && (
+                <>
+                  <div style={{
+                    background: 'linear-gradient(135deg, #0C2340, #1a3a5c)',
+                    borderRadius: '10px',
+                    padding: '16px 24px',
+                    marginBottom: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '16px',
+                    flexWrap: 'wrap',
+                  }}>
+                    {/* Left */}
+                    <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+                      <span style={{ fontSize: '20px', color: '#C4922A', marginRight: '12px', flexShrink: 0 }}>⚡</span>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: '20px',
+                          fontWeight: 600,
+                          color: 'white',
+                          lineHeight: 1.2,
+                        }}>
+                          {summary.recentActivityCount} bill{summary.recentActivityCount !== 1 ? 's' : ''} with recent developments
+                        </div>
+                        <div style={{
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '12px',
+                          color: '#AABBD0',
+                          marginTop: '3px',
+                        }}>
+                          Activity recorded in the last 3 days · as of {formatLastComputed(summary.lastComputedAt)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                      {summary.withUrgentIndicators > 0 && (
+                        <span style={{
+                          background: 'rgba(192,57,43,0.2)',
+                          border: '1px solid #C0392B',
+                          color: '#FF8A80',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          padding: '6px 14px',
+                          borderRadius: '20px',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {summary.withUrgentIndicators} urgent
+                        </span>
+                      )}
+                      <button
+                        onClick={() => setActivityFilter(f => f === 'recent' ? 'all' : 'recent')}
+                        style={{
+                          background: activityFilter === 'recent'
+                            ? 'rgba(196,146,42,0.3)'
+                            : 'rgba(255,255,255,0.1)',
+                          border: `1px solid ${activityFilter === 'recent' ? '#C4922A' : 'rgba(255,255,255,0.2)'}`,
+                          color: 'white',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '13px',
+                          padding: '8px 16px',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {activityFilter === 'recent' ? 'Showing Active Only ×' : 'Show Active Only'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Data freshness note (Part 5) */}
+                  <div style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '11px',
+                    color: '#AAA',
+                    fontStyle: 'italic',
+                    marginBottom: '16px',
+                    lineHeight: 1.6,
+                  }}>
+                    Indicators reflect data as of last sync. Louisiana Legislature schedules may change without notice. Verify at{' '}
+                    <a
+                      href={LEGIS_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: '#C4922A', textDecoration: 'none' }}
+                    >
+                      legis.la.gov
+                    </a>.
+                  </div>
+                </>
+              )}
+
+              {/* No recent activity line */}
+              {summary && summary.recentActivityCount === 0 && (
+                <div style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '12px',
+                  color: '#AAA',
+                  marginBottom: '12px',
+                }}>
+                  No recorded activity in the last 3 days on your watched bills. Data syncs daily.
+                </div>
+              )}
+
+              {/* Activity filter empty state (Part 6) */}
+              {filteredBills.length === 0 && activityFilter !== 'all' ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                  <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: '#AAA', marginBottom: '8px' }}>
+                    No bills match this filter right now.
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: '#BBB', marginBottom: '16px' }}>
+                    Schedules are often posted late — check back or view all bills.
+                  </div>
+                  <button
+                    onClick={() => setActivityFilter('all')}
+                    style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '13px',
+                      color: 'var(--gold)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    View All Bills
+                  </button>
+                </div>
+              ) : (
+                (filteredBills || []).map(bill => (
+                  <BillCard
+                    key={bill.bill_id}
+                    bill={bill}
+                    folders={folders}
+                    onPriorityUpdate={handlePriorityUpdate}
+                    onNotesUpdate={handleNotesUpdate}
+                    onFoldersUpdate={handleFoldersUpdate}
+                  />
+                ))
+              )}
+            </>
           )}
         </div>
       </div>

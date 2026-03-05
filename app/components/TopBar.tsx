@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from './AuthProvider'
 import { useWatchlist } from './WatchlistProvider'
 import Logo from './Logo'
@@ -39,7 +39,21 @@ export default function TopBar() {
   const { watchedIds } = useWatchlist()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [urgentCount, setUrgentCount] = useState(0)
   const sessionStatus = getSessionStatus()
+
+  useEffect(() => {
+    const stored = localStorage.getItem('watchlist_urgent_count')
+    if (stored) setUrgentCount(parseInt(stored, 10) || 0)
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{ urgentCount: number }>
+      if (typeof ce.detail?.urgentCount === 'number') {
+        setUrgentCount(ce.detail.urgentCount)
+      }
+    }
+    window.addEventListener('watchlist-updated', handler)
+    return () => window.removeEventListener('watchlist-updated', handler)
+  }, [])
 
   const handleSignOut = async () => {
     await signOut()
@@ -197,23 +211,47 @@ export default function TopBar() {
                       </svg>
                       My Watchlist
                       {watchedIds.size > 0 && (
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          minWidth: '18px',
-                          height: '18px',
-                          borderRadius: '9px',
-                          background: 'var(--navy)',
-                          border: '1.5px solid var(--gold)',
-                          color: 'white',
-                          fontFamily: 'var(--font-sans)',
-                          fontSize: '10px',
-                          fontWeight: 700,
-                          padding: '0 4px',
-                          lineHeight: 1,
-                        }}>
-                          {watchedIds.size}
+                        <span style={{ position: 'relative' }}>
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minWidth: '18px',
+                            height: '18px',
+                            borderRadius: '9px',
+                            background: 'var(--navy)',
+                            border: '1.5px solid var(--gold)',
+                            color: 'white',
+                            fontFamily: 'var(--font-sans)',
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            padding: '0 4px',
+                            lineHeight: 1,
+                          }}>
+                            {watchedIds.size}
+                          </span>
+                          {urgentCount > 0 && (
+                            <span style={{
+                              position: 'absolute',
+                              top: '-6px',
+                              right: '-6px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              minWidth: '18px',
+                              height: '18px',
+                              borderRadius: '9px',
+                              background: '#C0392B',
+                              color: 'white',
+                              fontFamily: 'var(--font-sans)',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              padding: '0 5px',
+                              lineHeight: 1,
+                            }}>
+                              {urgentCount}
+                            </span>
+                          )}
                         </span>
                       )}
                     </Link>
