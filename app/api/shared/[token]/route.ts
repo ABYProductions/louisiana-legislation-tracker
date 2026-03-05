@@ -59,10 +59,10 @@ export async function GET(
 
   const { data: billData } = await supabase
     .from('Bills')
-    .select('id, bill_number, title, status, author, committee, last_action, last_action_date, next_event, history, summary, summary_status, pdf_url')
+    .select('id, bill_number, title, status, author, committee, last_action, last_action_date, next_event, history, pdf_url')
     .in('id', billIds)
 
-  // Truncate summary to 300 chars for shared view, never expose notes or user_id
+  // Never expose notes, user data, or AI summaries in shared view
   const bills = (billData || []).map(bill => ({
     id: bill.id,
     bill_number: bill.bill_number,
@@ -74,8 +74,6 @@ export async function GET(
     last_action_date: bill.last_action_date,
     next_event: bill.next_event,
     history: bill.history,
-    summary: bill.summary ? bill.summary.slice(0, 300) + (bill.summary.length > 300 ? '…' : '') : null,
-    summary_status: bill.summary_status,
     pdf_url: bill.pdf_url,
   }))
 

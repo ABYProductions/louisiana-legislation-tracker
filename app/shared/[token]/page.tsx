@@ -17,8 +17,6 @@ interface SharedBill {
   last_action_date: string | null
   next_event: { date?: string; description?: string } | null
   history: HistoryItem[] | null
-  summary: string | null
-  summary_status: string | null
   pdf_url?: string | null
 }
 
@@ -181,18 +179,22 @@ export default async function SharedWatchlistPage({
 
           {/* Disclaimer */}
           <div style={{
-            background: 'rgba(13,42,74,0.04)',
-            border: '1px solid var(--border)',
+            background: 'rgba(196,146,42,0.06)',
+            border: '1px solid rgba(196,146,42,0.3)',
+            borderLeft: '3px solid #C4922A',
             borderRadius: 'var(--radius-md)',
             padding: 'var(--space-3) var(--space-4)',
             marginTop: 'var(--space-4)',
             fontFamily: 'var(--font-sans)',
             fontSize: 'var(--text-sm)',
             color: 'var(--text-secondary)',
-            lineHeight: 1.55,
+            lineHeight: 1.6,
           }}>
-            This is a read-only view shared by a SessionSource user. Private notes are not included. For the full SessionSource experience,{' '}
-            <Link href="/auth/signup" style={{ color: 'var(--navy)', fontWeight: 600 }}>create a free account</Link>.
+            <strong style={{ color: '#C4922A', fontWeight: 600 }}>Beta tool — always verify information.</strong>{' '}
+            This is a read-only view shared by a SessionSource user. SessionSource is in beta testing. Please verify all bill information directly at the{' '}
+            <a href="https://legis.la.gov" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--navy)', fontWeight: 600, textDecoration: 'underline' }}>
+              Louisiana Legislature website (legis.la.gov)
+            </a>.
           </div>
 
           {/* Adopt CTA */}
@@ -297,22 +299,7 @@ export default async function SharedWatchlistPage({
                     </div>
                   )}
 
-                  {/* Summary */}
-                  {bill.summary_status === 'complete' && bill.summary && (
-                    <p style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: 'var(--text-sm)',
-                      color: 'var(--text-secondary)',
-                      lineHeight: 1.6,
-                      margin: 0,
-                      borderLeft: '3px solid var(--gold)',
-                      paddingLeft: 'var(--space-3)',
-                    }}>
-                      {bill.summary}
-                    </p>
-                  )}
-
-                  {/* View full bill + PDF */}
+                  {/* View full bill + official links */}
                   <div style={{ marginTop: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
                     <Link href={`/bill/${bill.id}`} style={{
                       fontFamily: 'var(--font-sans)',
@@ -325,9 +312,29 @@ export default async function SharedWatchlistPage({
                       padding: '4px 12px',
                       transition: 'all 150ms ease',
                     }}>
-                      View full bill →
+                      View on SessionSource →
                     </Link>
                     {bill.pdf_url && <PDFPill url={bill.pdf_url} billNumber={bill.bill_number} />}
+                    <a
+                      href="https://legis.la.gov"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '4px',
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: 'var(--text-xs)',
+                        fontWeight: 500,
+                        color: 'var(--text-muted)',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        <polyline points="15 3 21 3 21 9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                      legis.la.gov
+                    </a>
                   </div>
                 </div>
 
